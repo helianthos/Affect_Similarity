@@ -15,10 +15,10 @@ Open Science Framework (OSF):\
 <https://doi.org/10.17605/OSF.IO/V7T9F>
 
 **Contact:**\
-geert.vandingenen\@stuent.kuleuven.be
+geert.vandingenen\@student.kuleuven.be
 
 **Last updated:**\
-2026-01-15
+2026-01-16
 
 ## Project overview
 
@@ -44,49 +44,33 @@ You can either:
 
 #### *2. Open the project*
 
-Open the RStudio project file:
-
-``` text
-Internship.Rproj
-```
+Open the RStudio project file `Internship.Rproj`.
 
 This will automatically activate the project-specific R environment via **renv**.
 
 #### *3. Restore the R package environment*
 
-In the R console, run:
-
-``` r
-renv::restore()
-```
+In the R console, run `renv::restore()`
 
 This installs the exact package versions specified in `renv.lock`.
 
 #### *4. Provide access to the raw data*
 
-Raw data files are **not included** in this repository. Request the raw CSV files and update the path in:
+Raw data files are **not included** in this repository. Request the raw CSV files and create a machine-specific path configuration file (it will not be tracked by git):
 
-```         
-R/02_paths.R
-```
+1.  Copy the template: `config/local_paths_TEMPLATE.R` → `config/local_paths.R`
+2.  Open `config/local_paths.R` and set `RAW_DATA_DIR` to the folder that contains the raw CSV files on your machine.
+3.  Restart R (Session → Restart R) or re-source the paths script.
 
-to point to the location of the raw data on your machine.
+The project will read raw data from `RAW_DATA_DIR`.
 
 #### *5. Generate derived datasets*
 
-Run the import script to generate analysis-ready datasets:
+Run the import script to generate analysis-ready datasets: `source("scripts/01_import.R")`
 
-```         
-source("scripts/01_import.R")
-```
+Derived data files will be written to `data/derived/`.
 
-Derived data files will be written to:
-
-```         
-data/derived/
-```
-
-These files are regenerated locally and are not tracked by Git.
+These files are regenerated locally and are not tracked by git.
 
 #### *6. Run analyses*
 
@@ -114,6 +98,12 @@ project/
 ├── .Rprofile
 │   └── Automatically activates renv when the project is opened
 │
+├── config/
+│   ├── local_paths_TEMPLATE.R
+│   │   └── Templae to copy to local_paths.R and updated by user
+│   └── lacal_paths.R
+│       └── created locally by user from TEMPLATE with updated raw data directory (git ignored)
+│
 ├── renv/
 │   ├── activate.R
 │   │   └── renv bootstrap script (auto-run; do not edit manually)
@@ -125,13 +115,12 @@ project/
 │   │   └── Documentation of the renv workflow
 │   │       (when to run init / snapshot / restore; not sourced automatically)
 │   │
-│   ├── 01_packages.R
+│   ├── 01_paths.R
+│   │   └── Defines file paths used across scripts. Machine-specific paths are read from config │   │      /local_paths.R
+│   │
+│   ├── 02_packages.R
 │   │   └── Loads all libraries required by the project
 │   │       (no installation; assumes renv::restore() has been run)
-│   │
-│   ├── 02_paths.R
-│   │   └── Defines file paths (e.g., OneDrive raw data location,
-│   │       project-local derived data directory)
 │   │
 │   └── 03_functions.R
 │       └── User-defined helper functions reused across scripts and analyses

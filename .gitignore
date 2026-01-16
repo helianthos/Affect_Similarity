@@ -10,6 +10,9 @@
 # renv
 # see .gitignore in renv folder
 
+# local paths config file
+config/local_paths.R
+
 # Derived data
 data/derived/*
 !data/derived/.gitkeep

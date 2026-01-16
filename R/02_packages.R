@@ -17,3 +17,7 @@
 #   - Required package versions are recorded in renv.lock.
 #   - On a new machine, run renv::restore() before sourcing this file.
 # ============================================================
+
+# Core
+library(tidyverse)
+library(here)

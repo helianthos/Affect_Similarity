@@ -1,15 +1,44 @@
 # ============================================================
 # 01_paths.R
 # Define file paths used across scripts.
-# Edit the RAW_DATA_DIR on each machine if needed.
 # ============================================================
 
-# library(here)
+source("R/02_packages.R") # load packages from project library
 
-# Folder containing the raw CSV files in your OneDrive
-# Change this path per machine if your OneDrive root differs.
-RAW_DATA_DIR <- "CHANGE_ME_TO_YOUR_ONEDRIVE_FOLDER"
+cfg_file <- here("config", "local_paths.R")
 
-# Project-local derived data folder (not tracked in Git)
+if (!file.exists(cfg_file)) {
+  stop(
+    paste(
+      "Missing config/local_paths.R.",
+      "Create it by copying config/local_paths_TEMPLATE.R",
+      "and editing RAW_DATA_DIR.",
+      sep = "\n"
+    ),
+    call. = FALSE
+  )
+}
 
-# DERIVED_DIR <- here("data", "derived")
+source(cfg_file)  # defines RAW_DATA_DIR
+
+paths <- list(
+  project_dir = here(),
+  raw_dir     = RAW_DATA_DIR,
+  derived_dir = here("data", "derived")
+)
+
+# ---- Validation  ----
+
+if (!dir.exists(paths$raw_dir)) {
+  stop(glue::glue("Raw data directory does not exist: {paths$raw_dir}"),
+       call. = FALSE)
+}
+
+if (!dir.exists(paths$derived_dir)) {
+  stop(glue::glue(
+    "Derived data directory is missing: {paths$derived_dir}.\n",
+    "This folder should exist in the repository (see .gitkeep)."
+  ), call. = FALSE)
+}
+
+paths
