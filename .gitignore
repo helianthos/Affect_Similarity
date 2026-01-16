@@ -1,5 +1,15 @@
+# RStudio
 .Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
+
+# MacOs
 .DS_Store
+
+# renv
+# see .gitignore in renv folder
+
+# Derived data
+data/derived/*
+!data/derived/.gitkeep
