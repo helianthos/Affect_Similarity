@@ -18,7 +18,7 @@ Open Science Framework (OSF):\
 geert.vandingenen\@student.kuleuven.be
 
 **Last updated:**\
-2026-01-16
+2026-01-17
 
 ## Project overview
 
@@ -46,7 +46,7 @@ You can either:
 
 Open the RStudio project file `Internship.Rproj`.
 
-This will automatically activate the project-specific R environment via **renv**.
+This will automatically activate the project-specific R environment via **renv** by auto-running .Rprofile.
 
 #### *3. Restore the R package environment*
 
@@ -150,7 +150,7 @@ project/
 │               (contents are regenerated locally and ignored by Git)
 │
 └── outputs/
-    ├── figures/
+    ├── plots/
     │   └── Saved plots (not tracked by default)
     └── tables/
         └── Saved tables (not tracked by default)

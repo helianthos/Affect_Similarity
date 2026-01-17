@@ -16,3 +16,7 @@ config/local_paths.R
 # Derived data
 data/derived/*
 !data/derived/.gitkeep
+
+# Outputs
+outputs/plots/ESM data diagnostics/*
+!outputs/plots/ESM data diagnostics/.gitkeep
