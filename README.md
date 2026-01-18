@@ -18,7 +18,7 @@ Open Science Framework (OSF):\
 geert.vandingenen\@student.kuleuven.be
 
 **Last updated:**\
-2026-01-17
+2026-01-18
 
 ## Project overview
 
@@ -130,8 +130,8 @@ project/
 │   ├── 01_import.R
 │   │   └── Reads raw CSV files and saves derived .rds files
 │   │
-│   ├── 02_clean.R
-│   │   └── Cleans and reshapes imported data into analysis-ready format
+│   ├── 02_data_checks.R
+│   │   └── Checks on the imported .rds files
 │   │
 │   └── 03_construct.R
 │       └── Constructs scales, similarity indices, and derived variables
