@@ -73,14 +73,14 @@ if (length(missing_files) > 0) {
 
 # ---- Save derived datasets ----
 
-bg_q_raw <- raw_data[["CCS_BGQuestionnaireV2_with_screener.csv"]]
+bg_raw <- raw_data[["CCS_BGQuestionnaireV2_with_screener.csv"]]
 esm_raw <- raw_data[["CCS_ESMbeeps_individual.csv"]]
 vmr_raw <- raw_data[["CCS_VMR_preprocessed.csv"]]
-post_q_raw <- raw_data[["CCS_Preprocessed_PostInteractionQ.csv"]]
+post_raw <- raw_data[["CCS_Preprocessed_PostInteractionQ.csv"]]
 
-saveRDS(bg_q_raw,  here::here("data", "derived", "bg_q_raw.rds"))
+saveRDS(bg_q_raw,  here::here("data", "derived", "bg_raw.rds"))
 saveRDS(esm_raw,  here::here("data", "derived", "esm_raw.rds"))
 saveRDS(vmr_raw,  here::here("data", "derived", "vmr_raw.rds"))
-saveRDS(post_q_raw, here::here("data", "derived", "post_q_raw.rds"))
+saveRDS(post_q_raw, here::here("data", "derived", "post_raw.rds"))
 
 message("Derived datasets written to data/derived/")

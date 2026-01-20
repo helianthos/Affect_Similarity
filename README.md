@@ -18,7 +18,7 @@ Open Science Framework (OSF):\
 geert.vandingenen\@student.kuleuven.be
 
 **Last updated:**\
-2026-01-18
+2026-01-20
 
 ## Project overview
 
@@ -152,6 +152,9 @@ project/
 └── outputs/
     ├── plots/
     │   └── Saved plots (not tracked by default)
-    └── tables/
+    ├── tables/
         └── Saved tables (not tracked by default)
+    └── log/
+         └── Saved console log outputs (not tracked by default)
+        
 ```
