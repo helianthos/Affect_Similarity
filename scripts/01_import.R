@@ -56,7 +56,7 @@ raw_data <- raw_files %>%
 
 # ---- Check if required files exist ----
 required_files <- c(
-  "CCS_BGQuestionnaireV1_without_screener.csv",
+  "CCS_BGQuestionnaireV2_with_screener.csv",
   "CCS_ESMbeeps_individual.csv",
   "CCS_Preprocessed_PostInteractionQ.csv",
   "CCS_VMR_preprocessed.csv"
@@ -73,7 +73,7 @@ if (length(missing_files) > 0) {
 
 # ---- Save derived datasets ----
 
-bg_q_raw <- raw_data[["CCS_BGQuestionnaireV1_without_screener.csv"]]
+bg_q_raw <- raw_data[["CCS_BGQuestionnaireV2_with_screener.csv"]]
 esm_raw <- raw_data[["CCS_ESMbeeps_individual.csv"]]
 vmr_raw <- raw_data[["CCS_VMR_preprocessed.csv"]]
 post_q_raw <- raw_data[["CCS_Preprocessed_PostInteractionQ.csv"]]

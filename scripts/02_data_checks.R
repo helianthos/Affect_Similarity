@@ -69,7 +69,8 @@ CONFIG <- list(
   settings = list(
     min_compliance = 30,
     expected_beeps = 90, #    Expected = (10*5) + (4*10) = 90 beeps
-    output_dir     = here("outputs", "plots", "ESM data diagnostics")
+    plots_dir      = here("outputs", "plots"),
+    log_file       = here("outputs", "logs", "02_data_checks_log_txt")
   )
 )
 
@@ -91,9 +92,14 @@ if(length(vars_missing) > 0) {
 }
 
 # 2. Ensure output directory exists 
-if(!dir.exists(output_dir)) {
+if(!dir.exists(plots_dir)) {
   stop("\n\n!!! ERROR: Output directory does not exist.\n")
 }
+
+# ---- START LOGGING -----------------------------------------------------------
+## --------------------------------------------------------------------------- -
+sink(file=log_file, append = FALSE, split = TRUE)
+cat(paste0("Log Generated: ", Sys.time(), "\n\n"))
 
 ## ---- 0. HELPER FUNCTIONS ----------------------------------------------------
 ## --------------------------------------------------------------------------- -
@@ -103,6 +109,25 @@ print_header <- function(text) {
   cat(paste0(rep("=", 60), collapse = ""), "\n")
   cat(paste("  ", toupper(text)), "\n")
   cat(paste0(rep("=", 60), collapse = ""), "\n")
+}
+
+check_mc_consistency <- function(var,no_resp, not_no_resp) {
+  cat(paste0("\nLogical Consistency of '", var, "' (Mutually Exclusive MC Answers)\n"))
+  inconsistent <- esm_data %>%
+    select(all_of(col_person), all_of(col_beep), all_of(var)) %>%
+    mutate(
+      no  = grepl(no_resp, as.character(.data[[var]])),
+      not_no = grepl(not_no_resp, as.character(.data[[var]]))
+    ) %>%
+    filter(no & not_no)
+  
+  if(nrow(inconsistent) > 0) {
+    cat(sprintf("⚠️ WARNING: %d rows contain contradictory multiple choice answers.\n",
+                nrow(inconsistent)))
+    print(inconsistent)
+  } else {
+    cat("✅ All ", var," responses are logically consistent.\n\n")
+  }
 }
 
 check_branch_consistency <-  function(is_gate_open, vars_conditional, label) {
@@ -128,7 +153,7 @@ check_branch_consistency <-  function(is_gate_open, vars_conditional, label) {
 }
 
 save_plot <- function(plot_obj, filename, w=10, h=8) {
-  full_path <- file.path(output_dir, filename)
+  full_path <- file.path(plots_dir, filename)
   ggsave(full_path, plot_obj, width = w, height = h, bg = "white")
   cat(sprintf("✅ Saved: %s\n   Location: %s\n", filename, full_path))
 }
@@ -138,7 +163,10 @@ save_plot <- function(plot_obj, filename, w=10, h=8) {
 print_header("1. Dataset Overview & Structure")
 
 # 1. Dimensions and variables
-glimpse(esm_data)
+str(esm_data, 
+    list.len = ncol(esm_data), # Show ALL columns
+    strict.width = "cut",      # FORCE single line (no wrapping!)
+    give.attr = FALSE)         # Remove the messy attributes at the bottom
 cat(sprintf("\nUnique Persons: %d\n", n_distinct(esm_data[[col_person]])))
 cat(sprintf("Unique Dyads:   %d\n", n_distinct(esm_data[[col_dyad]])))
 
@@ -222,7 +250,7 @@ plot_time <- esm_data %>%
        x = "Hour of Day (0-24)", y = "Count of Beeps") +
   theme_minimal()
 
-save_plot(plot_time, "01_response_time_dist.png")
+save_plot(plot_time, "01_ESM_response_time_dist.png")
 
 # 7. Timestamp Order Check 
 cat("\nTimestamp Logic (Scheduled < Sent < Start < Stop):\n")
@@ -242,6 +270,17 @@ if(nrow(logic_failures) == 0) {
   cat(sprintf("⚠️ WARNING: %d beeps have illogical timestamps:\n", nrow(logic_failures)))
   print(logic_failures)
 }
+
+# 8. Multiple choice consistency check
+
+#    partner_contact 1 (No) should be mutually exclusive from 2-4 (Yes contact).
+check_mc_consistency(col_part_cont, "1", "[234]")
+
+#    presence_others 7 (Nobody) should be mutually exclusive from 1-6
+check_mc_consistency(col_pres_oth, "7", "[123456]")
+
+#    contact_others 7 (Nobody) should be mutually exclusive from 1-6
+check_mc_consistency(col_cont_oth, "7", "[123456]")
 
 ## ---- 2. CONDITIONAL ITEM CHECKS ---------------------------------------------
 ## --------------------------------------------------------------------------- -
@@ -295,34 +334,12 @@ is_general_gate_open <- (esm_data[[col_part_pres]] == 0) &
 check_branch_consistency(is_general_gate_open, vars_branch_no_partner, 
                          "'No-partner Branch'")
 
-# 4. Logical Consistency of 'partner_contact' check
-#    partner_contact 1 ("No contact") should be mutually exclusive from
-#    2, 3, 4 ("Yes contact").
-cat(paste0("\nCheck 4: Logical Consistency of '", col_part_cont, "' (Mutually Exclusive)\n"))
-
-inconsistent_contact <- esm_data %>%
-  select(all_of(col_person), all_of(col_beep), all_of(col_part_cont)) %>%
-  mutate(
-    contact_str = as.character(.data[[col_part_cont]]),
-    has_no_contact  = grepl("1", contact_str),
-    has_yes_contact = grepl("[234]", contact_str)
-  ) %>%
-  filter(has_no_contact & has_yes_contact)
-
-if(nrow(inconsistent_contact) > 0) {
-  cat(sprintf("⚠️ WARNING: %d rows contain contradictory contact info (1 AND 2/3/4).\n",
-              nrow(inconsistent_contact)))
-  print(inconsistent_contact)
-} else {
-  cat("✅ All 'partner_contact' responses are logically consistent.\n")
-}
-
 ## ---- 3. SCHEDULE CHECKS -----------------------------------------------------
 ## --------------------------------------------------------------------------- -
 print_header("3. Protocol Schedule Compliance")
 
 # 1. Calculate beeps per day and determine day type
-daily_counts <- esm_data %>%
+daily_counts <- esm_data %>% 
   mutate(
     date_val = as.Date(.data[[col_ts_sent]]),
     # wday: 1=Sunday, 7=Saturday
@@ -406,7 +423,7 @@ plot_miss <- naniar::vis_miss(esm_data, warn_large_data = FALSE) +
   theme(axis.text.x = element_text(angle = 90)) +
   labs(title = "Missingness Map (Black = Missing)")
 
-save_plot(plot_miss, "02_missingness_map.png")
+save_plot(plot_miss, "02_ESM_missingness_map.png")
 
 
 ## ---- 5. COMPLIANCE ANALYSIS -------------------------------------------------
@@ -461,7 +478,7 @@ plot_comp_heatmap <- daily_counts %>%  # Uses object created in Section 3
   theme_minimal() +
   theme(axis.text.y = element_text(size = 6)) 
 
-save_plot(plot_comp_heatmap, "03_compliance_heatmap.png")
+save_plot(plot_comp_heatmap, "03_ESM_compliance_heatmap.png")
 
 # 6. Normalized compliance heatmap (saved as plot)
 cat("\n... Generating Normalized Compliance Heatmap ...\n")
@@ -498,7 +515,7 @@ plot_norm_comp_heatmap <- esm_relative %>%
   theme_minimal() +
   theme(axis.text.y = element_text(size = 5))
 
-save_plot(plot_norm_comp_heatmap, "04_attrition_relative.png")
+save_plot(plot_norm_comp_heatmap, "04_ESM_compliance_heatmap_normalized.png")
 
 # 7. Fatigue heatmap
 cat("\n... Generating Fatigue Heatmap  ...\n")
@@ -525,10 +542,17 @@ row_avgs <- main_grid %>%
 col_avgs <- main_grid %>%
   group_by(beep_label) %>%
   summarise(pct_complete = mean(pct_complete), .groups = "drop") %>%
-  mutate(day_label = "Beep Avg") 
+  mutate(day_label = "Beep Avg")
+
+#  Calculate Grand Mean (corner cell)
+grand_avg <- tibble(
+  day_label = "Beep Avg",   # Matches the label used in col_avgs
+  beep_label = "Day Avg",   # Matches the label used in row_avgs
+  pct_complete = mean(main_grid$pct_complete, na.rm = TRUE)
+)
 
 # Plot
-plot_data <- bind_rows(main_grid, row_avgs, col_avgs)
+plot_data <- bind_rows(main_grid, row_avgs, col_avgs, grand_avg)
 
 level_x <- c(as.character(1:10), "Day Avg")
 level_y <- c(as.character(1:14), "Beep Avg")
@@ -560,7 +584,7 @@ plot_fatigue_avg <- plot_data %>%
        fill = "% Compliance") +
   theme_minimal()
 
-save_plot(plot_fatigue_avg, "05_fatigue_map_avg.png")
+save_plot(plot_fatigue_avg, "05_ESM_fatigue_map.png")
 
 ## ---- 6. PARTNER BEEP SYNCHRONIZATION ----------------------------------------
 ## --------------------------------------------------------------------------- -
@@ -615,3 +639,8 @@ print(sync_table_pct)
 # ---- END ---------------------------------------------------------------------
 ## --------------------------------------------------------------------------- -
 print_header("End of Data Check Report")
+
+# ---- STOP LOGGING ------------------------------------------------------------
+## --------------------------------------------------------------------------- -
+sink()
+message(paste("Output log saved to:", log_file))

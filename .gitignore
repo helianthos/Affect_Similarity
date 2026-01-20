@@ -18,5 +18,7 @@ data/derived/*
 !data/derived/.gitkeep
 
 # Outputs
-outputs/plots/ESM data diagnostics/*
-!outputs/plots/ESM data diagnostics/.gitkeep
+outputs/plots/*
+!outputs/plots/.gitkeep
+outputs/logs/*
+!outputs/logs/.gitkeep
