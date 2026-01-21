@@ -362,6 +362,24 @@ save_plot <- function(plot_obj, filename, w=10, h=8) {
   plot_counter <<- plot_counter + 1
 }
 
+save_base_plot <- function(plot_code, filename, w=10, h=8) {
+  # 1. Create prefix using global counter
+  prefix <- sprintf("%02d_", plot_counter) 
+  # 2. Update filename
+  new_filename <- paste0(prefix, filename)
+  full_path <- file.path(plots_dir, new_filename)
+  # 3. Open PNG device
+  png(filename = full_path, width = w, height = h, units = "in", res = 300)
+  # 4. Execute the plotting code
+  #    use 'force()' to ensure the code block runs inside the device
+  force(plot_code)
+  # 5. Close device
+  dev.off()
+  # 6. Log and Increment
+  cat(sprintf("✅ Saved: %s\n   Location: %s\n", new_filename, full_path))
+  plot_counter <<- plot_counter + 1
+}
+
 check_range <- function(data, vars, min_v, max_v, scale_name) {
   vars_present <- intersect(vars, names(data))
   vars_missing <- setdiff(vars, names(data))
@@ -1095,7 +1113,7 @@ dci_scores <- dci_reversed %>%
   # Omega is computationally heavier; we suppress plot output
   # 'nfactors = 1' assumes we are checking a single global construct
   omega_res <- suppressMessages(omega(dci_reversed %>% select(all_of(scale_DCI)), 
-                                             nfactors = 1, plot = FALSE))
+                                             nfactors = 3, plot = FALSE))
   print(round(omega_res$omega.tot, 3)) 
 
 # 4. VISUALIZE TOTAL DCI SCORES
@@ -1193,6 +1211,33 @@ plot_weness_diff <- dci_dyadic %>%
   theme_minimal()
 
 save_plot(plot_weness_diff, "BG_Weness_Diff_Hist.png")
+
+# 8. HIERARCHICAL CHECK FOR WE-NESS (Validation)
+  cat("\n=== HIERARCHICAL FACTOR ANALYSIS: WE-NESS (Positive Items Only) ===\n")
+  cat("Checking if positive items form a stronger general factor than the full DCI...\n\n")
+  
+  # Select only the We-ness items
+  weness_data <- bg_data %>%
+    select(all_of(dci_we_items)) %>%
+    mutate(across(everything(), as.numeric))
+  
+  # Run Omega with 3 factors (Theoretical: Own Provided Support, Perceived Partner Support, Stress Comm)
+  save_base_plot({
+    omega_weness <<- psych::omega(weness_data, nfactors = 3, plot = TRUE)
+  }, filename = "BG_Weness_Omega_Structure.png")
+  
+  print(omega_weness)
+  
+  # specific print for the summary stats we care about
+  cat(sprintf("\n--- KEY RESULTS ---\nOmega Total (Reliability): %.2f\nOmega Hierarchical (Unidimensionality): %.2f\n", 
+              omega_weness$omega.tot, 
+              omega_weness$omega_h))
+  
+  if(omega_weness$omega_h > 0.50) {
+    cat("✅ RESULT: Good! The general 'We-ness' factor explains a majority of the variance.\n")
+  } else {
+    cat("ℹ️  NOTE: The subscales (Self vs Partner) are still very distinct even without negative items.\n")
+  }
 
 ## ---- ```` BG CLEANUP --------------------------------------------------------
 ## --------------------------------------------------------------------------- -
