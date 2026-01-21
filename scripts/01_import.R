@@ -78,9 +78,9 @@ esm_raw <- raw_data[["CCS_ESMbeeps_individual.csv"]]
 vmr_raw <- raw_data[["CCS_VMR_preprocessed.csv"]]
 post_raw <- raw_data[["CCS_Preprocessed_PostInteractionQ.csv"]]
 
-saveRDS(bg_q_raw,  here::here("data", "derived", "bg_raw.rds"))
+saveRDS(bg_raw,  here::here("data", "derived", "bg_raw.rds"))
 saveRDS(esm_raw,  here::here("data", "derived", "esm_raw.rds"))
 saveRDS(vmr_raw,  here::here("data", "derived", "vmr_raw.rds"))
-saveRDS(post_q_raw, here::here("data", "derived", "post_raw.rds"))
+saveRDS(post_raw, here::here("data", "derived", "post_raw.rds"))
 
 message("Derived datasets written to data/derived/")
