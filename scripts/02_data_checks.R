@@ -149,6 +149,9 @@ CONFIG_BG <- list(
     scale_WHODAS_likert = paste0("WHODAS", 1:12), # General Functioning
     scale_WHODAS_days   = paste0("WHODAS", 13:15) # General Functioning
   ),
+  item_subsets = list(
+    dci_neg_indices = c(7, 10, 11, 15, 22, 25, 26, 27)
+  ),
   # Valid Ranges (Min, Max) for each scale
   ranges = list(
     limits_NSF   = c(1, 5),      
@@ -1047,6 +1050,149 @@ df_temp <- bg_data %>% transmute(val = get_label(., "col_med"))
 print(freq_table(df_temp, "val"))
 save_plot(plot_bar_categorical(df_temp, "val", "BG: Medication", "Medication Status"),
           "BG_medication_bar.png", w = 8, h = 5)
+
+## ---- ```` B3. DCI DETAILED ANALYSIS (TOTAL & WE-NESS) -----------------------
+## --------------------------------------------------------------------------- -
+print_header("B3. DCI: Total Score, Reliability, & We-ness")
+
+# 1. DEFINE ITEMS & SUBSCALES
+
+# Load negative indices from Config:dci_neg_indices
+dci_neg_items <- paste0("DCI", dci_neg_indices)
+
+# Positive "We-ness" items (All items MINUS the negative ones)
+dci_we_items  <- setdiff(scale_DCI, dci_neg_items)
+
+# --- 2. CALCULATE TOTAL DCI (Including Flipped Negative Items) ---
+# We need a temporary dataframe to handle the reverse coding safely# Ensure numeric
+
+# Reverse Code the negative items (Scale 1-5 becomes 6-x)
+dci_reversed <- bg_data %>%
+  select(all_of(col_dyad), 
+         all_of(col_person), 
+         all_of(scale_DCI)) %>%
+  mutate(across(all_of(scale_DCI), ~ as.numeric(.))) %>%
+  mutate(across(all_of(dci_neg_items), ~ 6 - .))
+
+# Calculate Total Score
+dci_scores <- dci_reversed %>%
+  mutate(
+    DCI_Total_Score = rowSums(select(., all_of(scale_DCI)), na.rm = FALSE),
+    We_Ness_Score   = rowSums(select(., all_of(dci_we_items)), na.rm = FALSE)
+  )
+
+# --- 3. RELIABILITY (Alpha & Omega) ---
+  cat("\n=== RELIABILITY CHECK (Total DCI - 30 items) ===\n")
+  
+  # A. Cronbach's Alpha
+  cat("\n--- Cronbach's Alpha ---\n")
+  # We use the dataset where negative items are ALREADY flipped
+  alpha_res <- alpha(dci_reversed %>% select(all_of(scale_DCI)))
+  print(round(alpha_res$total, 3)) 
+  
+  # B. McDonald's Omega
+  cat("\n--- McDonald's Omega ---\n")
+  # Omega is computationally heavier; we suppress plot output
+  # 'nfactors = 1' assumes we are checking a single global construct
+  omega_res <- suppressMessages(omega(dci_reversed %>% select(all_of(scale_DCI)), 
+                                             nfactors = 1, plot = FALSE))
+  print(round(omega_res$omega.tot, 3)) 
+
+# 4. VISUALIZE TOTAL DCI SCORES
+plot_dci_total_hist <- dci_scores %>%
+  filter(!is.na(DCI_Total_Score)) %>%
+  ggplot(aes(x = DCI_Total_Score)) +
+  geom_histogram(binwidth = 5, fill = "steelblue", color = "white") +
+  labs(title = "Distribution of Total DCI Scores", 
+       subtitle = "Sum of 30 items (Negative items reversed)",
+       x = "Total Score", y = "Count") +
+  theme_minimal()
+
+save_plot(plot_dci_total_hist, "BG_DCI_Total_Hist.png")
+
+# 5. DYADIC CORRELATION (TOTAL SCORE)
+# Reshape to wide format
+dci_dyadic <- dci_scores %>%
+  group_by(.data[[col_dyad]]) %>%
+  filter(n() == 2) %>% # Ensure complete dyads
+  mutate(partner_num = rank(.data[[col_person]])) %>%
+  select(all_of(col_dyad), partner_num, DCI_Total_Score, We_Ness_Score) %>%
+  pivot_wider(
+    names_from = partner_num, 
+    values_from = c(DCI_Total_Score, We_Ness_Score),
+    names_glue = "{.value}_P{partner_num}" # Creates DCI_Total_Score_P1, etc.
+  )
+
+# Calculate Correlation
+cor_total <- cor(dci_dyadic$DCI_Total_Score_P1, dci_dyadic$DCI_Total_Score_P2, use = "complete.obs")
+cat(sprintf("\nDyadic Correlation (Total DCI): r = %.3f\n", cor_total))
+
+# Plot Scatter (Visualizing the correlation)
+plot_dci_total_corr <- dci_dyadic %>%
+  ggplot(aes(x = DCI_Total_Score_P1, y = DCI_Total_Score_P2)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", color = "blue", se = FALSE) +
+  labs(title = "Dyadic Correlation: Total DCI",
+       subtitle = paste0("Pearson r = ", round(cor_total, 3)),
+       x = "Partner 1 Score", y = "Partner 2 Score") +
+  theme_minimal()
+
+save_plot(plot_dci_total_corr, "BG_DCI_Total_Scatter.png")
+
+# 6. WE-NESS SCORE ANALYSIS
+cat("\n=== WE-NESS SCORE ANALYSIS (Positive Items Only) ===\n")
+
+# Histogram of Personal We-ness
+plot_weness_hist <- dci_scores %>%
+  filter(!is.na(We_Ness_Score)) %>%
+  ggplot(aes(x = We_Ness_Score)) +
+  geom_histogram(binwidth = 5, fill = "forestgreen", color = "white") +
+  labs(title = "Distribution of 'We-ness' Scores", 
+       subtitle = "Sum of Positive items only (No negative items)",
+       x = "We-ness Score", y = "Count") +
+  theme_minimal()
+
+save_plot(plot_weness_hist, "BG_Weness_Hist.png")
+
+# Dyadic Correlation We-ness
+cor_weness <- cor(dci_dyadic$We_Ness_Score_P1, dci_dyadic$We_Ness_Score_P2, use = "complete.obs")
+cat(sprintf("Dyadic Correlation (We-ness): r = %.3f\n", cor_weness))
+
+# Plot Scatter We-ness
+plot_weness_corr <- dci_dyadic %>%
+  ggplot(aes(x = We_Ness_Score_P1, y = We_Ness_Score_P2)) +
+  geom_point(alpha = 0.6, color = "darkgreen") +
+  geom_smooth(method = "lm", color = "black", se = FALSE) +
+  labs(title = "Dyadic Correlation: We-ness",
+       subtitle = paste0("Pearson r = ", round(cor_weness, 3)),
+       x = "Partner 1 We-ness", y = "Partner 2 We-ness") +
+  theme_minimal()
+
+save_plot(plot_weness_corr, "BG_Weness_Scatter.png")
+
+# 7. PARTNER DIFFERENCES
+cat("\n=== PARTNER DISCREPANCY ANALYSIS ===\n")
+
+# Calculate Absolute Difference in We-ness
+dci_dyadic <- dci_dyadic %>%
+  mutate(
+    Weness_Diff = abs(We_Ness_Score_P1 - We_Ness_Score_P2)
+  )
+
+cat("Summary of Absolute Differences in We-ness:\n")
+summary(dci_dyadic$Weness_Diff) %>% print()
+
+# Plot Histogram of Differences
+plot_weness_diff <- dci_dyadic %>%
+  filter(!is.na(Weness_Diff)) %>%
+  ggplot(aes(x = Weness_Diff)) +
+  geom_histogram(binwidth = 2, fill = "firebrick", color = "white") +
+  labs(title = "Distribution of We-ness Discrepancies", 
+       subtitle = "Absolute difference between Partner 1 and Partner 2",
+       x = "Difference Score (|P1 - P2|)", y = "Count of Couples") +
+  theme_minimal()
+
+save_plot(plot_weness_diff, "BG_Weness_Diff_Hist.png")
 
 ## ---- ```` BG CLEANUP --------------------------------------------------------
 ## --------------------------------------------------------------------------- -
