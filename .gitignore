@@ -11,11 +11,11 @@
 # see .gitignore in renv folder
 
 # local paths config file
-config/local_paths.R
+config/local_raw_data_path.R
 
 # Derived data
-data/derived/*
-!data/derived/.gitkeep
+data/imported/*
+!data/imported/.gitkeep
 
 # Outputs
 outputs/plots/*

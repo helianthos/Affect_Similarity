@@ -6,47 +6,46 @@
 #
 # Usage:
 # Run source("R/02_structure_checks.R") to see the report without code echoing.
-# Assumes data is located in
-#       * data/derived/esm_raw.rds
-#       * data/derived/esm_bg.rds
-#       * data/derived/esm_vmr.rds
-#       * data/derived/esm_post.rds
+# Assumes data is located in dir_data, afer running 01_data_import.R at least once
+#       * data/imported/esm_raw.rds
+#       * data/imported/esm_bg.rds
+#       * data/imported/esm_vmr.rds
+#       * data/imported/esm_post.rds
 # Assumes that the output directories exist (e.g., via git clone)
-#       * outputs/plots
-#       * output/logs
+# If not, these will as fallback be created during 00_setup.R
+#       * outputs/plots (in dir_plots)
+#       * outputs/logs (in dir_logs)
 #
 ############################################################################## #
 
 ## ---- GLOBAL SETUP  ----------------------------------------------------------
 ## --------------------------------------------------------------------------- -
 
-# 1. Load packages
-suppressPackageStartupMessages(source("R/02_packages.R"))
+# 1. Load packages and paths
+source(here::here("R", "00_setup.R"))
 
 # 2. Load datasets
-esm_data <- readRDS(here("data", "derived", "esm_raw.rds"))
-bg_data <- readRDS(here("data", "derived", "bg_raw.rds"))
-vmr_data <- readRDS(here("data", "derived", "vmr_raw.rds"))
-post_data <- readRDS(here("data", "derived", "post_raw.rds"))
+esm_data <- readRDS(file.path(dir_data, "esm_raw.rds"))
+bg_data <- readRDS(file.path(dir_data, "bg_raw.rds"))
+vmr_data <- readRDS(file.path(dir_data, "vmr_raw.rds"))
+post_data <- readRDS(file.path(dir_data, "post_raw.rds"))
 
 # 3. Global settings/paths
 SETTINGS_GLOBAL <- list(
-  plots_dir = here("outputs", "plots"),
-  logs_dir = here("outputs", "logs"),
-  log_file  = here("outputs", "logs", "02_data_checks_log.txt"),
+  log_file  = file.path(dir_logs, "02_data_checks_log.txt"),
   variable_config_sublists = c("cols", "vars", "scales")
 )
 list2env(SETTINGS_GLOBAL, envir = .GlobalEnv)
 
 plot_counter <- 1
 
-if(!dir.exists(plots_dir)) {
-  stop("\n\n!!! ERROR: Output directory does not exist.\n")
-}
-
 # 4. Start logging
 sink(file=log_file, append = FALSE, split = TRUE) # for cat and print
-cat(paste0("Log Generated: ", Sys.time(), "\n\n"))
+cat("============================================================\n")
+cat("02_data_checks.R log\n")
+cat("Log generated: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "\n", sep = "")
+cat("Project root:  ", here::here(), "\n", sep = "")
+cat("============================================================\n")
 
 # # ---- GLOBAL DATA CONFIGURATION ---------------------------------------------
 # # -------------------------------------------------------------------------- -
@@ -354,7 +353,7 @@ save_plot <- function(plot_obj, filename, w=10, h=8) {
   prefix <- sprintf("%02d_", plot_counter) 
     # 2. Update filename
   new_filename <- paste0(prefix, filename)
-  full_path <- file.path(plots_dir, new_filename)
+  full_path <- file.path(dir_plots, new_filename)
     # 3. Save
   ggsave(full_path, plot_obj, width = w, height = h, bg = "white")
   cat(sprintf("✅ Saved: %s\n   Location: %s\n", new_filename, full_path))
@@ -367,7 +366,7 @@ save_base_plot <- function(plot_code, filename, w=10, h=8) {
   prefix <- sprintf("%02d_", plot_counter) 
   # 2. Update filename
   new_filename <- paste0(prefix, filename)
-  full_path <- file.path(plots_dir, new_filename)
+  full_path <- file.path(dir_plots, new_filename)
   # 3. Open PNG device
   png(filename = full_path, width = w, height = h, units = "in", res = 300)
   # 4. Execute the plotting code
@@ -1318,6 +1317,7 @@ cat("\n✅ Cross-check environment cleaned.\n")
 # ---- END ---------------------------------------------------------------------
 ## ########################################################################### #
 print_header("End of Data Check Report", level = 1)
+cat("Log saved to: ", log_file, "\n", sep = "")
 
 message(paste("Output log saved to:", log_file))
 sink()

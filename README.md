@@ -8,7 +8,7 @@ Reproducible analysis code accompanying the OSF preregistration for the internsh
 
 **Affiliation:**\
 KU Leuven – Faculty of Psychology and Educational Sciences\
-Research Unit Quantitative Psychology and Indivdual Differences
+Research Unit Quantitative Psychology and Individual Differences
 
 **Preregistration:**\
 Open Science Framework (OSF):\
@@ -18,7 +18,7 @@ Open Science Framework (OSF):\
 geert.vandingenen\@student.kuleuven.be
 
 **Last updated:**\
-2026-01-20
+2026-01-22
 
 ## Project overview
 
@@ -40,7 +40,7 @@ You can either:
 
 -   clone this repository from GitHub, or
 
--   download the final project archive (ZIP) from OSF.
+-   download the final project archive (ZIP) from OSF and extract it.
 
 #### *2. Open the project*
 
@@ -54,23 +54,23 @@ In the R console, run `renv::restore()`
 
 This installs the exact package versions specified in `renv.lock`.
 
-#### *4. Provide access to the raw data*
+#### *4. Provide access to the raw data (csv)*
 
 Raw data files are **not included** in this repository. Request the raw CSV files and create a machine-specific path configuration file (it will not be tracked by git):
 
-1.  Copy the template: `config/local_paths_TEMPLATE.R` → `config/local_paths.R`
-2.  Open `config/local_paths.R` and set `RAW_DATA_DIR` to the folder that contains the raw CSV files on your machine.
-3.  Restart R (Session → Restart R) or re-source the paths script.
+1.  Copy the template: `config/local_raw_data_path_TEMPLATE.R` → `config/local_raw_data_path.R`
+2.  Open `config/local_raw_data_path.R` and set `RAW_DATA_DIR` to the folder that contains the raw CSV files on your machine.
+3.  Restart R (Session → Restart R) or re-source the paths or setup script.
 
 The project will read raw data from `RAW_DATA_DIR`.
 
-#### *5. Generate derived datasets*
+#### *5. Import raw data in R*
 
-Run the import script to generate analysis-ready datasets: `source("scripts/01_import.R")`
+Run the import script to generate analysis-ready datasets: `source("scripts/01_data_import.R")`
 
-Derived data files will be written to `data/derived/`.
+Imported data files will be written to `data/imported/`.
 
-These files are regenerated locally and are not tracked by git.
+These files are generated locally and are not tracked by git.
 
 #### *6. Run analyses*
 
@@ -86,6 +86,10 @@ project/
 ├── README.md
 │   └── Project overview, setup instructions, and folder structure
 │
+├── renv_workflow.md
+│   └── Documentation of the renv workflow
+│       (for info, project management information)
+│
 ├── project.Rproj
 │   └── RStudio project file
 │
@@ -99,24 +103,26 @@ project/
 │   └── Automatically activates renv when the project is opened
 │
 ├── config/
-│   ├── local_paths_TEMPLATE.R
-│   │   └── Templae to copy to local_paths.R and updated by user
-│   └── lacal_paths.R
-│       └── created locally by user from TEMPLATE with updated raw data directory (git ignored)
+│   ├── local_raw_data_path_TEMPLATE.R
+│   │   └── Template to copy to local_raw_data_path.R and updated by user
+│   └── local_raw_data_path.R
+│       └── created locally by user from TEMPLATE with updated raw data directory
+│           (git ignored)
 │
 ├── renv/
 │   ├── activate.R
-│   │   └── renv bootstrap script (auto-run; do not edit manually)
+│   │   └── renv bootstrap script (auto-runs; do not edit manually)
 │   └── .gitignore
 │       └── Ignores renv internal folders (library/, sandbox/, etc.)
 │
 ├── R/
-│   ├── 00_renv_workflow.R
-│   │   └── Documentation of the renv workflow
-│   │       (when to run init / snapshot / restore; not sourced automatically)
+│   ├── 00_setup.R
+│   │   └── Setup script to load libraries and define all file paths
+│   │       (uses 01_paths.R and 02_packages.R)
 │   │
 │   ├── 01_paths.R
-│   │   └── Defines file paths used across scripts. Machine-specific paths are read from config │   │      /local_paths.R
+│   │   └── Defines file paths used across scripts. Machine-specific raw data path is
+│   │       read from config/local_raw_data_path.R
 │   │
 │   ├── 02_packages.R
 │   │   └── Loads all libraries required by the project
@@ -127,7 +133,7 @@ project/
 │           (e.g., checks, transformations, similarity computations)
 │
 ├── scripts/
-│   ├── 01_import.R
+│   ├── 01_data_import.R
 │   │   └── Reads raw CSV files and saves derived .rds files
 │   │
 │   ├── 02_data_checks.R
@@ -144,7 +150,7 @@ project/
 │       └── Main preregistered statistical models and reporting
 │
 ├── data/
-│   └── derived/
+│   └── imported/
 │       └── .gitkeep
 │           └── Placeholder so the folder exists after cloning
 │               (contents are regenerated locally and ignored by Git)
@@ -155,6 +161,6 @@ project/
     ├── tables/
         └── Saved tables (not tracked by default)
     └── log/
-         └── Saved console log outputs (not tracked by default)
+         └── Saved log outputs (not tracked by default)
         
 ```
