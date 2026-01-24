@@ -1,6 +1,26 @@
 # ============================================================
 # R/01_paths.R
-# Define and validate file paths used across scripts.
+#
+# Purpose:
+#   Define and validate file paths used across scripts.
+#
+# Usage:
+#   Source this file to load paths:  source(here::here("R", "01_paths.R"))
+#   Sourcing is included in R/00_setup.R together with R/02_packages.R and
+#   R/03_data_config.R
+#
+# Notes:
+#   - This file reads and validates the raw data path provided by the user
+#     in config/local_raw_data_path.R. This is the only path that is computer/user
+#     dependent and needs to be provided (see README.md)
+#   - The package 'here' is used to determine file path to project/working
+#     directory and set file paths to other project sub-directories
+#   - The project directory structure should exist since it is tracked by git
+#     (in case of cloning) or included in the project compressed file.
+#   - In case the core directories would not exist, they are created
+#   - The package 'here' should be installed, in case it is not, renv will 
+#     install it when doing renv::restore() (see README.md or renv_worklflow.md)
+#   - Do NOT call install.packages() in this file.
 # ============================================================
 
 # Read local data path from config/local_raw_data_path.R

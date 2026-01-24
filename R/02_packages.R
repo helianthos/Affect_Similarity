@@ -1,5 +1,5 @@
 # ============================================================
-# 02_packages.R
+# R/02_packages.R
 #
 # Purpose:
 #   Load all R packages required for this project.
@@ -10,8 +10,9 @@
 #   - Do NOT call install.packages() in this file.
 #
 # Usage:
-#   Source this file at the top of scripts and R Markdown files:
-#     source("R/02_packages.R")
+#   Source this file to load all packages:  source(here::here("R", "02_packages.R"))
+#   Sourcing is included in R/00_setup.R together with R/01_paths.R 
+#   and R/03_data_config.R
 #
 # Reproducibility:
 #   - Required package versions are recorded in renv.lock.

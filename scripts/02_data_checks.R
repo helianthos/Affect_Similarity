@@ -18,10 +18,11 @@
 #
 ############################################################################## #
 
-## ---- GLOBAL SETUP  ----------------------------------------------------------
-## --------------------------------------------------------------------------- -
+## ########################################################################### #
+## ---- GLOBAL SETUP -----------------------------------------------------------
+## ########################################################################### #
 
-# 1. Load packages and paths
+# 1. Load packages, paths and data configurations
 source(here::here("R", "00_setup.R"))
 
 # 2. Load datasets
@@ -30,14 +31,17 @@ bg_data <- readRDS(file.path(dir_data, "bg_raw.rds"))
 vmr_data <- readRDS(file.path(dir_data, "vmr_raw.rds"))
 post_data <- readRDS(file.path(dir_data, "post_raw.rds"))
 
-# 3. Global settings/paths
-SETTINGS_GLOBAL <- list(
-  log_file  = file.path(dir_logs, "02_data_checks_log.txt"),
-  variable_config_sublists = c("cols", "vars", "scales")
-)
-list2env(SETTINGS_GLOBAL, envir = .GlobalEnv)
-
-plot_counter <- 1
+# 3. Parameters
+# ---- Global
+log_file  = file.path(dir_logs, "02_data_checks_log.txt")
+config_sublists_with_variables = c("cols", "vars", "scales")
+plot_counter <- 1 # initialize start of plot numbering
+# ---- ESM
+min_compliance = 30
+expected_beeps = 90 #    Expected = (10*5) + (4*10) = 90 beeps
+# ---- VMR
+expected_segments_per_topic = 16
+expected_topics = c("positive", "negative")
 
 # 4. Start logging
 sink(file=log_file, append = FALSE, split = TRUE) # for cat and print
@@ -47,226 +51,80 @@ cat("Log generated: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "\n", sep = "")
 cat("Project root:  ", here::here(), "\n", sep = "")
 cat("============================================================\n")
 
-# # ---- GLOBAL DATA CONFIGURATION ---------------------------------------------
-# # -------------------------------------------------------------------------- -
+## ########################################################################### #
+## ---- HELPER FUNCTIONS -------------------------------------------------------
+## ########################################################################### #
 
-# ----````  1. ESM centralized configuration list ---- 
-CONFIG_ESM <- list(
-  # Columns mapping
-  cols = list(
-    col_person = "PpID",
-    col_dyad   = "CoupleID",
-    col_beep   = "beepno",
-    col_compl  = "compliance",
-    col_start  = "started",
-    col_end    = "complete",
-    col_ts_sent   = "timeStampSent",
-    col_ts_sched  = "timeStampScheduled",
-    col_ts_start  = "timeStampStart",
-    col_ts_stop   = "timeStampStop",
-    col_part_no   = "partner_no",      # Partner number (1 or 2)
-    col_neg_gen   = "negevent_general",
-    col_pres_oth  = "presence_others",
-    col_cont_oth  = "contact_others",
-    col_part_pres = "partner_presence", # 0=No, 1=Yes
-    col_part_cont = "partner_contact"  # 1=No contact, 2-4=Types of contact
-  ),
-  # List of specific variables for targeted missingness or conditional items checks
-  vars = list(
-    vars_affect = c('NA_own', 'PA_own', 'NA_partner', 'PA_partner', 
-                     'loving', 'perc_respons', 'negevent_partner', 'posevent_partner'),
-    
-    vars_time = c("timeStampScheduled", "timeStampSent", "timeStampStart", "timeStampStop"),
-    
-    vars_non_core = c("GeneralComments", "ESMComments", 
-                      "timeStampScheduled", "timeStampSent", "timeStampStart", 
-                      "timeStampStop", "started", "complete", "compliance"),
-    
-    vars_branch_partner = c(
-      "negevent_partner", "posevent_partner", "reassurance_own", "extrinsicIER", 
-      "expression_own", "dominance_own", "affiliation_own", "reassurance_partner", 
-      "expression_partner", "dominance_partner", "affiliation_partner"),
-    
-    vars_branch_no_partner = c(
-      "presence_others", "contact_others", "negevent_general", "posevent_general", 
-      "lonely", "rumination", "posthoughts", "expression_desire", "affection_desire")
-  ),
-  # Settings
-  settings = list(
-    min_compliance = 30,
-    expected_beeps = 90 #    Expected = (10*5) + (4*10) = 90 beeps
-  )
-)
+header <- function(text, level = 3) {
+    if (level == 1) {
+    cat("\n")
+    cat(paste0(rep("=", 60), collapse = ""), "\n")
+    cat(paste("  ", toupper(text)), "\n")
+    cat(paste0(rep("=", 60), collapse = ""), "\n")
+  }
+  if (level == 2) {
+    cat("\n--- ", text, " ---\n")
+    cat(paste0(rep("-", 60), collapse = ""), "\n")
+  }
+  if (level == 3) {
+    cat("\n***", text, "\n")
+  }
+}
 
-#  ----````  2. BG centralized configuration list ----
-CONFIG_BG <- list(
-  # Column Names (Mapping your raw data names to generic roles)
-  cols = list(
-    col_person  = "PpID",
-    col_dyad    = "CoupleID",
-    col_age     = "AgeYEARS",
-    col_gender  = "gender",
-    col_nat     = "nationality",
-    col_etn     = "etnicity",
-    col_edu     = "edu",
-    col_child   = "childrenYN",
-    col_liv_tog = "livingTogether",
-    col_rel_dur = "RelDurMonths",
-    col_med     = "medication_none" # NA = no, 1=yes
-  ),
-  value_labels = list(
-    col_gender  = c("1" = "Male", "2" = "Female", "3" = "Other"),
-    col_nat     = c("4" = "Belgian", "5" = "Dutch", "6" = "Other"),
-    col_etn     = c("1" = "Asian", "2" = "Black or AFrican-American", 
-                    "3" = "Spanish or Latino", "4" = "White", "5" = "Other"),
-    col_edu     = c("1" = "Primary School", "2" = "High School", 
-                    "3" = "Bachelor", "4" = "Master", "5" = "PhD"),
-    col_child   = c("0" = "No", "1" = "Yes"),
-    col_liv_tog = c("1" = "No", "2" = "Yes"),
-    col_med     = c("0" = "Not Medicated", "1" = "Medicated") # NA = no, 1=yes
-  ),
-  # Lists of scale items for range checks
-  scales = list(
-    scale_NSF = paste0("NSF", 1:16),      # Need Satisfaction & Frustration
-    scale_CESD  = paste0("CESD", 1:20),   # Depressive syptoms     
-    scale_DCI   = paste0("DCI", 1:30),    # Dyadic coping
-    scale_ECR   = paste0("ECR", 1:12),    # Attachment 
-    scale_EROS  = paste0("EROS", 1:9),    # Emotion Regulation Others and Self
-    scale_IDSSR = paste0("IDSSR", 1:30),  # Depressive Symptoms      
-    scale_PAQ   = paste0("PAQ", 1:16),    # Problem Areas in relationships
-    scale_PRQCI = paste0("PRQCI", 1:18),  # Perceived Relationship Quality   
-    scale_QSI6  = paste0("QSI6", 1:12),   # Sexual Satisfaction
-    scale_ROES  = paste0("ROES", 1:32),   # Interpersonal emotion regulation  
-    scale_RRS   = paste0("RRS", 1:26),    # Reflection and Rumination
-    scale_RSE   = paste0("RSE", 1:10),    # Self Esteem
-    scale_SIS   = paste0("SIS", 1:14),    # Sexual Inhibition 
-    scale_SWLS  = paste0("SWLS", 1:5),    # Satisfaction With Life Scale
-    scale_ADPIV1= paste0("ADPIV1.", 1:10),# Borderline Symptoms
-    scale_ADPIV2= paste0("ADPIV2.", 1:10),# Borderline Symptoms     
-    scale_CSIV  = paste0("CSIV", 1:32),   # Interpersonal Values
-    scale_DIRIRS= paste0("DIRIRS", 1:4),  # Reinsurance seeking
-    scale_WHODAS_likert = paste0("WHODAS", 1:12), # General Functioning
-    scale_WHODAS_days   = paste0("WHODAS", 13:15) # General Functioning
-  ),
-  item_subsets = list(
-    dci_neg_indices = c(7, 10, 11, 15, 22, 25, 26, 27)
-  ),
-  # Valid Ranges (Min, Max) for each scale
-  ranges = list(
-    limits_NSF   = c(1, 5),      
-    limits_CESD  = c(0, 3),   
-    limits_DCI   = c(1, 5),    
-    limits_ECR   = c(1, 7),    
-    limits_EROS  = c(1, 5),    
-    limits_IDSSR = c(0, 3),   
-    limits_PAQ   = c(1, 7),    
-    limits_PRQCI = c(1, 7),  
-    limits_QSI6  = c(1, 6),   
-    limits_ROES  = c(1, 6),   
-    limits_RRS   = c(1, 4),    
-    limits_RSE   = c(0, 3),    
-    limits_SIS   = c(1, 4),    
-    limits_SWLS  = c(1, 7),    
-    limits_WHODAS= c(1, 5), 
-    limits_ADPIV1= c(1, 7),
-    limits_ADPIV2= c(1, 3),
-    limits_CSIV  = c(1, 5),   
-    limits_DIRIRS= c(1, 7),
-    limits_WHODAS_likert = c(1, 5), 
-    limits_WHODAS_days   = c(0, 30)  # Days range
-  ),
-  settings = list(
-    min_age = 18,
-    max_age = 65 # max in codebook
-  )
-)
-
-# ----````  3. VMR centralized configuration list ----
-CONFIG_VMR <- list(
-  cols = list(
-    col_person = "PpID"
-              ),
-  vars = list(), 
-  settings = list()
-)
-
-# ----````  4. POST centralized configuration list ----
-CONFIG_POST <- list(
-  cols = list(
-    col_person = "PpID"
-  ),
-  vars = list(), 
-  settings = list()
-)
-
-## ---- HELPER FUNCTIONS ----------------------------------------------------
-## --------------------------------------------------------------------------- -
-
-load_config <- function(config, to_global = TRUE) {
-  # 1. Select the config list
-  cfg <- switch(config,
-                "ESM"  = CONFIG_ESM,
-                "BG"   = CONFIG_BG,
-                "VMR"  = CONFIG_VMR,
-                "POST" = CONFIG_POST)
+check_basic_structure <- function(data, label = "DATA") {
+  # 1. Structure overview
+  header(sprintf("%s dimensions and variables", label))
+  str(data,
+      list.len     = ncol(data),      # show ALL columns
+      strict.width = "cut",           # force single line (no wrapping)
+      give.attr    = FALSE)           # remove attributes at the bottom
+  cat(sprintf("\nUnique Persons: %d\n", n_distinct(data[[col_person]])))
+  cat(sprintf("Unique Dyads:   %d\n", n_distinct(data[[col_dyad]])))
+  cat(sprintf("Total Rows:     %d\n", nrow(data)))
+  cat(sprintf("Total Columns:  %d\n", ncol(data)))
   
-  if(is.null(cfg)) stop(paste("Configuration not found for:", config))
-  # 2. Unpack non-empty sublists to Global Environment except if argument is set to FALSE
-  if(to_global) {
-    sublists_to_unpack <- names(cfg)
-    for (sublist in sublists_to_unpack) {
-      if(is.list(cfg[[sublist]]) && !is.null(cfg[[sublist]]))  {
-        list2env(cfg[[sublist]], envir = .GlobalEnv)
-      } 
+    # 2. Dyad integrity check
+  header(sprintf("%s Dyad Integrity", label))
+  problem_dyads <- data %>%
+    group_by(.data[[col_dyad]]) %>%
+    summarise(n_persons = n_distinct(.data[[col_person]])) %>%
+    filter(n_persons != 2)
+  if (nrow(problem_dyads) == 0) {
+    cat(sprintf("✅ %s: All dyads contain exactly 2 unique persons.\n", label))
+  } else {
+    cat(sprintf("⚠️ WARNING: %s: %d dyads do not have exactly 2 persons (showing first 10):\n",
+                label, nrow(problem_dyads)))
+    print(head(problem_dyads, 10))
+  }
+  
+  # 3. Participant ID logic within dyad (<700 & >700)
+  header(sprintf("%s Participant ID numbering logic within dyad", label))
+  id_pattern <- data %>%
+      distinct(.data[[col_dyad]], .data[[col_person]]) %>%
+      group_by(.data[[col_dyad]]) %>%
+      summarise(
+        has_lt_700 = any(.data[[col_person]] < 700, na.rm = TRUE),
+        has_gt_700 = any(.data[[col_person]] > 700, na.rm = TRUE)
+      ) %>%
+      filter(!(has_lt_700 & has_gt_700))
+    
+    if (nrow(id_pattern) == 0) {
+      cat(sprintf("✅ %s: All dyads show the expected (<700 & >700) participant code pattern.\n", label))
+    } else {
+      cat(sprintf("⚠️ WARNING: %s: %d dyads do NOT show the expected (<700 & >700) pattern (showing first 10):\n",
+                  label, nrow(id_pattern)))
+      print(head(id_pattern, 10))
     }
-    cat(sprintf("✅ %s config unpacked to Global Env (Sublists: %s).\n", 
-                config, paste(sublists_to_unpack, collapse=", ")))  }
-  # 3. Return the config object invisibly
-  invisible(cfg)
-}
-
-clean_config <- function(config) {
-  # 1. Get the config to know WHAT to remove, to_global = FALSE to not unpack
-  cfg <- load_config(config, to_global = FALSE) 
-  # 2. Collect all variable names
-  vars_to_remove <- c()
-  sublists_to_remove <- names(cfg)
-  for (sublist in sublists_to_remove) {
-    if (is.list(cfg[[sublist]]) && !is.null(cfg[[sublist]])) {
-      vars_to_remove <- c(vars_to_remove, names(cfg[[sublist]]))
-    }
-  }
-  # 3. Limit to what exists in GlobalEnv to avoid warnings
-  vars_to_remove <- vars_to_remove[sapply(vars_to_remove, exists, envir = .GlobalEnv)]
-  vars_to_remove <- unique(vars_to_remove) # avoid attempting to remove twice
-  # 4. Remove them from GlobalEnv
-  if(length(vars_to_remove) > 0) {
-    rm(list = vars_to_remove, envir = .GlobalEnv)
-    cat(sprintf("\n🧹 %s vars removed from Global Env.\n", config))
-  }
-}
-
-validate_variables <- function(config, dataset) {
-  # 1. Get the config locally (not to global env)
-  cfg <- load_config(config, to_global = FALSE)
-  # 2. Gather all expected column names (in GLOBAL_SETTINGS variable_config_sublists)
-  vars_required <- c()
-  sublists_to_check <- intersect(names(cfg), variable_config_sublists)
-  for (sublist in sublists_to_check) {
-    if (!is.null(cfg[[sublist]]) && is.list(cfg[[sublist]])) {
-      vars_required <- c(vars_required, unlist(cfg[[sublist]]))
-    }
-  }
-  # 3. Compare against the actual dataframe
-  vars_missing <- setdiff(vars_required, names(dataset))
-  # 4. Stop if any are missing
-  if(length(vars_missing) > 0) {
-    cat(sprintf("\n\n!!! ERROR: The '%s' dataset is missing these variables:\n%s\n", 
-                 config, 
-                 paste(vars_missing, collapse = ", ")))
-  }
-  cat(sprintf("✅ %s dataset validated: All %d required variables found (checked: %s).\n", 
-              config, length(vars_required), paste(sublists_to_check, collapse=", ")))
+  
+  # Return diagnostics invisibly so you can unit-test or log them if needed
+  invisible(list(
+    n_persons        = dplyr::n_distinct(data[[col_person]]),
+    n_dyads          = dplyr::n_distinct(data[[col_dyad]]),
+    n_rows           = nrow(data),
+    n_cols           = ncol(data),
+    problem_dyads    = problem_dyads
+    # id_pattern omitted from return if coercion failed; keep it simple for now
+  ))
 }
 
 check_data_participant_overlap <- function(data1_ids, data2_ids, data1_label, data2_label) {
@@ -294,21 +152,8 @@ check_data_participant_overlap <- function(data1_ids, data2_ids, data1_label, da
   }
 }
 
-print_header <- function(text, level = 2) {
-  if (level == 2) {
-    cat("\n")
-    cat(paste("--- ", text, " ---"), "\n")
-    cat(paste0(rep("-", 60), collapse = ""), "\n")
-  } else {
-    cat("\n")
-    cat(paste0(rep("=", 60), collapse = ""), "\n")
-    cat(paste("  ", toupper(text)), "\n")
-    cat(paste0(rep("=", 60), collapse = ""), "\n")
-  }
-}
-
 check_mc_consistency <- function(var,no_resp, not_no_resp) {
-  cat(paste0("\nLogical Consistency of '", var, "' (Mutually Exclusive MC Answers)\n"))
+  header(sprintf("Logical Consistency of '%s' (Mutually Exclusive MC Answers)", var))
   inconsistent <- esm_data %>%
     select(all_of(col_person), all_of(col_beep), all_of(var)) %>%
     mutate(
@@ -327,9 +172,9 @@ check_mc_consistency <- function(var,no_resp, not_no_resp) {
 }
 
 check_branch_consistency <-  function(is_gate_open, vars_conditional, label) {
-  # rows where gate is closed but data exists in conditional items
+  # rows where gate is closed but data exists in conditional items in vars_conditional
   leaking_rows <- esm_data %>%
-    # NOTE: We use %in% TRUE to handle NAs safely. 
+    # NOTE: We use %in% TRUE to handle NAs safely:
     # !(... %in% TRUE) means "The condition is either FALSE or NA" (i.e., not explicitly met).
     filter(! (is_gate_open %in% TRUE)) %>%
     filter(if_any(all_of(vars_conditional), ~ !is.na(.)))
@@ -341,8 +186,8 @@ check_branch_consistency <-  function(is_gate_open, vars_conditional, label) {
     leaking_rows %>%
       select(all_of(vars_conditional)) %>%
       summarise(across(everything(), ~sum(!is.na(.)))) %>%
-      pivot_longer(everything(), names_to = "Variable", values_to = "Illegal_Entries") %>%
-      filter(Illegal_Entries > 0) %>%
+      pivot_longer(everything(), names_to = "Variable", values_to = "Irregular_Entries") %>%
+      filter(Irregular_Entries > 0) %>%
       print()
   } else {cat("✅ Conditional" , label,  "logic is consistent.\n")
   }
@@ -351,13 +196,13 @@ check_branch_consistency <-  function(is_gate_open, vars_conditional, label) {
 save_plot <- function(plot_obj, filename, w=10, h=8) {
   # 1. Create prefix (e.g., "01_", "02_")
   prefix <- sprintf("%02d_", plot_counter) 
-    # 2. Update filename
+  # 2. Update filename
   new_filename <- paste0(prefix, filename)
   full_path <- file.path(dir_plots, new_filename)
-    # 3. Save
+  # 3. Save
   ggsave(full_path, plot_obj, width = w, height = h, bg = "white")
   cat(sprintf("✅ Saved: %s\n   Location: %s\n", new_filename, full_path))
-    # 4. Increment counter globally
+  # 4. Increment counter globally
   plot_counter <<- plot_counter + 1
 }
 
@@ -379,9 +224,9 @@ save_base_plot <- function(plot_code, filename, w=10, h=8) {
   plot_counter <<- plot_counter + 1
 }
 
-check_range <- function(data, vars, min_v, max_v, scale_name) {
-  vars_present <- intersect(vars, names(data))
-  vars_missing <- setdiff(vars, names(data))
+check_range <- function(data, group, min_v, max_v, scale_name) {
+  vars_present <- intersect(group, names(data))
+  vars_missing <- setdiff(group, names(data))
   if(length(vars_present) == 0) {
     cat(sprintf("ℹ️  Note: No variables found for %s scale.\n", scale_name))
     return(NULL)
@@ -400,7 +245,7 @@ check_range <- function(data, vars, min_v, max_v, scale_name) {
                   scale_name, min_v, max_v))
     } else {
       # Partial Success: Found items are valid, but some are missing
-      cat(sprintf("✅ %s: Existing items valid [%d, %d], but %d items missing (%s)\n", 
+      cat(sprintf("⚠️ %s: Existing items valid [%d, %d], but %d items missing (%s)\n", 
                   scale_name, min_v, max_v, length(vars_missing), 
                   paste(vars_missing, collapse=", ")))
     }  
@@ -456,45 +301,24 @@ plot_bar_categorical <- function(data, var, title, xlab) {
 
 ## ---- ```` ESM SETUP & VALIDATION ----------------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("A. ESM Data Checks", level = 1)
+header("A. ESM Data Checks", level = 1)
 
 load_config("ESM")
-validate_variables("ESM", esm_data)
+validate_config("ESM", esm_data)
 
 ## ---- ```` A1. ESM STRUCTURAL CHECKS -----------------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("A1. ESM Dataset Overview & Structure")
+header("A1. ESM Dataset Overview & Structure", level = 2)
 
-# 1. Dimensions and variables
-str(esm_data, 
-    list.len = ncol(esm_data), # Show ALL columns
-    strict.width = "cut",      # FORCE single line (no wrapping!)
-    give.attr = FALSE)         # Remove the messy attributes at the bottom
-cat(sprintf("\nUnique Persons: %d\n", n_distinct(esm_data[[col_person]])))
-cat(sprintf("Unique Dyads:   %d\n", n_distinct(esm_data[[col_dyad]])))
+# 1. Basic structure and dyad integrity
+check_basic_structure(esm_data, "ESM")
 
-# 2. Check persons per dyad
-cat("\nDyad Integrity:\n")
-problem_dyads <- esm_data %>%
-  group_by(.data[[col_dyad]]) %>%
-  summarise(n_persons = n_distinct(.data[[col_person]])) %>%
-  filter(n_persons != 2)
-
-if(nrow(problem_dyads) == 0) {
-  cat("✅ All dyads contain exactly 2 unique persons.\n")
-} else {
-  cat("⚠️ WARNING: The following dyads do not have exactly 2 persons:\n")
-  print(problem_dyads)
-}
-
-# 3. Check beep counts
+# 2. Check beep counts
+header(sprintf("Beeps per Person (should be %d)", expected_beeps))
 beeps_per_person <- esm_data %>% count(.data[[col_person]], name = "n_beeps")
-
-cat("\nSummary of Total Beeps per Person (should be", expected_beeps, "):\n")
 summary(beeps_per_person$n_beeps) %>% print()
 
 unique_n <- unique(beeps_per_person$n_beeps)
-
 if ((length(unique_n) == 1) && (unique_n == expected_beeps)) {
   cat("\n✅ All participants have" , expected_beeps, "rows/beeps.\n")
 } else if (length(unique_n) == 1) {
@@ -504,31 +328,29 @@ if ((length(unique_n) == 1) && (unique_n == expected_beeps)) {
   cat("\n⚠️ WARNING: Number of beeps VARIES between participants.\n")
 }
 
-cat("Distribution of Total Beeps (How many people have X beeps?):\n")
-beeps_per_person %>% 
-  count(n_beeps, name = "n_participants") %>% 
-  print()
+header("Distribution of Beeps (How many people have X beeps?)")
+beeps_per_person %>% count(n_beeps, name = "n_participants") %>% print()
 
-cat("\nCheck Missing Beeps: Which beep numbers are most frequently missing?\n")
+header("Missing Beeps: Which beep numbers are missing?")
 beep_counts <- esm_data %>%
   count(.data[[col_beep]], name = "count_present") %>%
   mutate(missing_count = n_distinct(esm_data[[col_person]]) - count_present) %>%
+  filter(missing_count != 0) %>%
   arrange(desc(missing_count)) %>%
-  head(15) %>%
   print()
 
-# 4. Check Total Beeps
+# 4. Check total beeps
 outliers <- beeps_per_person %>% filter(n_beeps != expected_beeps)
 
 if(nrow(outliers) > 0) {
-  cat("\n\nTotal Beep Count Anomalies (Expected", expected_beeps,")\n")
+  cat("\n\nBeep Count Anomalies (Expected", expected_beeps,")\n")
   print(head(outliers, 10))
 } else {
   cat("\n\n✅ Total Beep Check: All participants have exactly" , expected_beeps, "beeps.\n")
 }
 
 # 5. Check for duplicate beep numbers within persons
-cat("\nCheck: Are beep numbers unique within persons?\n")
+header("Are beep numbers unique within persons?")
 duplicates <- esm_data %>%
   group_by(.data[[col_person]], .data[[col_beep]]) %>%
   count() %>%
@@ -542,7 +364,7 @@ if(nrow(duplicates) == 0) {
 }
 
 # 6. Response timestamp distribution (saved to plot)
-cat("\n... Generating Response Timestamp Distribution ...\n")
+header("Responses Timestamp Distribution")
 
 plot_time <- esm_data %>%
   filter(.data[[col_start]] == 1) %>%
@@ -561,7 +383,7 @@ plot_time <- esm_data %>%
 save_plot(plot_time, "ESM_response_time_dist.png")
 
 # 7. Timestamp Order Check 
-cat("\nTimestamp Logic (Scheduled < Sent < Start < Stop):\n")
+header("Timestamp Logic (Scheduled < Sent < Start < Stop)")
 
 logic_failures <- esm_data %>%
   filter(.data[[col_end]] == 1) %>% # Only check completed beeps
@@ -582,32 +404,32 @@ if(nrow(logic_failures) == 0) {
 # 8. Multiple choice consistency check
 
 #    partner_contact 1 (No) should be mutually exclusive from 2-4 (Yes contact).
-check_mc_consistency(col_part_cont, "1", "[234]")
+check_mc_consistency(var_part_cont, "1", "[234]")
 
 #    presence_others 7 (Nobody) should be mutually exclusive from 1-6
-check_mc_consistency(col_pres_oth, "7", "[123456]")
+check_mc_consistency(var_pres_oth, "7", "[123456]")
 
 #    contact_others 7 (Nobody) should be mutually exclusive from 1-6
-check_mc_consistency(col_cont_oth, "7", "[123456]")
+check_mc_consistency(var_cont_oth, "7", "[123456]")
 
 ## ---- ```` A2. ESM CONDITIONAL ITEM CHECKS -----------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("A2. ESM: Conditional Item Checks")
+header("A2. ESM: Conditional Item Checks", level = 2)
 
 # 1. Orphaned 'partner_contact' check
 #    'partner_contact' can only have data if 'partner_presence' == 0 (=no)
-cat(paste0("\nCheck 1: Does '", col_part_cont, "' have data while '",
-           col_part_pres, "' is 'yes' or missing?\n"))
+header(sprintf("Check 1: Does '%s' have data while '%s' is 'yes' or missing?",
+               var_part_cont, var_part_pres ))
 
 invalid_contact <- esm_data %>%
   filter(
-    !is.na(.data[[col_part_cont]]) &       # partner_contact has data...
-      ! (.data[[col_part_pres]] %in% 0)    # ...but presence is NOT 0 (covers 1 and NA)
+    !is.na(.data[[var_part_cont]]) &       # partner_contact has data...
+      ! (.data[[var_part_pres]] %in% 0)    # ...but presence is NOT 0 (covers 1 and NA)
   )
 
 if(nrow(invalid_contact) > 0) {
   cat(sprintf("⚠️ WARNING: %d rows have %s data while %s is 'yes' or missing.\n", 
-              nrow(invalid_contact), col_part_cont, col_part_pres))
+              nrow(invalid_contact), var_part_cont, var_part_pres))
   print(head(invalid_contact))
 } else {
   cat("✅ No invalid or orphaned partner_contact data found.\n")
@@ -616,15 +438,15 @@ if(nrow(invalid_contact) > 0) {
 # 2. Partner branch leakage check
 #    The variables in vars_branch_partner are asked ONLY IF
 #    partner is present or if there was contact since last beep.
-cat("\nCheck 2: 'Partner Branch' variables present without valid trigger?\n")
+header("Check 2: 'Partner Branch' variables present without valid trigger?")
 cat("   (Trigger: partner_presence=1 OR partner_contact contains 2,3, or 4)\n")
 
 #    is_*_gate_open is logical vector (an element per beep) containing if the
 #    participant was allowed to answer the branched items
 #    NOTE: 'partner_contact' is multiple choice (e.g., "24" = texted and saw each other).
 #         We check if specific digits appear in the string using regex (grepl).
-is_partner_gate_open <- (esm_data[[col_part_pres]] == 1) | 
-  grepl("[234]", as.character(esm_data[[col_part_cont]]))
+is_partner_gate_open <- (esm_data[[var_part_pres]] == 1) | 
+  grepl("[234]", as.character(esm_data[[var_part_cont]]))
 
 check_branch_consistency(is_partner_gate_open, vars_branch_partner, 
                          "'Partner Branch'")
@@ -633,18 +455,18 @@ check_branch_consistency(is_partner_gate_open, vars_branch_partner,
 #    The variables in vars_branch_no_partner are asked ONLY IF 
 #    (Partner Present == 0 = no) AND (Contact since last beep == 1 "No").
 #    Error: A conditional item has data, but the gate conditions are NOT met.
-cat("\nCheck 3: 'No-partner Branch' variables present without valid trigger?\n")
+header("Check 3: 'No-partner Branch' variables present without valid trigger?")
 cat("   (Trigger: partner_presence=0 AND partner_contact=1)\n")
 
-is_general_gate_open <- (esm_data[[col_part_pres]] == 0) & 
-  grepl("1", as.character(esm_data[[col_part_cont]]))
+is_general_gate_open <- (esm_data[[var_part_pres]] == 0) & 
+  grepl("1", as.character(esm_data[[var_part_cont]]))
 
 check_branch_consistency(is_general_gate_open, vars_branch_no_partner, 
                          "'No-partner Branch'")
 
 ## ---- ```` A3. ESM SCHEDULE CHECKS -------------------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("A3. ESM: Protocol Schedule Compliance")
+header("A3. ESM: Protocol Schedule Compliance", level = 2)
 
 # 1. Calculate beeps per day and determine day type
 daily_counts <- esm_data %>% 
@@ -670,12 +492,13 @@ schedule_compliance <- daily_counts %>%
   )
 
 # 3. Aggregated Summary (Pattern-based)
+header("Schedule Adherence Patterns")
+cat("Expected: 10 valid weekdays + 4 valid weekend days (0 invalid, 14 total)\n\n")
+
 schedule_patterns <- schedule_compliance %>%
   count(n_valid_weekdays, n_valid_weekends, n_invalid_days, total_days, name = "n_participants") %>%
-  arrange(desc(n_participants))
-
-cat("\nSchedule Adherence Patterns\n")
-cat("Target: 10 valid weekdays + 4 valid weekend days (0 invalid, 14 total)\n\n")
+  arrange(desc(n_participants)) %>%
+  relocate(n_participants, .before = 1)
 print(schedule_patterns)
 
 # 4. Identify deviations
@@ -695,24 +518,24 @@ if(nrow(deviants) > 0) {
 
 ## ---- ```` A4. ESM MISSINGNESS ANALYSIS --------------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("A4. ESM: Missingness")
+header("A4. ESM: Missingness", level = 2)
 
 # 1. General missingness
-cat(sprintf("\nGeneral dataset missingness: %.2f%%\n", pct_miss(esm_data)))
-cat("\nTop 10 general variables missingness\n")
+header(sprintf("General dataset missingness:\n %.2f%%", pct_miss(esm_data)))
+header("Top 10 general variables missingness")
 print(miss_var_summary(esm_data) %>% head(10))
 
-# 2. Total core variables data missingness
+# 2. Total core (wrt present research) data missingness
 pct_core <- esm_data %>%
-  select(all_of(vars_affect)) %>%
+  select(all_of(vars_core)) %>%
   pct_miss()
-cat(sprintf("\nTotal core dataset missingness: %.2f%%\n", pct_core))
-cat("\nTop 10 core variables missingness\n")
-subset_core <- esm_data %>% select(all_of(vars_affect))
+header(sprintf("Total core dataset missingness:\n %.2f%%", pct_core))
+header("Top 10 core variables missingness")
+subset_core <- esm_data %>% select(all_of(vars_core))
 print(miss_var_summary(subset_core) %>% head(10))
 
 # 3. Beep completion
-cat("\nBeep completion stats:\n")
+header("Beep completion stats")
 completion_stats <- esm_data %>%
   summarise(
     Total_Rows = n(),
@@ -721,22 +544,19 @@ completion_stats <- esm_data %>%
     Started_But_Incomplete = sum(.data[[col_start]] == 1 & .data[[col_end]] == 0, na.rm = TRUE)
   )
 print(completion_stats)
-cat(sprintf("Percentage of started beeps that were NOT completed: %.2f%%\n", 
+header(sprintf("Percentage of started beeps that were NOT completed:\n %.2f%%", 
             (completion_stats$Started_But_Incomplete / completion_stats$Started) * 100))
 
 # 4. Missingness Map (saved as plot)
-cat("\n... Generating Missingness Heatmap (this may take a moment) ...\n")
-
+header("Missingness Heatmap")
 plot_miss <- naniar::vis_miss(esm_data, warn_large_data = FALSE) +
   theme(axis.text.x = element_text(angle = 90)) +
   labs(title = "Missingness Map (Black = Missing)")
-
 save_plot(plot_miss, "ESM_missingness_map.png")
-
 
 ## ---- ```` A5. ESM COMPLIANCE ANALYSIS ---------------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("A5. ESM: Compliance Analysis")
+header("A5. ESM: Compliance Analysis", level = 2)
 
 # 1. Calculate Compliance per Person (as Percentage 0-100)
 person_compliance <- esm_data %>%
@@ -748,7 +568,7 @@ person_compliance <- esm_data %>%
   )
 
 # 2. Summary statistics
-cat("\nSummary statistics for Participant Compliance Rates (%):\n")
+header("Summary statistics for Participant Compliance Rates (%)")
 summary(person_compliance$comp_rate) %>% print()
 
 # 3. Compliance frequency table
@@ -760,7 +580,7 @@ counts_pass <- sapply(thresholds, function(x) {
 
 cumulative_table <- as.data.frame(t(counts_pass))
 colnames(cumulative_table) <- c(paste0(" ≤", thresholds, "%"))
-cat("\nParticipant Cumulative Distribution of Compliance Rates:\n")
+header("Participant Cumulative Distribution of Compliance Rates")
 print(cumulative_table) # Create and print 1-row summary table
 
 # 4. Identify low compliers
@@ -768,16 +588,16 @@ low_compliers <- person_compliance %>%
   filter(comp_rate < min_compliance) %>%
   arrange(comp_rate) # Participants below minimim compliance
 
-cat(sprintf("\n⚠️ Participants with < %d%% compliance (Total: %d):\n",
+header(sprintf("⚠️ Participants with < %d%% compliance (Total: %d)",
             min_compliance, nrow(low_compliers)))
 if(nrow(low_compliers) > 0) {
   print(head(low_compliers))
 }
 
 # 5. Compliance heatmap (saved as plot)
-cat("\n... Generating Compliance Heatmap ...\n")
+header("Compliance Heatmap")
 
-plot_comp_heatmap <- daily_counts %>%  # Uses object created in Section 3
+plot_comp_heatmap <- daily_counts %>%  # Uses object created in Section A3
   ggplot(aes(x = date_val, y = as.factor(.data[[col_person]]), fill = n_beeps)) +
   geom_tile(color = "white") +
   scale_fill_gradient(low = "red", high = "green", na.value = "grey90") +
@@ -789,7 +609,7 @@ plot_comp_heatmap <- daily_counts %>%  # Uses object created in Section 3
 save_plot(plot_comp_heatmap, "ESM_compliance_heatmap.png")
 
 # 6. Normalized compliance heatmap (saved as plot)
-cat("\n... Generating Normalized Compliance Heatmap ...\n")
+header("Normalized Compliance Heatmap")
 
 #   Normalize time so everyone starts at "Day 1"
 esm_relative <- esm_data %>%
@@ -826,7 +646,7 @@ plot_norm_comp_heatmap <- esm_relative %>%
 save_plot(plot_norm_comp_heatmap, "ESM_compliance_heatmap_normalized.png")
 
 # 7. Fatigue heatmap
-cat("\n... Generating Fatigue Heatmap  ...\n")
+header("Fatigue Heatmap")
 
 main_grid <- esm_relative %>%
   filter(study_day <= 14) %>% # exclude 1 couple's day 15 data
@@ -894,8 +714,7 @@ save_plot(plot_fatigue_avg, "ESM_fatigue_map.png")
 
 ## ---- ```` A6. ESM PARTNER BEEP SYNCHRONIZATION ------------------------------
 ## --------------------------------------------------------------------------- -
-
-print_header("A6. ESM: Dyadic Beep Synchronization")
+header("A6. ESM: Dyadic Beep Synchronization", level = 2)
 
 # 1. Create Dyadic Dataset (Self vs Partner) for timestamps
 p1 <- esm_data %>% 
@@ -912,7 +731,7 @@ dyadic_sync <- inner_join(p1, p2, by = c(col_dyad, col_beep)) %>%
   ) %>%
   filter(!is.na(diff_start_mins))
 
-cat("\nSummary of time difference between partners starting the SAME beep (mins):\n")
+header("Summary of time difference between partners starting the SAME beep (mins)")
 summary(dyadic_sync$diff_start_mins) %>% print()
 
 # 2. Calculate Cumulative Counts (<=1, <=2, ... <=15) and >15
@@ -930,7 +749,7 @@ count_over_15 <- sum(dyadic_sync$diff_start_mins > 15, na.rm = TRUE)
 sync_table <- as.data.frame(t(c(counts_cumulative, count_over_15)))
 colnames(sync_table) <- c(paste0("≤", thresholds), ">15")
 
-cat("\nCumulative count of dyadic beeps started within X minutes:\n")
+header("Cumulative count of dyadic beeps started within X minutes")
 print(sync_table)
 
 # 3. Calculate Cumulative Percentages (<=1, <=2, ... <=15) and >15
@@ -939,7 +758,7 @@ n_total <- nrow(dyadic_sync) # Total valid dyadic pairs
 sync_table_pct <- round((sync_table/n_total)*100,1)
 colnames(sync_table_pct) <- c(paste0("≤", thresholds, "m"), ">15m")
 
-cat(sprintf("\nCumulative percentage of dyadic beeps started within X minutes (N=%d):\n", n_total))
+header(sprintf("Cumulative percentage of dyadic beeps started within X minutes (N=%d)", n_total))
 print(sync_table_pct)
 
 ## ---- ```` ESM CLEANUP ------------------------------------------------------
@@ -952,41 +771,36 @@ clean_config("ESM") # Remove ESM-specific configuration variables
 
 ## ---- ```` BG SETUP & VALIDATION ---------------------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("B. Background Questionnaires Data Checks", level = 1)
+header("B. Background Questionnaires Data Checks", level = 1)
 
 load_config("BG")
-validate_variables("BG", bg_data)
+validate_config("BG", bg_data)
 
 ## ---- ```` B1. BG STRUCTURAL CHECKS-------------------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("B1. BG Structural Checks")
+header("B1. BG Structural Checks", level = 2)
 
-# 1. Dimensions and variables
-str(bg_data, 
-    list.len = ncol(bg_data), # Show ALL columns
-    strict.width = "cut",      # FORCE single line (no wrapping!)
-    give.attr = FALSE)         # Remove the messy attributes at the bottom
-cat(sprintf("\nUnique Persons: %d\n", n_distinct(esm_data[[col_person]])))
-cat(sprintf("Unique Dyads:   %d\n", n_distinct(esm_data[[col_dyad]])))
+# 1. Basic structure and dyad integrity
+check_basic_structure(bg_data, "BG")
 
 # 2. Scale Range Checks
-scale_names <- names(CONFIG_BG$scales)
+scale_names <- names(scales)
 for(name in scale_names) {
   # Get the items from the config
-  items <- CONFIG_BG$scales[[name]]
+  items <- scales[[name]]
   # Find the matching limit
   limit_name <- sub("scale_", "limits_", name)
-  limits     <- CONFIG_BG$ranges[[limit_name]]
+  limits     <- ranges[[limit_name]]
   # Run check
   check_range(bg_data, items, limits[1], limits[2], name)
 }
 
 ## ---- ```` B2. BG DESCRIPTIVES (DEMOGRAPHICS) -------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("B2. BG Descriptive statistics (demographics)")
+header("B2. BG Descriptive statistics (demographics)", level = 2)
 
 # 1. AGE (numeric)
-cat("\nAge (years):\n")
+header("Age (years)")
 age <- suppressWarnings(as.numeric(bg_data[[col_age]]))
 print(summary(age))
 cat(sprintf("Missing age: %d\n", sum(is.na(age))))
@@ -1000,7 +814,7 @@ plot_age <- bg_data %>%
 save_plot(plot_age, "BG_age_hist.png")
 
 # 2. GENDER
-cat("\nGender:\n")
+header("Gender")
 # Pass "col_gender" (the key). The function finds the real column "gender".
 df_temp <- bg_data %>% transmute(val = get_label(., "col_gender"))
 print(freq_table(df_temp, "val"))
@@ -1008,42 +822,42 @@ save_plot(plot_bar_categorical(df_temp, "val", "BG: Gender", "Gender"),
           "BG_gender_bar.png")
 
 # 3. NATIONALITY
-cat("\nNationality:\n")
+header("Nationality")
 df_temp <- bg_data %>% transmute(val = get_label(., "col_nat"))
 print(freq_table(df_temp, "val"))
 save_plot(plot_bar_categorical(df_temp, "val", "BG: Nationality", "Nationality"),
           "BG_nationality_bar.png", w = 10, h = 6)
 
 # 4. ETHNICITY
-cat("\nEthnicity:\n")
+header("Ethnicity")
 df_temp <- bg_data %>% transmute(val = get_label(., "col_etn"))
 print(freq_table(df_temp, "val"))
 save_plot(plot_bar_categorical(df_temp, "val", "BG: Ethnicity", "Ethnicity"),
           "BG_ethnicity_bar.png", w = 10, h = 6)
 
 # 5. EDUCATION
-cat("\nEducation:\n")
+header("Education")
 df_temp <- bg_data %>% transmute(val = get_label(., "col_edu"))
 print(freq_table(df_temp, "val"))
 save_plot(plot_bar_categorical(df_temp, "val", "BG: Education", "Education"),
           "BG_education_bar.png", w = 10, h = 6)
 
 # 6. CHILDREN
-cat("\nChildren (YN):\n")
+header("Children (YN)")
 df_temp <- bg_data %>% transmute(val = get_label(., "col_child"))
 print(freq_table(df_temp, "val"))
 save_plot(plot_bar_categorical(df_temp, "val", "BG: Children", "Children"),
           "BG_children_bar.png", w = 8, h = 5)
 
 # 7. LIVING TOGETHER
-cat("\nLiving together:\n")
+header("Living together")
 df_temp <- bg_data %>% transmute(val = get_label(., "col_liv_tog"))
 print(freq_table(df_temp, "val"))
 save_plot(plot_bar_categorical(df_temp, "val", "BG: Living together", "Living together"),
           "BG_living_together_bar.png", w = 8, h = 5)
 
 # 8. RELATIONSHIP DURATION (Numeric - months)
-cat("\nRelationship duration (months):\n")
+header("Relationship duration (months)")
 rel_dur <- suppressWarnings(as.numeric(bg_data[[col_rel_dur]]))
 print(summary(rel_dur))
 cat(sprintf("Missing relationship duration: %d\n", sum(is.na(rel_dur))))
@@ -1056,26 +870,23 @@ plot_rel_dur <- bg_data %>%
        x = "Duration (Months)", 
        y = "Count") +
   theme_minimal()
-
 save_plot(plot_rel_dur, "BG_rel_duration_hist.png")
 
 # 9. MEDICATION
-cat("\nMedication:\n")
-# The NA fix is now safely hidden inside get_label
+header("Medication")
 df_temp <- bg_data %>% transmute(val = get_label(., "col_med"))
-
 print(freq_table(df_temp, "val"))
 save_plot(plot_bar_categorical(df_temp, "val", "BG: Medication", "Medication Status"),
           "BG_medication_bar.png", w = 8, h = 5)
 
 ## ---- ```` B3. DCI DETAILED ANALYSIS (TOTAL & WE-NESS) -----------------------
 ## --------------------------------------------------------------------------- -
-print_header("B3. DCI: Total Score, Reliability, & We-ness")
+header("B3. DCI: Total Score, Reliability, & We-ness")
 
 # 1. DEFINE ITEMS & SUBSCALES
 
-# Load negative indices from Config:dci_neg_indices
-dci_neg_items <- paste0("DCI", dci_neg_indices)
+# Load negative indices from Config:DCI_reverse_items
+dci_neg_items <- paste0("DCI", DCI_reverse_items)
 
 # Positive "We-ness" items (All items MINUS the negative ones)
 dci_we_items  <- setdiff(scale_DCI, dci_neg_items)
@@ -1094,8 +905,8 @@ dci_reversed <- bg_data %>%
 # Calculate Total Score
 dci_scores <- dci_reversed %>%
   mutate(
-    DCI_Total_Score = rowSums(select(., all_of(scale_DCI)), na.rm = FALSE),
-    We_Ness_Score   = rowSums(select(., all_of(dci_we_items)), na.rm = FALSE)
+    DCI_Total_Score = rowSums(select(., all_of(scale_DCI)), na.rm = FALSE),  # check if na.rm = FALSE has an effect, are there missing values?
+    We_Ness_Score   = rowMeans(select(., all_of(dci_we_items)), na.rm = TRUE)
   )
 
 # --- 3. RELIABILITY (Alpha & Omega) ---
@@ -1163,9 +974,9 @@ cat("\n=== WE-NESS SCORE ANALYSIS (Positive Items Only) ===\n")
 plot_weness_hist <- dci_scores %>%
   filter(!is.na(We_Ness_Score)) %>%
   ggplot(aes(x = We_Ness_Score)) +
-  geom_histogram(binwidth = 5, fill = "forestgreen", color = "white") +
+  geom_histogram(binwidth = 0.1, fill = "forestgreen", color = "white") +
   labs(title = "Distribution of 'We-ness' Scores", 
-       subtitle = "Sum of Positive items only (No negative items)",
+       subtitle = "Average of 22 Positive items (No negative items)",
        x = "We-ness Score", y = "Count") +
   theme_minimal()
 
@@ -1188,7 +999,7 @@ plot_weness_corr <- dci_dyadic %>%
 save_plot(plot_weness_corr, "BG_Weness_Scatter.png")
 
 # 7. PARTNER DIFFERENCES
-cat("\n=== PARTNER DISCREPANCY ANALYSIS ===\n")
+cat("\n=== PARTNER DIFFERENCE ANALYSIS ===\n")
 
 # Calculate Absolute Difference in We-ness
 dci_dyadic <- dci_dyadic %>%
@@ -1203,8 +1014,8 @@ summary(dci_dyadic$Weness_Diff) %>% print()
 plot_weness_diff <- dci_dyadic %>%
   filter(!is.na(Weness_Diff)) %>%
   ggplot(aes(x = Weness_Diff)) +
-  geom_histogram(binwidth = 2, fill = "firebrick", color = "white") +
-  labs(title = "Distribution of We-ness Discrepancies", 
+  geom_histogram(binwidth = 0.1, fill = "firebrick", color = "white") +
+  labs(title = "Distribution of We-ness Differences", 
        subtitle = "Absolute difference between Partner 1 and Partner 2",
        x = "Difference Score (|P1 - P2|)", y = "Count of Couples") +
   theme_minimal()
@@ -1248,10 +1059,287 @@ clean_config("BG") # Remove BG-specific configuration variables
 
 ## ---- ```` VMR SETUP & VALIDATION ----------------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("C. VMR Data Checks", level = 1)
+header("C. VMR Data Checks", level = 1)
 
 load_config("VMR")
-validate_variables("VMR", vmr_data)
+validate_config("VMR", vmr_data)
+
+## ---- ```` C1. VMR DATASET OVERVIEW & STRUCTURE ------------------------------
+## --------------------------------------------------------------------------- -
+header("C1. VMR Dataset Overview & Structure", level = 2)
+
+# 1. Basic structure and dyad integrity
+check_basic_structure(vmr_data, "VMR")
+
+# 2. Topics present (expected: 2 topics per participant, positive/negative)
+header("Topic distribution")
+vmr_data %>%
+  count(topic, name = "n_rows", sort = TRUE) %>%
+  print()
+
+header("Topics per participant (should be 2)")
+topics_per_person <- vmr_data %>%
+  distinct(.data[[col_person]], .data[[col_topic]]) %>%
+  count(.data[[col_person]], name = "n_topics")
+summary(topics_per_person$n_topics) %>% print()
+
+if (all(topics_per_person$n_topics == 2)) {
+  cat("✅ VMR: All participants have 2 topics.\n")
+} else {
+  cat("⚠️ WARNING: Some participants don't have 2 topics.\n")
+  topics_per_person %>% 
+    filter(n_topics != 2) %>% 
+    arrange(desc(n_topics)) %>% 
+    head(20) %>% 
+    print()
+}
+
+# 3. Segment Count
+header(sprintf("Segment Completeness (Expected %d per person x topic)", 
+               expected_segments_per_topic)) # 16 expected
+counts_pt <- vmr_data %>%
+  group_by(.data[[col_person]], .data[[col_topic]]) %>%
+  summarise(n_segments = n(), .groups = "drop")
+summary(counts_pt$n_segments) %>% print()
+
+incomplete_pt <- counts_pt %>%
+  filter(n_segments != expected_segments_per_topic) %>%
+  arrange(.data[[col_person]], .data[[col_topic]])
+
+if(nrow(incomplete_pt) == 0) {
+  cat("✅ VMR: All (PpID x topic) combinations have exactly 16 segments.\n")
+} else {
+  cat(sprintf("⚠️ WARNING: %d (PpID x topic) combinations deviate from %d segments.\n",
+              nrow(incomplete_pt), expected_segments_per_topic))
+  print(incomplete_pt)
+}
+
+# Check: per participant, total rows should typically be 32 (2 topics x 16 segments)
+rows_per_person <- vmr_data %>%
+  count(.data[[col_person]], name = "n_rows") %>%
+  arrange(n_rows)
+
+header(sprintf("Total rows per participant (%d expected)", 
+               expected_segments_per_topic * 2))
+summary(rows_per_person$n_rows) %>% print()
+
+if(all(rows_per_person$n_rows == 2 * expected_segments_per_topic)) {
+  cat(sprintf("✅ VVMR: Participant row totals are %d (consistent with 2 topics).", 
+              expected_segments_per_topic * 2))
+} else {
+  cat("⚠️ WARNING: Some participants have unexpected total row counts (showing first 20):\n")
+  print(head(rows_per_person %>% filter(!n_rows %in% c(16, 32)), 20))
+}
+
+# Additional check: segment should run 1..16 for each (PpID x topic)
+header("Check: segment range and coverage (expected 1..16 per PpID x topic)")
+tp_range <- vmr_data %>%
+  group_by(.data[[col_person]], .data[[col_topic]]) %>%
+  summarise(tp_min = min(.data[[col_segment]], na.rm = TRUE),
+            tp_max = max(.data[[col_segment]], na.rm = TRUE),
+            n_tp  = n_distinct(.data[[col_segment]]),
+            .groups = "drop")
+
+tp_bad <- tp_range %>%
+  filter(tp_min != 1 | tp_max != 16 | n_tp != 16)
+
+if(nrow(tp_bad) == 0) {
+  cat("✅ VMR: tsegmentcoverage is complete (1..16, 16 unique) for all (PpID x topic).\n")
+} else {
+  cat(sprintf("⚠️ WARNING: %d (PpID x topic) combinations show incomplete/irregulars segments.\n",
+              nrow(tp_bad)))
+  print(tp_bad)
+}
+
+# 4. Participant and dyad number relation checks
+header("Participant and couple ID relation checks")
+print(summary(vmr_data[[col_person]]))
+print(summary(vmr_data[[col_dyad]]))
+
+# If CoupleID is unexpectedly large, it may indicate a coding/offset issue
+if(max(vmr_data[[col_dyad]], na.rm = TRUE) > 899) {
+  cat("⚠️ WARNING: Max CoupleID is unusually large.\n")
+} else {
+  cat("✅ VMR: CoupleID range appears plausible.\n")
+}
+
+# Check consistency: for PpID>700, CoupleID should equal PpID-700
+vmr_id_logic <- vmr_data %>%
+  distinct(.data[[col_person]], .data[[col_dyad]]) %>%
+  mutate(
+    expected = if_else(.data[[col_person]] > 700, 
+                       .data[[col_person]] - 700, .data[[col_person]]),
+    matches_expected  = (.data[[col_dyad]] == expected)
+  )
+
+n_mismatch <- sum(!vmr_id_logic$matches_expected, na.rm = TRUE)
+if(n_mismatch == 0) {
+  cat("✅ VMR: CoupleID matches the expected transformation from PpID.\n")
+} else {
+  cat(sprintf("⚠️ WARNING: %d (PpID, CoupleID) pairs do not match the expected 
+              relation (first 10 shown).\n",
+              n_mismatch))
+  print(head(vmr_id_logic %>% filter(!matches_expected), 10))
+}
+
+# 5. VMR duplicate (PpID x topic x segment) combination
+header("VMR Duplicate Key Checks")
+
+dup_keys <- vmr_data %>%
+  group_by(.data[[col_person]], .data[[col_topic]], .data[[col_segment]]) %>%
+  tally(name = "n") %>%
+  filter(n > 1) %>%
+  arrange(desc(n))
+
+if(nrow(dup_keys) == 0) {
+  cat("✅ VMR: No duplicate rows found for the key (PpID x topic x segment.\n")
+} else {
+  cat(sprintf("⚠️ WARNING: %d duplicate key combinations found (showing first 10):\n",
+              nrow(dup_keys)))
+  print(head(dup_keys, 10))
+}
+
+# 6. 2 persons expected in each (CoupleID x topic x segment) combination
+header("VMR: 2 rows per CoupleID x topic x segment?")
+
+pair_check <- vmr_data %>%
+  group_by(.data[[col_dyad]], .data[[col_topic]], .data[[col_segment]]) %>%
+  summarise(n_rows = n(), n_persons = n_distinct(.data[[col_person]]), .groups = "drop") %>%
+  filter(n_rows != 2 | n_persons != 2) %>%
+  arrange(desc(n_rows), .data[[col_dyad]], .data[[col_topic]], .data[[col_segment]])
+
+if(nrow(pair_check) == 0) {
+  cat("✅ VMR: All (CoupleID x topic x segment) combinations contain exactly 2
+      rows (2 partners).\n")
+} else {
+  cat(sprintf("⚠️ WARNING: %d (CoupleID x topic x segment) combinations do not have 
+              exactly 2 partner rows (first 10 shown).\n",
+              nrow(pair_check)))
+  print(head(pair_check, 10))
+}
+
+# 7. VMR Range Checks
+header("VMR: Range Checks (0–100 sliders; -3..3 agency/communion)")
+
+out_of_range <- tibble()
+
+for (var_key in names(vars)) {
+  var_name <- vars[[var_key]]                  # e.g., "neg_aff_own"
+  lim_key  <- sub("^var_", "limits_", var_key) # e.g., "limits_NA_own"
+  limits   <- ranges[[lim_key]]                # e.g., c(0, 100)
+  
+  lower <- min(limits)
+  upper <- max(limits)
+  
+  tmp <- vmr_data %>%
+    select(all_of(col_dyad), all_of(col_person), value = all_of(var_name)) %>%
+    mutate(value_num = suppressWarnings(as.numeric(value))) %>%
+    filter(!is.na(value_num) & (value_num < lower | value_num > upper)) %>%
+    mutate(
+      var_key  = var_key,
+      var_name = var_name,
+      lower    = lower,
+      upper    = upper,
+      value    = value_num
+    ) %>%
+    select(all_of(col_dyad), all_of(col_person), var_key, var_name, value, lower, upper)
+  
+  out_of_range <- bind_rows(out_of_range, tmp)
+}
+
+if (nrow(out_of_range) == 0) {
+  cat("✅ VMR: All checked variables fall within their specified ranges.\n")
+} else {
+  cat(sprintf("⚠️ WARNING: VMR: %d out-of-range values detected (showing first 25 rows).\n",
+              nrow(out_of_range)))
+  print(head(out_of_range, 25))
+  
+  cat("\nSummary (out-of-range counts per variable):\n")
+  out_of_range %>%
+    count(var_key, var_name, lower, upper, name = "n_out_of_range") %>%
+    arrange(desc(n_out_of_range)) %>%
+    print()
+}
+
+
+
+## ---- ```` C7. VMR MISSINGNESS -----------------------------------------------
+## --------------------------------------------------------------------------- -
+header("C7. VMR: Missingness")
+
+cat(sprintf("\nGeneral dataset missingness: %.2f%%\n", pct_miss(vmr_data)))
+cat("\nTop 10 variables missingness\n")
+print(miss_var_summary(vmr_data) %>% head(10))
+
+# Hard check: any NA in core identifiers?
+cat("\nCheck: Missing values in key identifiers (PpID, CoupleID, topic, timepoint):\n")
+key_na <- vmr_data %>%
+  summarise(
+    na_PpID     = sum(is.na(PpID)),
+    na_CoupleID = sum(is.na(CoupleID)),
+    na_topic    = sum(is.na(topic)),
+    na_timepoint= sum(is.na(timepoint))
+  )
+print(key_na)
+
+if(all(key_na == 0)) {
+  cat("✅ VMR: No missing values in key identifiers.\n")
+} else {
+  cat("⚠️ WARNING: Missing values found in key identifiers.\n")
+}
+
+## ---- ```` C8. VMR DURATION CHECKS -------------------------------------------
+## --------------------------------------------------------------------------- -
+header("C8. VMR: Completion Duration Checks (if available)")
+
+if("duration_minutes" %in% names(vmr_data)) {
+  cat("\nSummary of VMR completion duration (minutes):\n")
+  summary(vmr_data$duration_minutes) %>% print()
+  
+  # One duration per participant x topic expected (duration repeated across 16 segments)
+  duration_unique <- vmr_data %>%
+    distinct(PpID, topic, duration_minutes)
+  
+  cat("\nCheck: number of unique durations per (PpID x topic) should be 1:\n")
+  duration_mult <- duration_unique %>%
+    count(PpID, topic, name = "n_durations") %>%
+    filter(n_durations != 1)
+  
+  if(nrow(duration_mult) == 0) {
+    cat("✅ VMR: duration_minutes is constant within each (PpID x topic).\n")
+  } else {
+    cat(sprintf("⚠️ WARNING: duration_minutes varies within some (PpID x topic) (showing first 20):\n"))
+    print(head(duration_mult, 20))
+  }
+  
+  # Sanity bounds (very conservative): should be >0, and not extremely large
+  cat("\nCheck: Implausible durations (<=0 or >60 minutes):\n")
+  dur_bad <- duration_unique %>%
+    filter(duration_minutes <= 0 | duration_minutes > 60)
+  
+  if(nrow(dur_bad) == 0) {
+    cat("✅ VMR: No implausible duration values found.\n")
+  } else {
+    cat(sprintf("⚠️ WARNING: %d (PpID x topic) have implausible durations (showing first 20):\n",
+                nrow(dur_bad)))
+    print(head(dur_bad, 20))
+  }
+  
+} else {
+  cat("ℹ️  Note: duration_minutes not found in vmr_data; skipping duration checks.\n")
+}
+
+## ---- ```` C10. VMR OPTIONAL: QUICK DESCRIPTIVES (TOPIC x TIMEPOINT) ---------
+## --------------------------------------------------------------------------- -
+header("C10. VMR: Quick Descriptives (Row coverage by topic x timepoint)")
+
+# Useful to spot holes in the segment grid across topics
+grid_check <- vmr_data %>%
+  count(topic, timepoint, name = "n_rows") %>%
+  arrange(topic, timepoint)
+
+cat("\nCoverage table: number of rows per (topic x timepoint):\n")
+print(grid_check, n = Inf)
 
 ## ---- ```` VMR CLEANUP -------------------------------------------------------
 ## --------------------------------------------------------------------------- -
@@ -1263,10 +1351,17 @@ clean_config("VMR") # Remove VMR-specific configuration variables
 
 ## ---- ```` POST SETUP & VALIDATION -------------------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("D. Post Interaction Questionnaire Data Checks", level = 1)
+header("D. Post Interaction Questionnaire Data Checks", level = 1)
 
 load_config("POST")
-validate_variables("POST", post_data)
+validate_config("POST", post_data)
+
+## ---- ```` D1. POST DATASET OVERVIEW & STRUCTURE ------------------------------
+## --------------------------------------------------------------------------- -
+header("D1. POST Dataset Overview & Structure", level = 2)
+
+# 1. Basic structure and dyad integrity
+check_basic_structure(post_data, "POST")
 
 ## ---- ```` POST CLEANUP -------------------------------------------------------
 ## --------------------------------------------------------------------------- -
@@ -1279,7 +1374,7 @@ clean_config("POST") # Remove POST-specific configuration variables
 ## ---- ```` CROSS-CHECK SETUP --------------------------------------------------
 ## --------------------------------------------------------------------------- -
 # Load configs into local objects (no global environment conflicts)
-print_header("E. Cross-Dataset Data Checks", level = 1)
+header("E. Cross-Dataset Data Checks", level = 1)
 
 # cfg_esm  <- load_config("ESM",  to_global = FALSE)
 # cfg_bg   <- load_config("BG",   to_global = FALSE)
@@ -1289,7 +1384,7 @@ print_header("E. Cross-Dataset Data Checks", level = 1)
 
 ## ---- ```` E1. PARTICIPANT ID CONSISTENCY -----------------------------------------
 ## --------------------------------------------------------------------------- -
-print_header("Checking Participant ID Consistency across Datasets")
+header("Checking Participant ID Consistency across Datasets")
 
 # 1. Extract PpIDs using the specific config map for each dataset
 ids_esm  <- unique(esm_data[[CONFIG_ESM$cols$col_person]])
@@ -1316,7 +1411,7 @@ cat("\n✅ Cross-check environment cleaned.\n")
 ## ########################################################################### #
 # ---- END ---------------------------------------------------------------------
 ## ########################################################################### #
-print_header("End of Data Check Report", level = 1)
+header("End of Data Check Report", level = 1)
 cat("Log saved to: ", log_file, "\n", sep = "")
 
 message(paste("Output log saved to:", log_file))
