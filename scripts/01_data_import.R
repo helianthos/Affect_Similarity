@@ -1,17 +1,19 @@
 # ========================================================== =
-# 01_import.R
+# 01_data_import.R
 #
 # Purpose:
 #   Import raw CSV files and generate analysis-ready datasets.
+#.  Raw = preprocessed, but preprocessing documented
 #
 # Inputs:
-#   - Raw CSV files located in paths$dir_raw_data
+#   - Raw CSV files located in paths$dir_raw_data, read from
+#.    config/local_raw_data_path by R/01_paths.R
 #
 # Outputs:
 #   - data/imported/*.rds (not tracked in Git)
 #
 # Usage:
-#   source("scripts/01_import.R")
+#   source("scripts/01_data_import.R")
 #
 # Notes:
 #   - Requires config/local_raw_data_path.R to be present
@@ -80,12 +82,11 @@ if (length(missing_files) > 0) {
 # ---- 7. Save imported datasets ----
 for (nm in names(required_files)) {
   obj <- raw_data[[ required_files[[nm]] ]]
-  saveRDS(obj, file.path(dir_data, paste0(nm, "_raw.rds")))
-  cat("\n✅ Imported dataset ", paste0(nm, "_raw.rds ") ,"written to: ", dir_data)
+  saveRDS(obj, file.path(dir_data_imp, paste0(nm, "_raw.rds")))
+  cat("\n✅ Imported dataset ", paste0(nm, "_raw.rds ") ,"written to: ", dir_data_imp)
 }
 
 # ---- 7. Clean and stop logging ----
-
 rm(obj, nm, raw_data, raw_files, required_files, missing_files, read_csv_quiet)
 
 cat("\n\nDone.\n")

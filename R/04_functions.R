@@ -2,12 +2,12 @@
 # 04_functions.R
 #
 # Purpose:
-# Define user functions ti be used across scripts
+#   Define user functions to be used across scripts
 #
 # Usage:
-# Run source("R/04_functions.R") to source these functions.
-# Sourcing is included in R/00_setup.R together with R/01_paths.R, 
-# R/02_packages.R, and R/03_data_config.R
+#.  Run source("R/04_functions.R") to source these functions.
+#   Sourcing is included in R/00_setup.R together with R/01_paths.R, 
+#   R/02_packages.R, and R/03_data_config.R
 #
 ############################################################################## #
 
@@ -23,7 +23,77 @@ header <- function(text, level = 3) {
     cat(paste0(rep("-", 60), collapse = ""), "\n")
   }
   if (level == 3) {
-    cat("\n***", text, "\n")
+    cat("\n===", text, "\n")
+  }
+}
+
+load_config <- function(config, to_global = TRUE) {
+  # 1. Select the config list
+  cfg <- switch(config,
+                "ESM"  = CONFIG_ESM,
+                "BG"   = CONFIG_BG,
+                "VMR"  = CONFIG_VMR,
+                "POST" = CONFIG_POST)
+  
+  if(is.null(cfg)) stop(paste("Configuration not found for:", config))
+  # 2. Unpack sublists to Global Environment except if to_global = FALSE
+  if(to_global) {
+    sublists_to_unpack <- names(cfg)
+    for (sublist in sublists_to_unpack) {
+      list2env(cfg[[sublist]], envir = .GlobalEnv)
+    }
+    cat(sprintf("✅ %s config unpacked to Global Env (Sublists: %s).\n", 
+                config, paste(sublists_to_unpack, collapse=", ")))  }
+  list2env(list(cols = cfg$cols, vars = cfg$vars, ranges = cfg$ranges,
+                scales = cfg$scales), envir = .GlobalEnv)
+  # 3. Return the config object invisibly
+  invisible(cfg)
+}
+
+clean_config <- function(config) {
+  # 1. Get load_config to know WHAT to remove, to_global = FALSE to not unpack
+  cfg <- load_config(config, to_global = FALSE) 
+  # 2. Collect all variable names
+  vars_to_remove <- c()
+  sublists_to_remove <- names(cfg)
+  for (sublist in sublists_to_remove) {
+    vars_to_remove <- c(vars_to_remove, names(cfg[[sublist]]))
+  }
+  # 3. Add containers
+  containers <- c("cols", "vars", "ranges", "scales")
+  vars_to_remove <- c(vars_to_remove, containers)
+  # 4. Limit to what exists in GlobalEnv to avoid warnings
+  vars_to_remove <- vars_to_remove[sapply(vars_to_remove, exists, envir = .GlobalEnv)]
+  vars_to_remove <- unique(vars_to_remove) # avoid attempting to remove twice
+  # 5. Remove them from GlobalEnv
+  if(length(vars_to_remove) > 0) {
+    rm(list = vars_to_remove, envir = .GlobalEnv)
+    cat(sprintf("🧹 %s vars removed from Global Env.\n", config))
+  } 
+}
+
+# Validation function to check if if columns/vars mapped in the CONFIG exist in the datset
+# used during development
+validate_config <- function(config, dataset) {
+  # 1. Get the config locally (not to global env)
+  cfg <- load_config(config, to_global = FALSE)
+  # 2. Gather all expected column names (in GLOBAL_SETTINGS config_sublists_with_variables)
+  vars_required <- c()
+  config_sublists_with_variables = c("cols", "vars", "scales")
+  sublists_to_check <- intersect(names(cfg), config_sublists_with_variables)
+  for (sublist in sublists_to_check) {
+    vars_required <- c(vars_required, unlist(cfg[[sublist]]))
+  }
+  # 3. Compare against the actual dataframe
+  vars_missing <- setdiff(vars_required, names(dataset))
+  # 4. Stop if any are missing
+  if(length(vars_missing) > 0) {
+    cat(sprintf("\n\n!!! ERROR: The '%s' dataset is missing these variables:\n%s\n", 
+                config, 
+                paste(vars_missing, collapse = ", ")))
+  } else {
+    cat(sprintf("✅ %s dataset validated: All %d required variables found (checked: %s).\n", 
+                config, length(vars_required), paste(sublists_to_check, collapse=", ")))
   }
 }
 
@@ -34,15 +104,15 @@ check_basic_structure <- function(data, label = "DATA") {
       list.len     = ncol(data),      # show ALL columns
       strict.width = "cut",           # force single line (no wrapping)
       give.attr    = FALSE)           # remove attributes at the bottom
-  cat(sprintf("\nUnique Persons: %d\n", n_distinct(data[[col_person]])))
-  cat(sprintf("Unique Dyads:   %d\n", n_distinct(data[[col_dyad]])))
+  cat(sprintf("\nUnique Persons: %d\n", n_distinct(data[[person]])))
+  cat(sprintf("Unique Dyads:   %d\n", n_distinct(data[[dyad]])))
   cat(sprintf("Total Rows:     %d\n", nrow(data)))
   cat(sprintf("Total Columns:  %d\n", ncol(data)))
   # 2. Dyad integrity check
   header(sprintf("%s Dyad Integrity", label))
   problem_dyads <- data %>%
-    group_by(.data[[col_dyad]]) %>%
-    summarise(n_persons = n_distinct(.data[[col_person]])) %>%
+    group_by(.data[[dyad]]) %>%
+    summarise(n_persons = n_distinct(.data[[person]])) %>%
     filter(n_persons != 2)
   if (nrow(problem_dyads) == 0) {
     cat(sprintf("✅ %s: All dyads contain exactly 2 unique persons.\n", label))
@@ -54,11 +124,11 @@ check_basic_structure <- function(data, label = "DATA") {
   # 3. Participant ID logic within dyad (<700 & >700)
   header(sprintf("%s Participant ID numbering logic within dyad", label))
   id_pattern <- data %>%
-    distinct(.data[[col_dyad]], .data[[col_person]]) %>%
-    group_by(.data[[col_dyad]]) %>%
+    distinct(.data[[dyad]], .data[[person]]) %>%
+    group_by(.data[[dyad]]) %>%
     summarise(
-      has_lt_700 = any(.data[[col_person]] < 700, na.rm = TRUE),
-      has_gt_700 = any(.data[[col_person]] > 700, na.rm = TRUE)
+      has_lt_700 = any(.data[[person]] < 700, na.rm = TRUE),
+      has_gt_700 = any(.data[[person]] > 700, na.rm = TRUE)
     ) %>%
     filter(!(has_lt_700 & has_gt_700))
   
@@ -71,8 +141,8 @@ check_basic_structure <- function(data, label = "DATA") {
   }
   # Return diagnostics invisibly
   invisible(list(
-    n_persons        = n_distinct(data[[col_person]]),
-    n_dyads          = n_distinct(data[[col_dyad]]),
+    n_persons        = n_distinct(data[[person]]),
+    n_dyads          = n_distinct(data[[dyad]]),
     n_rows           = nrow(data),
     n_cols           = ncol(data),
     problem_dyads    = problem_dyads
@@ -107,7 +177,7 @@ check_data_participant_overlap <- function(data1_ids, data2_ids, data1_label, da
 check_mc_consistency <- function(var,no_resp, not_no_resp) {
   header(sprintf("Logical Consistency of '%s' (Mutually Exclusive MC Answers)", var))
   inconsistent <- esm_data %>%
-    select(all_of(col_person), all_of(col_beep), all_of(var)) %>%
+    select(all_of(person), all_of(beep), all_of(var)) %>%
     mutate(
       no  = grepl(no_resp, as.character(.data[[var]])),
       not_no = grepl(not_no_resp, as.character(.data[[var]]))
@@ -186,7 +256,7 @@ check_range <- function(data, columns, min_v, max_v, name) {
   }
   # Find values outside range (ignoring NA) for columns/variables that are present
   out_of_bounds <- data %>%
-    select(all_of(col_person), all_of(columns_present)) %>%
+    select(all_of(person), all_of(columns_present)) %>%
     filter(if_any(all_of(columns_present), ~ . < min_v | . > max_v))
   if(nrow(out_of_bounds) > 0) {
     cat(sprintf("⚠️  %s: %d rows have values outside range [%d, %d].\n", 
@@ -238,14 +308,14 @@ check_missingness <- function (data) {
   print(miss_var_summary(subset_core) %>% head(10))
 }
 
-get_label <- function(data, col_name) {
+get_label <- function(data, name) {
   # 1. Retrieve the column name and the label map
-  var_name <- CONFIG_BG$cols[[col_name]]
-  lbls     <- CONFIG_BG$value_labels[[col_name]]
+  var_name <- CONFIG_BG$cols[[name]]
+  lbls     <- CONFIG_BG$value_labels[[name]]
   # 2. Extract the data vector for var_name
   vec <- trimws(as.character(data[[var_name]]))
   # 3. Fix: If this is the medication column, treat NA as 0
-  if (col_name == "col_med") {
+  if (name == "med") {
     vec <- replace_na(vec, "0")
   }
   # 4. Return the Factor
@@ -279,4 +349,13 @@ plot_bar_categorical <- function(data, var, title, xlab) {
     coord_flip() +
     labs(title = title, x = xlab, y = "Count") +
     theme_minimal()
+}
+
+select_and_rename <- function (data, map) {
+  old <- unname(map)
+  new <- names(map)
+  data <- data %>%     
+    select(all_of(old)) %>%    # keep only mapped columns
+    setNames(new)                # rename old -> new
+  return(data)
 }

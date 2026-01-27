@@ -52,13 +52,17 @@ if (!exists("RAW_DATA_DIR") ||       # missing?
 paths <- list(
   dir_project      = here::here(),
   dir_raw_data     = RAW_DATA_DIR,
-  dir_data         = here::here("data", "imported"),
+  dir_data_imp     = here::here("data", "imported"),
+  dir_data_red     = here::here("data", "reduced"),
+  dir_data_ana     = here::here("data", "analysis"),
   dir_plots        = here::here("outputs", "plots"),
   dir_logs         = here::here("outputs", "logs")
 )
 
 # Safeguard: create paths in case they don't exist
-dir.create(paths$dir_data,  recursive = TRUE, showWarnings = FALSE)
+dir.create(paths$dir_data_imp,  recursive = TRUE, showWarnings = FALSE)
+dir.create(paths$dir_data_red, recursive = TRUE, showWarnings = FALSE)
+dir.create(paths$dir_data_ana,  recursive = TRUE, showWarnings = FALSE)
 dir.create(paths$dir_plots, recursive = TRUE, showWarnings = FALSE)
 dir.create(paths$dir_logs,  recursive = TRUE, showWarnings = FALSE)
 

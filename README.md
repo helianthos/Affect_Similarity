@@ -143,8 +143,11 @@ project/
 │   ├── 02_data_checks.R
 │   │   └── Checks on the imported .rds files
 │   │
-│   └── 03_construct.R
-│       └── Constructs scales, similarity indices, and derived variables
+│   ├── 03_data_reduction.R
+│   │   └── reduce data to variables of interest for the present research
+│   │
+│   └── 04_data_construct.R
+│       └── Constructs scales, similarity indices
 │
 ├── analysis/
 │   ├── 01_descriptives.Rmd
@@ -153,18 +156,21 @@ project/
 │   └── 02_models.Rmd
 │       └── Main preregistered statistical models and reporting
 │
-├── data/
-│   └── imported/
+├── data/          (folder .gitkeep but contents generated locally)
+│   ├── imported/
+│   │   └── data imported from 'raw' preprocessing files
+│   │
+│   ├── reduced/
+│   │   └── data reduced to variables of interest
+│   │
+│   └── analysis/
 │       └── .gitkeep
 │           └── Placeholder so the folder exists after cloning
 │               (contents are regenerated locally and ignored by Git)
-│
-└── outputs/
+└── outputs/       (folder .gitkeep but contents generated locally)
     ├── plots/
-    │   └── Saved plots (not tracked by default)
-    ├── tables/
-        └── Saved tables (not tracked by default)
-    └── log/
-         └── Saved log outputs (not tracked by default)
+    │   └── Saved plots
+    └── logs/
+        └── Saved log outputs
         
 ```

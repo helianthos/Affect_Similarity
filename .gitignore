@@ -13,9 +13,13 @@
 # local paths config file
 config/local_raw_data_path.R
 
-# Derived data
+# Data
 data/imported/*
 !data/imported/.gitkeep
+data/reduced/*
+!data/reduced/.gitkeep
+data/analysis/*
+!data/analysis/.gitkeep
 
 # Outputs
 outputs/plots/*
