@@ -53,7 +53,7 @@ CONFIG_ESM <- list(
     var_sad          = "sad",                 # Sadness
     var_NA_own       = "NA_own",              # Own negative affect
     var_PA_own       = "PA_own",              # Own positive affect
-    var_anhed        = "anhedionia",          # Anhedonio
+    var_anhed        = "anhedonia",           # Anhedonia
     var_fat          = "tired",               # Fatigue
     var_insec        = "insecure",            # Insecurity
     var_part_pres    = "partner_presence",    # Partner presence
@@ -227,6 +227,12 @@ CONFIG_BG <- list(
     limits_WHODAS_likert = c(1, 5), 
     limits_WHODAS_days   = c(0, 30)  # Days range
   ),
+  groups = list(
+    # group with timestamp data
+    vars_time = c("StartQ", "EndQ"),
+    # group core to the present research
+    vars_core = paste0("DCI", 1:30)
+  ),
   settings = list(
     min_age = 18,
     max_age = 65 # max in codebook
@@ -276,9 +282,10 @@ CONFIG_VMR <- list(
     limits_comm_own    = c(-3, 3),
     limits_comm_part   = c(-3, 3)
   ),
+  # List of specific variables for targeted checks
   groups = list(
-    vars_0_100 = c("neg_aff_own","neg_aff_partner", "pos_aff_own", "pos_aff_partner",
-                   "press_sad", "perc_reassk", "suppression", "extr_IER")
+    # group core to the present research
+    vars_core = c('neg_aff_own', 'pos_aff_own', 'neg_aff_partner', 'pos_aff_partner')
   )
 )
 
@@ -339,25 +346,48 @@ CONFIG_POST <- list(
   ), 
   # Valid Ranges (Min, Max) for each variable
   ranges = list(
-    limits_anger             = c(0, 100),
-    limits_stress            = c(0, 100),
-    limits_sad               = c(0, 100),
-    limits_happy             = c(0, 100),
-    limits_love              = c(0, 100),
-    limits_close             = c(0, 100),
-    limits_ignored           = c(0, 100),
-    limits_irritated         = c(0, 100),
-    limits_hurt              = c(0, 100),
-    limits_guilt             = c(0, 100),
-    limits_indifferent       = c(0, 100),
-    limits_emo_connected     = c(0, 100),
-    limits_emo_match         = c(0, 5),
-    limits_s_care_about_p    = c(0, 6),
-    limits_p_care_about_s    = c(0, 6),
-    limits_p_free            = c(0, 6),
-    limits_s_free            = c(0, 6),
-    limits_satisfied_conv    = c(1, 7),
-    limits_representive      = c(1, 7)
+    limits_anger_neg             = c(0, 100),
+    limits_stress_neg            = c(0, 100),
+    limits_sad_neg               = c(0, 100),
+    limits_happy_neg             = c(0, 100),
+    limits_love_neg              = c(0, 100),
+    limits_close_neg             = c(0, 100),
+    limits_ignored_neg           = c(0, 100),
+    limits_irritated_neg         = c(0, 100),
+    limits_hurt_neg              = c(0, 100),
+    limits_guilt_neg             = c(0, 100),
+    limits_indifferent_neg       = c(0, 100),
+    limits_emo_connected_neg     = c(0, 100),
+    limits_emo_match_neg         = c(0, 5),
+    limits_s_care_about_p_neg    = c(0, 6),
+    limits_p_care_about_s_neg    = c(0, 6),
+    limits_p_free_neg            = c(0, 6),
+    limits_s_free_neg            = c(0, 6),
+    limits_satisfied_conv_neg    = c(1, 7),
+    limits_representive_neg      = c(1, 7),
+    limits_anger_pos             = c(0, 100),
+    limits_stress_pos            = c(0, 100),
+    limits_sad_pos               = c(0, 100),
+    limits_happy_pos             = c(0, 100),
+    limits_love_pos              = c(0, 100),
+    limits_close_pos             = c(0, 100),
+    limits_ignored_pos           = c(0, 100),
+    limits_irritated_pos         = c(0, 100),
+    limits_hurt_pos              = c(0, 100),
+    limits_guilt_pos             = c(0, 100),
+    limits_indifferent_pos       = c(0, 100),
+    limits_emo_connected_pos     = c(0, 100),
+    limits_emo_match_pos         = c(0, 5),
+    limits_s_care_about_p_pos    = c(0, 6),
+    limits_p_care_about_s_pos    = c(0, 6),
+    limits_p_free_pos            = c(0, 6),
+    limits_s_free_pos            = c(0, 6),
+    limits_satisfied_conv_pos    = c(1, 7),
+    limits_representive_pos      = c(1, 7)
+  ),
+  groups = list(
+    # group core to the present research
+    vars_core = c("Lovingly_neg", "Lovingly_pos", "Close_neg", "Close_pos")
   )
 )
 

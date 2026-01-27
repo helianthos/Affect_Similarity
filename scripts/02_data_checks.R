@@ -82,8 +82,7 @@ check_basic_structure <- function(data, label = "DATA") {
   cat(sprintf("Unique Dyads:   %d\n", n_distinct(data[[col_dyad]])))
   cat(sprintf("Total Rows:     %d\n", nrow(data)))
   cat(sprintf("Total Columns:  %d\n", ncol(data)))
-  
-    # 2. Dyad integrity check
+  # 2. Dyad integrity check
   header(sprintf("%s Dyad Integrity", label))
   problem_dyads <- data %>%
     group_by(.data[[col_dyad]]) %>%
@@ -96,7 +95,6 @@ check_basic_structure <- function(data, label = "DATA") {
                 label, nrow(problem_dyads)))
     print(head(problem_dyads, 10))
   }
-  
   # 3. Participant ID logic within dyad (<700 & >700)
   header(sprintf("%s Participant ID numbering logic within dyad", label))
   id_pattern <- data %>%
@@ -115,15 +113,13 @@ check_basic_structure <- function(data, label = "DATA") {
                   label, nrow(id_pattern)))
       print(head(id_pattern, 10))
     }
-  
-  # Return diagnostics invisibly so you can unit-test or log them if needed
+  # Return diagnostics invisibly
   invisible(list(
-    n_persons        = dplyr::n_distinct(data[[col_person]]),
-    n_dyads          = dplyr::n_distinct(data[[col_dyad]]),
+    n_persons        = n_distinct(data[[col_person]]),
+    n_dyads          = n_distinct(data[[col_dyad]]),
     n_rows           = nrow(data),
     n_cols           = ncol(data),
     problem_dyads    = problem_dyads
-    # id_pattern omitted from return if coercion failed; keep it simple for now
   ))
 }
 
@@ -224,32 +220,66 @@ save_base_plot <- function(plot_code, filename, w=10, h=8) {
   plot_counter <<- plot_counter + 1
 }
 
-check_range <- function(data, group, min_v, max_v, scale_name) {
-  vars_present <- intersect(group, names(data))
-  vars_missing <- setdiff(group, names(data))
-  if(length(vars_present) == 0) {
-    cat(sprintf("ℹ️  Note: No variables found for %s scale.\n", scale_name))
+check_range <- function(data, columns, min_v, max_v, name) {
+  # check which columns exist in the data
+  columns_present <- intersect(columns, names(data))
+  columns_missing <- setdiff(columns, names(data))
+  if(length(columns_present) == 0) {
+    cat(sprintf("ℹ️  Note: No variables found for %s.\n", name))
     return(NULL)
   }
-  # Find values outside range (ignoring NA)
+  # Find values outside range (ignoring NA) for columns/variables that are present
   out_of_bounds <- data %>%
-    select(all_of(col_person), all_of(vars_present)) %>%
-    filter(if_any(all_of(vars_present), ~ . < min_v | . > max_v))
+    select(all_of(col_person), all_of(columns_present)) %>%
+    filter(if_any(all_of(columns_present), ~ . < min_v | . > max_v))
   if(nrow(out_of_bounds) > 0) {
-    cat(sprintf("⚠️  %s: %d rows have values outside range [%d, %d]\n", 
-                scale_name, nrow(out_of_bounds), min_v, max_v))
+    cat(sprintf("⚠️  %s: %d rows have values outside range [%d, %d].\n", 
+                name, nrow(out_of_bounds), min_v, max_v))
+    cat(sprintf("    Printing 10 first:")) 
+    print(head(out_of_bounds, 25))
   } else {
-    if(length(vars_missing) == 0) {
+    if(length(columns_missing) == 0) {
       # Perfect: All items found + All valid
       cat(sprintf("✅ %s: All items found and values within codebook range [%d, %d]\n", 
-                  scale_name, min_v, max_v))
+                  name, min_v, max_v))
     } else {
       # Partial Success: Found items are valid, but some are missing
       cat(sprintf("⚠️ %s: Existing items valid [%d, %d], but %d items missing (%s)\n", 
-                  scale_name, min_v, max_v, length(vars_missing), 
-                  paste(vars_missing, collapse=", ")))
-    }  
+                  name, min_v, max_v, length(columns_missing), 
+                  paste(columns_missing, collapse=", ")))
+    }
   }
+}
+
+check_missingness <- function (data) {
+  # 1. General missingness
+  header(sprintf("General dataset missingness: %.2f%%", pct_miss(data)))
+  cat("Top 10 variables missingness\n")
+  print(miss_var_summary(data) %>% head(10))
+    # 2. Key identifier missingness
+  header("Missing values in key identifiers (PpID, CoupleID):")
+  key_na <- data %>%
+    summarise(
+      across(
+        any_of(c("PpID", "CoupleID", "topic", "timepoint")),
+        ~ sum(is.na(.x)),
+        .names = "na_{.col}"
+      )
+    )
+  print(key_na)
+  if(all(key_na == 0)) {
+    cat("✅ No missing values in key identifiers.\n")
+  } else {
+    cat("⚠️ WARNING: Missing values found in key identifiers.\n")
+  }
+  # 3. Total core (wrt present research) data missingness
+  pct_core <- data %>%
+    select(all_of(vars_core)) %>%
+    pct_miss()
+  header(sprintf("Total core dataset missingness: %.2f%%", pct_core))
+  cat("Top 10 core variables missingness\n")
+  subset_core <- data %>% select(all_of(vars_core))
+  print(miss_var_summary(subset_core) %>% head(10))
 }
 
 get_label <- function(data, col_name) {
@@ -412,9 +442,25 @@ check_mc_consistency(var_pres_oth, "7", "[123456]")
 #    contact_others 7 (Nobody) should be mutually exclusive from 1-6
 check_mc_consistency(var_cont_oth, "7", "[123456]")
 
-## ---- ```` A2. ESM CONDITIONAL ITEM CHECKS -----------------------------------
+## ---- ```` A2. ESM ITEM RANGE CHECKS -----------------------------------------
 ## --------------------------------------------------------------------------- -
-header("A2. ESM: Conditional Item Checks", level = 2)
+header("A2. ESM Item Range Checks", level = 2)
+
+# vars to check
+var_names <- names(vars) 
+for(name in var_names) {
+  # Get the items from the config
+  items <- vars[[name]]
+  # Find the matching limit
+  limit_name <- sub("var_", "limits_", name)
+  limits     <- ranges[[limit_name]]
+  # Run check
+  check_range(esm_data, items, limits[1], limits[2], name)
+}
+
+## ---- ```` A3. ESM CONDITIONAL ITEM CHECKS -----------------------------------
+## --------------------------------------------------------------------------- -
+header("A3. ESM Conditional Item Checks", level = 2)
 
 # 1. Orphaned 'partner_contact' check
 #    'partner_contact' can only have data if 'partner_presence' == 0 (=no)
@@ -464,9 +510,9 @@ is_general_gate_open <- (esm_data[[var_part_pres]] == 0) &
 check_branch_consistency(is_general_gate_open, vars_branch_no_partner, 
                          "'No-partner Branch'")
 
-## ---- ```` A3. ESM SCHEDULE CHECKS -------------------------------------------
+## ---- ```` A4. ESM SCHEDULE CHECKS -------------------------------------------
 ## --------------------------------------------------------------------------- -
-header("A3. ESM: Protocol Schedule Compliance", level = 2)
+header("A4. ESM Protocol Schedule Compliance", level = 2)
 
 # 1. Calculate beeps per day and determine day type
 daily_counts <- esm_data %>% 
@@ -516,25 +562,14 @@ if(nrow(deviants) > 0) {
   cat("\n\n✅ No deviations found. All participants follow the 14-day schedule perfectly.\n")
 }
 
-## ---- ```` A4. ESM MISSINGNESS ANALYSIS --------------------------------------
+## ---- ```` A5. ESM MISSINGNESS ANALYSIS --------------------------------------
 ## --------------------------------------------------------------------------- -
-header("A4. ESM: Missingness", level = 2)
+header("A5. ESM Missingness", level = 2)
 
-# 1. General missingness
-header(sprintf("General dataset missingness:\n %.2f%%", pct_miss(esm_data)))
-header("Top 10 general variables missingness")
-print(miss_var_summary(esm_data) %>% head(10))
+# 1. Generaland core (wrt present research) missingness
+check_missingness(esm_data)
 
-# 2. Total core (wrt present research) data missingness
-pct_core <- esm_data %>%
-  select(all_of(vars_core)) %>%
-  pct_miss()
-header(sprintf("Total core dataset missingness:\n %.2f%%", pct_core))
-header("Top 10 core variables missingness")
-subset_core <- esm_data %>% select(all_of(vars_core))
-print(miss_var_summary(subset_core) %>% head(10))
-
-# 3. Beep completion
+# 2. Beep completion
 header("Beep completion stats")
 completion_stats <- esm_data %>%
   summarise(
@@ -547,16 +582,16 @@ print(completion_stats)
 header(sprintf("Percentage of started beeps that were NOT completed:\n %.2f%%", 
             (completion_stats$Started_But_Incomplete / completion_stats$Started) * 100))
 
-# 4. Missingness Map (saved as plot)
+# 3. Missingness Map (saved as plot)
 header("Missingness Heatmap")
 plot_miss <- naniar::vis_miss(esm_data, warn_large_data = FALSE) +
   theme(axis.text.x = element_text(angle = 90)) +
   labs(title = "Missingness Map (Black = Missing)")
 save_plot(plot_miss, "ESM_missingness_map.png")
 
-## ---- ```` A5. ESM COMPLIANCE ANALYSIS ---------------------------------------
+## ---- ```` A6. ESM COMPLIANCE ANALYSIS ---------------------------------------
 ## --------------------------------------------------------------------------- -
-header("A5. ESM: Compliance Analysis", level = 2)
+header("A6. ESM Compliance Analysis", level = 2)
 
 # 1. Calculate Compliance per Person (as Percentage 0-100)
 person_compliance <- esm_data %>%
@@ -712,9 +747,9 @@ plot_fatigue_avg <- plot_data %>%
 
 save_plot(plot_fatigue_avg, "ESM_fatigue_map.png")
 
-## ---- ```` A6. ESM PARTNER BEEP SYNCHRONIZATION ------------------------------
+## ---- ```` A7. ESM PARTNER BEEP SYNCHRONIZATION ------------------------------
 ## --------------------------------------------------------------------------- -
-header("A6. ESM: Dyadic Beep Synchronization", level = 2)
+header("A7. ESM Dyadic Beep Synchronization", level = 2)
 
 # 1. Create Dyadic Dataset (Self vs Partner) for timestamps
 p1 <- esm_data %>% 
@@ -776,14 +811,17 @@ header("B. Background Questionnaires Data Checks", level = 1)
 load_config("BG")
 validate_config("BG", bg_data)
 
-## ---- ```` B1. BG STRUCTURAL CHECKS-------------------------------------------
+## ---- ```` B1. BG STRUCTURAL CHECKS ------------------------------------------
 ## --------------------------------------------------------------------------- -
-header("B1. BG Structural Checks", level = 2)
+header("B1. BG Dataset Overview & Structure", level = 2)
 
-# 1. Basic structure and dyad integrity
+# Basic structure and dyad integrity
 check_basic_structure(bg_data, "BG")
 
-# 2. Scale Range Checks
+## ---- ```` B2. BG ITEM RANGE CHECKS ------------------------------------------
+## --------------------------------------------------------------------------- -
+header("B2. BG Item Range Checks", level = 2)
+
 scale_names <- names(scales)
 for(name in scale_names) {
   # Get the items from the config
@@ -795,9 +833,16 @@ for(name in scale_names) {
   check_range(bg_data, items, limits[1], limits[2], name)
 }
 
-## ---- ```` B2. BG DESCRIPTIVES (DEMOGRAPHICS) -------------------------------
+## ---- ```` B3. BG MISSINGNESS ------------------------------------------------
 ## --------------------------------------------------------------------------- -
-header("B2. BG Descriptive statistics (demographics)", level = 2)
+header("B3. BG Missingness")
+
+# 1. General and core (wrt the present research) missingness
+check_missingness(bg_data)
+
+## ---- ```` B4. BG DESCRIPTIVES (DEMOGRAPHICS) -------------------------------
+## --------------------------------------------------------------------------- -
+header("B4. BG Descriptive statistics (demographics)", level = 2)
 
 # 1. AGE (numeric)
 header("Age (years)")
@@ -879,9 +924,9 @@ print(freq_table(df_temp, "val"))
 save_plot(plot_bar_categorical(df_temp, "val", "BG: Medication", "Medication Status"),
           "BG_medication_bar.png", w = 8, h = 5)
 
-## ---- ```` B3. DCI DETAILED ANALYSIS (TOTAL & WE-NESS) -----------------------
+## ---- ```` B5. DCI DETAILED ANALYSIS (TOTAL & WE-NESS) -----------------------
 ## --------------------------------------------------------------------------- -
-header("B3. DCI: Total Score, Reliability, & We-ness")
+header("B5. BG: DCI Total Score, Reliability, & We-ness")
 
 # 1. DEFINE ITEMS & SUBSCALES
 
@@ -1064,7 +1109,7 @@ header("C. VMR Data Checks", level = 1)
 load_config("VMR")
 validate_config("VMR", vmr_data)
 
-## ---- ```` C1. VMR DATASET OVERVIEW & STRUCTURE ------------------------------
+## ---- ```` C1. VMR STRUCTURAL CHECKS -----------------------------------------
 ## --------------------------------------------------------------------------- -
 header("C1. VMR Dataset Overview & Structure", level = 2)
 
@@ -1114,7 +1159,7 @@ if(nrow(incomplete_pt) == 0) {
   print(incomplete_pt)
 }
 
-# Check: per participant, total rows should typically be 32 (2 topics x 16 segments)
+# 4. Per participant, total rows should typically be 32 (2 topics x 16 segments)
 rows_per_person <- vmr_data %>%
   count(.data[[col_person]], name = "n_rows") %>%
   arrange(n_rows)
@@ -1131,7 +1176,7 @@ if(all(rows_per_person$n_rows == 2 * expected_segments_per_topic)) {
   print(head(rows_per_person %>% filter(!n_rows %in% c(16, 32)), 20))
 }
 
-# Additional check: segment should run 1..16 for each (PpID x topic)
+# 5. Segment should run 1..16 for each (PpID x topic)
 header("Check: segment range and coverage (expected 1..16 per PpID x topic)")
 tp_range <- vmr_data %>%
   group_by(.data[[col_person]], .data[[col_topic]]) %>%
@@ -1151,7 +1196,7 @@ if(nrow(tp_bad) == 0) {
   print(tp_bad)
 }
 
-# 4. Participant and dyad number relation checks
+# 6. Participant and dyad number relation checks
 header("Participant and couple ID relation checks")
 print(summary(vmr_data[[col_person]]))
 print(summary(vmr_data[[col_dyad]]))
@@ -1182,7 +1227,7 @@ if(n_mismatch == 0) {
   print(head(vmr_id_logic %>% filter(!matches_expected), 10))
 }
 
-# 5. VMR duplicate (PpID x topic x segment) combination
+# 7. VMR duplicate (PpID x topic x segment) combination
 header("VMR Duplicate Key Checks")
 
 dup_keys <- vmr_data %>%
@@ -1199,7 +1244,7 @@ if(nrow(dup_keys) == 0) {
   print(head(dup_keys, 10))
 }
 
-# 6. 2 persons expected in each (CoupleID x topic x segment) combination
+# 8. 2 persons expected in each (CoupleID x topic x segment) combination
 header("VMR: 2 rows per CoupleID x topic x segment?")
 
 pair_check <- vmr_data %>%
@@ -1218,128 +1263,73 @@ if(nrow(pair_check) == 0) {
   print(head(pair_check, 10))
 }
 
-# 7. VMR Range Checks
-header("VMR: Range Checks (0–100 sliders; -3..3 agency/communion)")
+# 9. Row coverage table to spot holes in the segment grid across topics
+header("Coverage table: number of rows per (topic x timepoint)")
 
-out_of_range <- tibble()
-
-for (var_key in names(vars)) {
-  var_name <- vars[[var_key]]                  # e.g., "neg_aff_own"
-  lim_key  <- sub("^var_", "limits_", var_key) # e.g., "limits_NA_own"
-  limits   <- ranges[[lim_key]]                # e.g., c(0, 100)
-  
-  lower <- min(limits)
-  upper <- max(limits)
-  
-  tmp <- vmr_data %>%
-    select(all_of(col_dyad), all_of(col_person), value = all_of(var_name)) %>%
-    mutate(value_num = suppressWarnings(as.numeric(value))) %>%
-    filter(!is.na(value_num) & (value_num < lower | value_num > upper)) %>%
-    mutate(
-      var_key  = var_key,
-      var_name = var_name,
-      lower    = lower,
-      upper    = upper,
-      value    = value_num
-    ) %>%
-    select(all_of(col_dyad), all_of(col_person), var_key, var_name, value, lower, upper)
-  
-  out_of_range <- bind_rows(out_of_range, tmp)
-}
-
-if (nrow(out_of_range) == 0) {
-  cat("✅ VMR: All checked variables fall within their specified ranges.\n")
-} else {
-  cat(sprintf("⚠️ WARNING: VMR: %d out-of-range values detected (showing first 25 rows).\n",
-              nrow(out_of_range)))
-  print(head(out_of_range, 25))
-  
-  cat("\nSummary (out-of-range counts per variable):\n")
-  out_of_range %>%
-    count(var_key, var_name, lower, upper, name = "n_out_of_range") %>%
-    arrange(desc(n_out_of_range)) %>%
-    print()
-}
-
-
-
-## ---- ```` C7. VMR MISSINGNESS -----------------------------------------------
-## --------------------------------------------------------------------------- -
-header("C7. VMR: Missingness")
-
-cat(sprintf("\nGeneral dataset missingness: %.2f%%\n", pct_miss(vmr_data)))
-cat("\nTop 10 variables missingness\n")
-print(miss_var_summary(vmr_data) %>% head(10))
-
-# Hard check: any NA in core identifiers?
-cat("\nCheck: Missing values in key identifiers (PpID, CoupleID, topic, timepoint):\n")
-key_na <- vmr_data %>%
-  summarise(
-    na_PpID     = sum(is.na(PpID)),
-    na_CoupleID = sum(is.na(CoupleID)),
-    na_topic    = sum(is.na(topic)),
-    na_timepoint= sum(is.na(timepoint))
-  )
-print(key_na)
-
-if(all(key_na == 0)) {
-  cat("✅ VMR: No missing values in key identifiers.\n")
-} else {
-  cat("⚠️ WARNING: Missing values found in key identifiers.\n")
-}
-
-## ---- ```` C8. VMR DURATION CHECKS -------------------------------------------
-## --------------------------------------------------------------------------- -
-header("C8. VMR: Completion Duration Checks (if available)")
-
-if("duration_minutes" %in% names(vmr_data)) {
-  cat("\nSummary of VMR completion duration (minutes):\n")
-  summary(vmr_data$duration_minutes) %>% print()
-  
-  # One duration per participant x topic expected (duration repeated across 16 segments)
-  duration_unique <- vmr_data %>%
-    distinct(PpID, topic, duration_minutes)
-  
-  cat("\nCheck: number of unique durations per (PpID x topic) should be 1:\n")
-  duration_mult <- duration_unique %>%
-    count(PpID, topic, name = "n_durations") %>%
-    filter(n_durations != 1)
-  
-  if(nrow(duration_mult) == 0) {
-    cat("✅ VMR: duration_minutes is constant within each (PpID x topic).\n")
-  } else {
-    cat(sprintf("⚠️ WARNING: duration_minutes varies within some (PpID x topic) (showing first 20):\n"))
-    print(head(duration_mult, 20))
-  }
-  
-  # Sanity bounds (very conservative): should be >0, and not extremely large
-  cat("\nCheck: Implausible durations (<=0 or >60 minutes):\n")
-  dur_bad <- duration_unique %>%
-    filter(duration_minutes <= 0 | duration_minutes > 60)
-  
-  if(nrow(dur_bad) == 0) {
-    cat("✅ VMR: No implausible duration values found.\n")
-  } else {
-    cat(sprintf("⚠️ WARNING: %d (PpID x topic) have implausible durations (showing first 20):\n",
-                nrow(dur_bad)))
-    print(head(dur_bad, 20))
-  }
-  
-} else {
-  cat("ℹ️  Note: duration_minutes not found in vmr_data; skipping duration checks.\n")
-}
-
-## ---- ```` C10. VMR OPTIONAL: QUICK DESCRIPTIVES (TOPIC x TIMEPOINT) ---------
-## --------------------------------------------------------------------------- -
-header("C10. VMR: Quick Descriptives (Row coverage by topic x timepoint)")
-
-# Useful to spot holes in the segment grid across topics
 grid_check <- vmr_data %>%
-  count(topic, timepoint, name = "n_rows") %>%
-  arrange(topic, timepoint)
+  count(.data[[col_topic]], .data[[col_segment]], name = "n_rows") %>%
+  arrange(.data[[col_topic]], .data[[col_segment]])
 
-cat("\nCoverage table: number of rows per (topic x timepoint):\n")
 print(grid_check, n = Inf)
+
+## ---- ```` C2. VMR RANGE CHECKS ----------------------------------------------
+## --------------------------------------------------------------------------- -
+header("C2. VMR Range Checks (0–100 sliders; -3..3 agency/communion)", level = 2)
+
+# vars to check
+var_names <- names(vars) 
+for(name in var_names) {
+  # Get the items from the config
+  items <- vars[[name]]
+  # Find the matching limit
+  limit_name <- sub("var_", "limits_", name)
+  limits     <- ranges[[limit_name]]
+  # Run check
+  check_range(vmr_data, items, limits[1], limits[2], name)
+}
+
+## ---- ```` C3. VMR MISSINGNESS -----------------------------------------------
+## --------------------------------------------------------------------------- -
+header("C3. VMR Missingness", level = 2)
+
+# 1. General and core (wrt the present research) missingness
+check_missingness(vmr_data)
+
+## ---- ```` C4. VMR DURATION CHECKS -------------------------------------------
+## --------------------------------------------------------------------------- -
+header("C4. VMR Completion Duration Checks", level = 2)
+
+header("Summary of VMR completion duration (minutes)")
+summary(vmr_data[[col_duration]]) %>% print()
+
+# One duration per participant x topic expected (duration repeated across 16 segments)
+duration_unique <- vmr_data %>%
+  distinct(.data[[col_person]], .data[[col_topic]], .data[[col_duration]])
+
+header("Number of unique durations per (PpID x topic) should be 1")
+duration_mult <- duration_unique %>%
+  count(.data[[col_person]], .data[[col_topic]], name = "n_durations") %>%
+  filter(n_durations != 1)
+
+if(nrow(duration_mult) == 0) {
+  cat("✅ VMR: duration_minutes is constant within each (PpID x topic).\n")
+} else {
+  cat(sprintf("⚠️ WARNING: duration_minutes varies within some (PpID x topic) (showing first 20):\n"))
+  print(head(duration_mult, 20))
+}
+
+# Sanity bounds (conservative): should be >0, and not extremely large
+header("Implausible durations (<=0 or >60 minutes)?")
+dur_bad <- duration_unique %>%
+  filter(.data[[col_duration]] <= 0 | .data[[col_duration]] > 60)
+
+if(nrow(dur_bad) == 0) {
+  cat("✅ VMR: No implausible duration values found.\n")
+} else {
+  cat(sprintf("⚠️ WARNING: %d (PpID x topic) have implausible durations (showing first 20):\n",
+              nrow(dur_bad)))
+  print(head(dur_bad, 20))
+}
 
 ## ---- ```` VMR CLEANUP -------------------------------------------------------
 ## --------------------------------------------------------------------------- -
@@ -1356,12 +1346,35 @@ header("D. Post Interaction Questionnaire Data Checks", level = 1)
 load_config("POST")
 validate_config("POST", post_data)
 
-## ---- ```` D1. POST DATASET OVERVIEW & STRUCTURE ------------------------------
+## ---- ```` D1. POST STRUCTURAL CHECKS ----------------------------------------
 ## --------------------------------------------------------------------------- -
 header("D1. POST Dataset Overview & Structure", level = 2)
 
-# 1. Basic structure and dyad integrity
+# Basic structure and dyad integrity
 check_basic_structure(post_data, "POST")
+
+## ---- ```` D2. POST ITEM RANGE CHECKS ----------------------------------------
+## --------------------------------------------------------------------------- -
+header("D2. POST Item Range Checks", level = 2)
+
+# vars to check
+var_names <- names(vars) 
+for(name in var_names) {
+  # Get the items from the config
+  items <- vars[[name]]
+  # Find the matching limit
+  limit_name <- sub("var_", "limits_", name)
+  limits     <- ranges[[limit_name]]
+  # Run check
+  check_range(post_data, items, limits[1], limits[2], name)
+}
+
+## ---- ```` D3. POST MISSINGNESS -----------------------------------------------
+## --------------------------------------------------------------------------- -
+header("D3. POST Missingness")
+
+# 1. General and core (wrt present research) missingness
+check_missingness(post_data)
 
 ## ---- ```` POST CLEANUP -------------------------------------------------------
 ## --------------------------------------------------------------------------- -
