@@ -6,8 +6,8 @@
 #
 # Usage:
 #   Source this file to load paths:  source(here::here("R", "01_paths.R"))
-#   Sourcing is included in R/00_setup.R together with R/02_packages.R and
-#   R/03_data_config.R
+#   Sourcing is included in R/00_setup.R together with R/02_packages.R,
+#   R/03_data_config.R and R/04_functions.R
 #
 # Notes:
 #   - This file reads and validates the raw data path provided by the user

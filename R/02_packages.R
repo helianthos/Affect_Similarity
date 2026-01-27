@@ -11,8 +11,8 @@
 #
 # Usage:
 #   Source this file to load all packages:  source(here::here("R", "02_packages.R"))
-#   Sourcing is included in R/00_setup.R together with R/01_paths.R 
-#   and R/03_data_config.R
+#   Sourcing is included in R/00_setup.R together with R/01_paths.R, 
+#   R/03_data_config.R, and R/04_functions.R
 #
 # Reproducibility:
 #   - Required package versions are recorded in renv.lock.

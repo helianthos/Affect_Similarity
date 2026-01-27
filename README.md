@@ -18,7 +18,7 @@ Open Science Framework (OSF):\
 geert.vandingenen\@student.kuleuven.be
 
 **Last updated:**\
-2026-01-22
+2026-01-27
 
 ## Project overview
 
@@ -117,18 +117,22 @@ project/
 │
 ├── R/
 │   ├── 00_setup.R
-│   │   └── Setup script to load libraries and define all file paths
-│   │       (uses 01_paths.R and 02_packages.R)
+│   │   └── Setup script to load libraries, define file paths, load dataset
+│   │       structures and user defined functions
+│   │       (uses 01_paths, 02_packages.R, 03_data_config.R, and 04_functions.R)
 │   │
 │   ├── 01_paths.R
-│   │   └── Defines file paths used across scripts. Machine-specific raw data path is
-│   │       read from config/local_raw_data_path.R
+│   │   └── Defines file paths used across scripts. Machine-specific raw data path
+│   │       is read from config/local_raw_data_path.R
 │   │
 │   ├── 02_packages.R
 │   │   └── Loads all libraries required by the project
 │   │       (no installation; assumes renv::restore() has been run)
 │   │
-│   └── 03_functions.R
+│   ├── 03_data_config.R
+│   │   └── Central dataset structure/variable mappings for the 4 imported datasets
+│   │
+│   └── 04_functions.R
 │       └── User-defined helper functions reused across scripts and analyses
 │           (e.g., checks, transformations, similarity computations)
 │

@@ -13,7 +13,10 @@
 
 # Usage:
 # Run source("R/02_structure_checks.R") to see the report without code echoing.
-# Assumes data is located in dir_data, afer running 01_data_import.R at least once
+# Sourcing is included in R/00_setup.R together with R/01_paths.R, 
+# R/02_packages.R, and R/04_functions.R
+#
+# Assumes data is located in dir_data, after running 01_data_import.R at least once
 #       * data/imported/esm_raw.rds
 #       * data/imported/esm_bg.rds
 #       * data/imported/esm_vmr.rds
