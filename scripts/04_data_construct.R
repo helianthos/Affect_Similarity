@@ -53,8 +53,7 @@ cat("============================================================\n")
 ## ########################################################################### #
 header("A. ESM Data", level = 1)
 
-# Center variables
-
+# 1. Add centered variables
 esm_data <- esm_data %>%
   group_by(person) %>%   # person mean centering
   mutate(
@@ -65,12 +64,35 @@ esm_data <- esm_data %>%
     clove         = love - mean(love, na.rm = TRUE),
     cperc_resp         = perc_resp - mean(perc_resp, na.rm = TRUE)
   )
-  
+
+# 2. Add actual affect data from partner to participant line
 esm_data <- esm_data %>%
   mutate(partner_id = ifelse(person < 700, person + 700, person -700)) %>%
   left_join(
-    esm_data %>% select(person, dyad, beep, cNA_part_act = cNA_own, cPA_partn_act = cPA_own),
+    esm_data %>% select(person, dyad, beep, cNA_part_act = cNA_own, cPA_part_act = cPA_own),
     by = c("dyad", "beep", "partner_id" = "person")
+  )
+
+# 3. Add mean affect elevation and affect distance columns
+esm_data <- esm_data %>%
+  mutate(
+    PA_elevation_act  = (cPA_own + cPA_part_act)/2,
+    PA_elevation_perc = (cPA_own + cPA_part_perc)/2,
+    PA_distance_act   = abs(cPA_own - cPA_part_act),
+    PA_distance_perc  = abs(cPA_own - cPA_part_perc),
+    NA_elevation_act  = (cNA_own + cNA_part_act)/2,
+    NA_elevation_perc = (cNA_own + cNA_part_perc)/2,
+    NA_distance_act   = abs(cNA_own - cNA_part_act),
+    NA_distance_perc  = abs(cNA_own - cNA_part_perc)
+  )
+
+# 4. Add actual and perceived similarity columns
+esm_data <- esm_data %>%
+  mutate(
+    PA_similarity_act  = PA_elevation_act - PA_distance_act,
+    PA_similarity_perc = PA_elevation_perc - PA_distance_perc,
+    NA_similarity_act  = NA_elevation_act - NA_distance_act,
+    NA_similarity_perc = NA_elevation_perc - NA_distance_perc
   )
 
 ## ########################################################################### #

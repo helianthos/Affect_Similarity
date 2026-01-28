@@ -8,7 +8,7 @@ renv_workflow.md documents how packages in this project are managed using renv.
 
 -   `install.packages()` installs into the project library
 
--   `renv::snapshot()` updates renv.lock (commit this file)
+-   `renv::snapshot()` updates renv.lock 
 
 -   `renv::restore()` installs the locked versions on a new machine
 
