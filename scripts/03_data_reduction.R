@@ -2,25 +2,26 @@
 # 03_data_reduction.R
 #
 # Purpose:
-#   Selection of variables to be used for analysis and renaming columns to uniform names,
+#   Selection of variables to be used for analysis and renaming columns to uniform names
+#   Correction for errors found during data checks (running scripts/02_data_checks.R)
 #
 # Usage:
-#   Run source("R/03_reduce_data.R") to generate execution report, saved in outputs/logs.
+#   Run source("R/03_data_reduction.R") to generate execution report, saved in outputs/logs.
 # 
 # Input:
 #   Assumes imported data is located in data/imported (in variable dir_data_imp),
 #   afer running 01_data_import.R at least once
 #       * data/imported/esm_raw.rds
-#       * data/imported/esm_bg.rds
-#       * data/imported/esm_vmr.rds
-#       * data/imported/esm_post.rds
+#       * data/imported/bg_raw.rds
+#       * data/imported/vmr_raw.rds
+#       * data/imported/post_raw.rds
 # 
 # Output:
 #   log file and reduced datasets
-#       * data/reduced/esm_reduced.rds
-#       * data/reduced/bg_reduced.rds
-#       * data/reduced/vmr_reduced.rds
-#       * data/reduced/post_reduced.rds       
+#       * data/reduced/esm_red.rds
+#       * data/reduced/bg_red.rds
+#       * data/reduced/vmr_red.rds
+#       * data/reduced/post_red.rds       
 #   Assumes that the output directories exist (e.g., via git clone)
 #   If not, these will as fallback be created during 00_setup.R
 #       * data/reduced (in dir_data_red)
@@ -35,16 +36,10 @@
 # 1. Load packages, paths and data configurations
 source(here::here("R", "00_setup.R"))
 
-# 2. Load datasets
-
-
-vmr_data <- readRDS(file.path(dir_data_imp, "vmr_raw.rds"))
-post_data <- readRDS(file.path(dir_data_imp, "post_raw.rds"))
-
-# 3. Parameters
+# 2. Parameters
 log_file  = file.path(dir_logs, "03_data_reduction_log.txt")
 
-# 4. Start logging
+# 3. Start logging
 sink(file=log_file, append = FALSE, split = TRUE) # for cat and print
 cat("============================================================\n")
 cat("03_data_reduction.R log\n")
@@ -83,6 +78,7 @@ esm_map <- c(
 
 # select and rename
 esm_data <- select_and_rename(esm_data, esm_map)
+
   
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -
@@ -91,7 +87,6 @@ cat(sprintf("✅ ESM data reduced to columns of interest and saved to %s\n∑",
             file.path(dir_data_red, "esm_red.rds")))
 clean_config("ESM") # Remove ESM-specific configuration variables
 
-  
 ## ########################################################################### #
 ## ---- B. BG DATA -------------------------------------------------------------
 ## ########################################################################### #
@@ -114,6 +109,14 @@ bg_map <- c(
 
 # select and rename
 bg_data <- select_and_rename(bg_data, bg_map)
+
+## ---- ```` Correct  ----------------------------------------------------------
+## --------------------------------------------------------------------------- -
+
+# dyad 59 had one partner delete and reinstall mpath so for the ESM data it was not
+# clear which answers belonged to which participant and they were therefore excluded
+# from ESM. They did not participate to lab sessions either, so also delete them from background data BG.
+bg_data <- bg_data %>% filter(dyad != 59)
 
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -
@@ -151,6 +154,15 @@ vmr_map <- c(
 # select and rename
 vmr_data <- select_and_rename(vmr_data, vmr_map)
 
+## ---- ```` Correct  ----------------------------------------------------------
+## --------------------------------------------------------------------------- -
+
+# correct CoupleID numbers higher than 700 (reduce them by 1400)
+vmr_data <- vmr_data %>% mutate(dyad = ifelse(dyad < 700, dyad, dyad - 1400))
+
+# exclude couple 2 since this was a test couple that should have been removed in preprocesing
+vmr_data <- vmr_data %>% filter(dyad != 2)
+
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -
 saveRDS(vmr_data, file.path(dir_data_red, "vmr_red.rds"))
@@ -184,12 +196,28 @@ post_map <- c(
 # select and rename
 post_data <- select_and_rename(post_data, post_map)
 
+## ---- ```` Correct  ----------------------------------------------------------
+## --------------------------------------------------------------------------- -
+
+# exclude couple 2 since this was a test couple that should have been removed in preprocessing
+post_data <- post_data %>% filter(dyad != 2)
+
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -
 saveRDS(post_data, file.path(dir_data_red, "post_red.rds"))
 cat(sprintf("✅ POST data reduced to columns of interest and saved to %s\n", 
             file.path(dir_data_red, "post_red.rds")))
 clean_config("POST") # Remove POST-specific configuration variables
+
+## ########################################################################### #
+## ---- E. CHECKS ------------------------------------------------------------
+## ########################################################################### #
+header("E. Cross dataset checks after reduction", level = 1)
+
+check_data_participant_overlap(esm_data$person, bg_data$person, "ESM", "BG")
+check_data_participant_overlap(vmr_data$person, post_data$person, "VMR", "POST")
+check_data_participant_overlap(esm_data$person, vmr_data$person, "ESM", "VMR")
+check_data_participant_overlap(vmr_data$person, bg_data$person, "VMR", "BG")
 
 ## ########################################################################### #
 # ---- END ---------------------------------------------------------------------

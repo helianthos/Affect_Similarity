@@ -68,7 +68,7 @@ clean_config <- function(config) {
   # 5. Remove them from GlobalEnv
   if(length(vars_to_remove) > 0) {
     rm(list = vars_to_remove, envir = .GlobalEnv)
-    cat(sprintf("🧹 %s vars removed from Global Env.\n", config))
+    cat(sprintf("\n🧹 %s vars removed from Global Env.\n", config))
   } 
 }
 
@@ -358,4 +358,21 @@ select_and_rename <- function (data, map) {
     select(all_of(old)) %>%    # keep only mapped columns
     setNames(new)                # rename old -> new
   return(data)
+}
+
+plot_trajectory <- function(data, variable, person_ids) {
+    # 1. Filter data for the specific people
+  plot_data <- data %>%
+    filter(person %in% person_ids)
+    # 2. Create the plot
+  ggplot(plot_data, aes(x = beep, y = .data[[variable]], color = as.factor(person))) +
+    geom_line(na.rm = TRUE) +
+    geom_point(na.rm = TRUE) +
+    theme_minimal() +
+    labs(
+      title = sprintf("Trajectory of %s in %s", variable, deparse(substitute(data))),
+      y = variable,
+      x = "Beep Number",
+      color = "Person ID"
+    )
 }

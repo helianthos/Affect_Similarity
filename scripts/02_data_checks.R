@@ -102,11 +102,12 @@ beep_counts <- esm_data %>%
 # 4. Check total beeps
 outliers <- beeps_per_person %>% filter(n_beeps != expected_beeps)
 
+header("Beep Counts")
 if(nrow(outliers) > 0) {
-  cat("\n\nBeep Count Anomalies (Expected", expected_beeps,")\n")
+  cat("Beep Count Anomalies (Expected", expected_beeps,")\n")
   print(head(outliers, 10))
 } else {
-  cat("\n\n✅ Total Beep Check: All participants have exactly" , expected_beeps, "beeps.\n")
+  cat("✅ Total Beep Check: All participants have exactly" , expected_beeps, "beeps.\n")
 }
 
 # 5. Check for duplicate beep numbers within persons
@@ -269,7 +270,7 @@ schedule_compliance <- daily_counts %>%
 
 # 3. Aggregated Summary (Pattern-based)
 header("Schedule Adherence Patterns")
-cat("Expected: 10 valid weekdays + 4 valid weekend days (0 invalid, 14 total)\n\n")
+cat("Expected: 10 valid weekdays + 4 valid weekend days (0 invalid, 14 total)\n")
 
 schedule_patterns <- schedule_compliance %>%
   count(n_valid_weekdays, n_valid_weekends, n_invalid_days, total_days, name = "n_participants") %>%
@@ -286,7 +287,7 @@ deviants <- schedule_compliance %>%
 
 if(nrow(deviants) > 0) {
   cat("\n\n⚠️  Participants with Schedule Deviations\n")
-  cat("Listing PpIDs with Invalid Days != 0 OR Total Days != 14:\n\n")
+  cat("Listing PpIDs with Invalid Days != 0 OR Total Days != 14:\n  ")
   print(deviants, n = Inf) 
 } else {
   cat("\n\n✅ No deviations found. All participants follow the 14-day schedule perfectly.\n")
