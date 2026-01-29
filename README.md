@@ -18,7 +18,7 @@ Open Science Framework (OSF):\
 geert.vandingenen\@student.kuleuven.be
 
 **Last updated:**\
-2026-01-27
+2026-01-29
 
 ## Project overview
 
@@ -44,7 +44,7 @@ You can either:
 
 #### *2. Open the project*
 
-Open the RStudio project file `Internship.Rproj`.
+Open the RStudio project file `Affect_Similarity.Rproj`.
 
 This will automatically activate the project-specific R environment via **renv** by auto-running .Rprofile.
 
@@ -64,17 +64,35 @@ Raw data files are **not included** in this repository. Request the raw CSV fi
 
 The project will read raw data from `RAW_DATA_DIR`.
 
-#### *5. Import raw data in R*
+#### *5. Data processing*
 
-Run the import script to generate analysis-ready datasets: `source("scripts/01_data_import.R")`
+In the `scripts/` folder, there are 4 R scripts to go from the raw csv datafiles to processed R datasets that are ready for analysis:
 
-Imported data files will be written to `data/imported/`.
+1.  `scripts/01_data_import.R`
 
-These files are generated locally and are not tracked by git.
+    Imported data files will be written to `data/imported/`.
 
-#### *6. Run analyses*
+2.  `scripts/02_data_checks.R`
 
-Analyses and reports are implemented in the `analysis/` folder using R Markdown files (e.g., `01_descriptives.Rmd`, `02_models.Rmd`).
+    Performing various checks on the imported data.
+
+3.  `scripts/03_data_reduction.R`
+
+    Reducing datasets to variables of interest for the present research. Correcting data with documentation of why. Reduced and corrected datasets will be written to `data/reduced/`.
+
+4.  `scripts/04_data_construct.R`
+
+    Datasets will be extended with centered variables, similarity measures (actual and perceived), and the "we-ness" construct. Analysis ready datasets will be written to `data/analysis`.
+
+These scripts should be run (for example using `source("scripts/xyz.R")`) to in that order to generate the datasets for analysis. For every script, a log file will be generated in `outputs/logs`.
+
+#### *6. Analyses*
+
+Descriptives and analyses can be found in the `/scripts` folder, as quarto .qmd files. These files can be rendered and html reports will be saved to `outputs/scripts/`:
+
+1.  05_descriptives.qmd
+
+2.  ...
 
 Confirmatory analyses follow the preregistered analysis plan. Any exploratory analyses are explicitly labeled as such.
 
@@ -90,7 +108,7 @@ project/
 │   └── Documentation of the renv workflow
 │       (for info, project management information)
 │
-├── project.Rproj
+├── Affect_Similarity.Rproj
 │   └── RStudio project file
 │
 ├── .gitignore
@@ -101,6 +119,15 @@ project/
 │
 ├── .Rprofile
 │   └── Automatically activates renv when the project is opened
+│
+├── _quarto.yml
+│   └── Global project-wide quarto report settings 
+│
+├── references.bib
+│   └── Citation data for the rendered Quarto reports 
+│
+├── apa.csl
+│   └── Citation style for the rendered Quarto reports (APA 7)
 │
 ├── config/
 │   ├── local_raw_data_path_TEMPLATE.R
@@ -138,23 +165,19 @@ project/
 │
 ├── scripts/
 │   ├── 01_data_import.R
-│   │   └── Reads raw CSV files and saves derived .rds files
+│   │   └── Reads raw CSV files and saves imported .rds files
 │   │
 │   ├── 02_data_checks.R
 │   │   └── Checks on the imported .rds files
 │   │
 │   ├── 03_data_reduction.R
-│   │   └── reduce data to variables of interest for the present research
+│   │   └── data correction and reduction to variables of interest
 │   │
-│   └── 04_data_construct.R
-│       └── Constructs scales, similarity indices
-│
-├── analysis/
-│   ├── 01_descriptives.Rmd
-│   │   └── Descriptive statistics and exploratory plots
+│   ├── 04_data_construct.R
+│   │   └── Constructs scales, similarity indices
 │   │
-│   └── 02_models.Rmd
-│       └── Main preregistered statistical models and reporting
+│   └── 05_descriptives.qmd
+│       └── Descriptive analyses (demographics, correlations,...)
 │
 ├── data/          (folder .gitkeep but contents generated locally)
 │   ├── imported/
@@ -167,10 +190,15 @@ project/
 │       └── .gitkeep
 │           └── Placeholder so the folder exists after cloning
 │               (contents are regenerated locally and ignored by Git)
+│
 └── outputs/       (folder .gitkeep but contents generated locally)
     ├── plots/
     │   └── Saved plots
-    └── logs/
-        └── Saved log outputs
+    │
+    ├── logs/
+    │   └── Saved log outputs
+    │     
+    └── scripts/
+        └── Rendered quarto html reports
         
 ```

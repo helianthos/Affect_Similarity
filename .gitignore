@@ -26,3 +26,9 @@ outputs/plots/*
 !outputs/plots/.gitkeep
 outputs/logs/*
 !outputs/logs/.gitkeep
+outputs/scripts/*
+!outputs/scripts/.gitkeep
+
+# Quarto cache
+/.quarto/
+**/*.quarto_ipynb

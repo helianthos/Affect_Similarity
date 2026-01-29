@@ -1,0 +1,27 @@
+project:
+  title: "Affect Similarity Project"
+  type: default
+  output-dir: outputs
+author: "Geert Van Dingenen"
+
+# APA references and bibliography
+bibliography: references.bib
+csl: apa.csl
+
+# GLOBAL SETTINGS
+date: last-modified
+format:
+  html:
+    theme: cosmo          
+    toc: true             
+    toc-location: left    
+    toc-depth: 3          
+    number-sections: true 
+    code-fold: true       
+    code-tools: true      
+    df-print: paged       
+    embed-resources: true  # contain all into one html file
+editor: visual
+execute:
+  warning: false
+  message: false

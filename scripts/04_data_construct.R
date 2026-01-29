@@ -32,7 +32,7 @@
 source(here::here("R", "00_setup.R"))
 
 # 2. Load datasets
-esm_data <- readRDS(file.path(dir_data_red, "esm_red.rds"))
+
 bg_data <- readRDS(file.path(dir_data_red, "bg_red.rds"))
 vmr_data <- readRDS(file.path(dir_data_red, "vmr_red.rds"))
 post_data <- readRDS(file.path(dir_data_red, "post_red.rds"))
@@ -53,7 +53,10 @@ cat("============================================================\n")
 ## ########################################################################### #
 header("A. ESM Data", level = 1)
 
-# 1. Add centered variables
+# 1. Load data ----
+esm_data <- readRDS(file.path(dir_data_red, "esm_red.rds"))
+
+# 2. Centering ----
 esm_data <- esm_data %>%
   group_by(person) %>%   # person mean centering
   mutate(
@@ -65,7 +68,7 @@ esm_data <- esm_data %>%
     cperc_resp         = perc_resp - mean(perc_resp, na.rm = TRUE)
   )
 
-# 2. Add actual affect data from partner to participant line
+# 3. Partner actual affect ----
 esm_data <- esm_data %>%
   mutate(partner_id = ifelse(person < 700, person + 700, person -700)) %>%
   left_join(
@@ -73,7 +76,7 @@ esm_data <- esm_data %>%
     by = c("dyad", "beep", "partner_id" = "person")
   )
 
-# 3. Add mean affect elevation and affect distance columns
+# 4. Mean elevation and affect distance ----
 esm_data <- esm_data %>%
   mutate(
     PA_elevation_act  = (cPA_own + cPA_part_act)/2,
@@ -86,7 +89,7 @@ esm_data <- esm_data %>%
     NA_distance_perc  = abs(cNA_own - cNA_part_perc)
   )
 
-# 4. Add actual and perceived similarity columns
+# 5. Actual and perceived similarity ----
 esm_data <- esm_data %>%
   mutate(
     PA_similarity_act  = PA_elevation_act - PA_distance_act,
@@ -94,6 +97,26 @@ esm_data <- esm_data %>%
     NA_similarity_act  = NA_elevation_act - NA_distance_act,
     NA_similarity_perc = NA_elevation_perc - NA_distance_perc
   )
+
+# 6. Save
+saveRDS(esm_data, file.path(dir_data_ana, "esm_ana.rds"))
+cat(sprintf("ESM data extended with centralized affect measures and similarity measures saved to %s\n", 
+            file.path(dir_data_red, "esm_ana.rds")))
+
+## ########################################################################### #
+## ---- BG DATA ---------------------------------------------------------------
+## ########################################################################### #
+header("B. BG Data", level = 1)
+
+# 1. Load data
+bg_data <- readRDS(file.path(dir_data_red, "bg_red.rds"))
+
+
+# Save
+saveRDS(bg_data, file.path(dir_data_ana, "bg_ana.rds"))
+cat(sprintf("BG data extended with we-ness construct and saved to %s\n", 
+            file.path(dir_data_red, "bg_ana.rds")))
+
 
 ## ########################################################################### #
 # ---- END ---------------------------------------------------------------------

@@ -217,7 +217,8 @@ check_branch_consistency <-  function(is_gate_open, vars_conditional, label) {
 
 save_plot <- function(plot_obj, filename, w=10, h=8) {
   # 1. Create prefix (e.g., "01_", "02_")
-  prefix <- sprintf("%02d_", plot_counter) 
+  # DP for data processing
+  prefix <- sprintf("DP_%02d_", plot_counter) 
   # 2. Update filename
   new_filename <- paste0(prefix, filename)
   full_path <- file.path(dir_plots, new_filename)
@@ -230,7 +231,8 @@ save_plot <- function(plot_obj, filename, w=10, h=8) {
 
 save_base_plot <- function(plot_code, filename, w=10, h=8) {
   # 1. Create prefix using global counter
-  prefix <- sprintf("%02d_", plot_counter) 
+  # DP for data processing
+  prefix <- sprintf("DP_%02d_", plot_counter) 
   # 2. Update filename
   new_filename <- paste0(prefix, filename)
   full_path <- file.path(dir_plots, new_filename)

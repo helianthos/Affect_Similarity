@@ -1,0 +1,35 @@
+---
+title: "05_descriptives"
+---
+
+```{r setup}
+
+# 1. Load packages, paths and data configurations
+source(here::here("R", "00_setup.R"))
+
+# 2. Load data
+# Use the 'dir_processed' path if it was loaded by 01_paths.R
+esm_data  <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
+#bg_data   <- readRDS(file.path(dir_data_ana, "bg_ana.rds"))
+#vmr_data  <- readRDS(file.path(dir_data_ana, "vmr_ana.rds"))
+#post_data <- readRDS(file.path(dir_data_ana, "post_ana.rds"))
+
+# 3. Set a global theme for plots
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+```
+
+### Repeated measures correlations
+
+As in @bakdashRepeatedMeasuresCorrelation2017 we look at some repeated measure correlations. This is the common within person or within dyad correlation.
+
+```{r rmcorr analysis}
+#| warning: false
+
+# (Bakdash & Marusich, 2017)
+rmcorr(person, PA_own, NA_own, esm_data)
+plot(rmcorr(person, PA_own, NA_own, esm_data))
+rmcorr(dyad, cPA_own, cNA_part_act, esm_data)
+plot(rmcorr(dyad, cPA_own, cNA_part_act, esm_data))
+
+
+```
