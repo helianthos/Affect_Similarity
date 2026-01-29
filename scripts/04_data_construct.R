@@ -2,7 +2,8 @@
 # 04_data_construct.R
 #
 # Purpose:
-#   Construction of similarity indices and we-ness and add to datasets
+#   Construction of similarity indices and we-ness and add to datasets. Reversing
+#   negative DCI items.
 #
 # Usage:
 #   Run source("R/04_data_construct.R") to generate execution report, saved in outputs/logs.
@@ -33,7 +34,6 @@ source(here::here("R", "00_setup.R"))
 
 # 2. Load datasets
 
-bg_data <- readRDS(file.path(dir_data_red, "bg_red.rds"))
 vmr_data <- readRDS(file.path(dir_data_red, "vmr_red.rds"))
 post_data <- readRDS(file.path(dir_data_red, "post_red.rds"))
 
@@ -55,6 +55,7 @@ header("A. ESM Data", level = 1)
 
 # 1. Load data ----
 esm_data <- readRDS(file.path(dir_data_red, "esm_red.rds"))
+load_config("ESM")
 
 # 2. Centering ----
 esm_data <- esm_data %>%
@@ -65,7 +66,7 @@ esm_data <- esm_data %>%
     cPA_part_perc = PA_part_perc - mean(PA_part_perc, na.rm = TRUE),
     cNA_part_perc = NA_part_perc - mean(NA_part_perc, na.rm = TRUE),
     clove         = love - mean(love, na.rm = TRUE),
-    cperc_resp         = perc_resp - mean(perc_resp, na.rm = TRUE)
+    cperc_resp    = perc_resp - mean(perc_resp, na.rm = TRUE)
   )
 
 # 3. Partner actual affect ----
@@ -102,21 +103,68 @@ esm_data <- esm_data %>%
 saveRDS(esm_data, file.path(dir_data_ana, "esm_ana.rds"))
 cat(sprintf("ESM data extended with centralized affect measures and similarity measures saved to %s\n", 
             file.path(dir_data_red, "esm_ana.rds")))
+clean_config("ESM")
 
 ## ########################################################################### #
 ## ---- BG DATA ---------------------------------------------------------------
 ## ########################################################################### #
 header("B. BG Data", level = 1)
 
-# 1. Load data
+# 1. Load data and data configuration ----
 bg_data <- readRDS(file.path(dir_data_red, "bg_red.rds"))
+load_config("BG")
 
+# 2. Reverse negative DCI items ----
+bg_data <- bg_data %>%
+  mutate(across(all_of(DCI_reverse_items), ~ 6 - .))
 
-# Save
+# 3. We-ness and total DCI ----
+dci_all_items <- paste0("DCI", 1:30)
+dci_we_items <- setdiff(dci_all_items, DCI_reverse_items)
+
+bg_data <- bg_data %>%
+  mutate(
+    dci_total = rowSums(pick(all_of(dci_all_items))),
+    we_ness   = rowMeans(pick(all_of(dci_we_items)))
+  )
+
+# 4. Save ----
 saveRDS(bg_data, file.path(dir_data_ana, "bg_ana.rds"))
 cat(sprintf("BG data extended with we-ness construct and saved to %s\n", 
             file.path(dir_data_red, "bg_ana.rds")))
+clean_config("BG")
 
+## ########################################################################### #
+## ---- VMR DATA ---------------------------------------------------------------
+## ########################################################################### #
+header("C. VMR Data", level = 1)
+
+# 1. Load data and data configuration ----
+vmr_data <- readRDS(file.path(dir_data_red, "vmr_red.rds"))
+load_config("VMR")
+
+
+# 2. Save ----
+saveRDS(vmr_data, file.path(dir_data_ana, "vmr_ana.rds"))
+cat(sprintf("VMR data saved to %s\n", 
+            file.path(dir_data_red, "vmr_ana.rds")))
+clean_config("VMR")
+
+## ########################################################################### #
+## ---- POST DATA ---------------------------------------------------------------
+## ########################################################################### #
+header("D. POST Data", level = 1)
+
+# 1. Load data and data configuration ----
+post_data <- readRDS(file.path(dir_data_red, "post_red.rds"))
+load_config("POST")
+
+
+# 2. Save ----
+saveRDS(post_data, file.path(dir_data_ana, "post_ana.rds"))
+cat(sprintf("POST data saved to %s\n", 
+            file.path(dir_data_red, "post_ana.rds")))
+clean_config("POST")
 
 ## ########################################################################### #
 # ---- END ---------------------------------------------------------------------

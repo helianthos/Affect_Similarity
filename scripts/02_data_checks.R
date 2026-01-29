@@ -662,10 +662,10 @@ header("B5. BG: DCI Total Score, Reliability, & We-ness", level = 2)
 # 1. DEFINE ITEMS & SUBSCALES
 
 # Load negative indices from Config:DCI_reverse_items
-dci_neg_items <- paste0("DCI", DCI_reverse_items)
+# dci_neg_items <- paste0("DCI", DCI_reverse_items)
 
 # Positive "We-ness" items (All items MINUS the negative ones)
-dci_we_items  <- setdiff(scale_DCI, dci_neg_items)
+dci_we_items  <- setdiff(scale_DCI, DCI_reverse_items)
 
 # --- 2. CALCULATE TOTAL DCI (Including Flipped Negative Items) ---
 # We need a temporary dataframe to handle the reverse coding safely# Ensure numeric
@@ -676,7 +676,7 @@ dci_reversed <- bg_data %>%
          all_of(person), 
          all_of(scale_DCI)) %>%
   mutate(across(all_of(scale_DCI), ~ as.numeric(.))) %>%
-  mutate(across(all_of(dci_neg_items), ~ 6 - .))
+  mutate(across(all_of(DCI_reverse_items), ~ 6 - .))
 
 # Calculate Total Score
 dci_scores <- dci_reversed %>%

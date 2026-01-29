@@ -7,15 +7,17 @@ title: "05_descriptives"
 # 1. Load packages, paths and data configurations
 source(here::here("R", "00_setup.R"))
 
-# 2. Load data
-# Use the 'dir_processed' path if it was loaded by 01_paths.R
-esm_data  <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
-#bg_data   <- readRDS(file.path(dir_data_ana, "bg_ana.rds"))
-#vmr_data  <- readRDS(file.path(dir_data_ana, "vmr_ana.rds"))
-#post_data <- readRDS(file.path(dir_data_ana, "post_ana.rds"))
-
-# 3. Set a global theme for plots
+# 2. Set a global theme for plots
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
+```
+
+# ESM
+
+```{r ESM_setup}
+# load data
+esm_data  <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
+# load data configuration file 
+load_config("ESM")
 ```
 
 ### Repeated measures correlations
@@ -32,4 +34,194 @@ rmcorr(dyad, cPA_own, cNA_part_act, esm_data)
 plot(rmcorr(dyad, cPA_own, cNA_part_act, esm_data))
 
 
+```
+
+# BG
+
+```{r BG_setup}
+# load data
+bg_data   <- readRDS(file.path(dir_data_ana, "bg_ana.rds"))
+# load data configuration file
+load_config("BG")
+```
+
+### Sample demographic descriptives
+
+See `outputs/plots` directory.
+
+### Visualize DCI scores
+
+```{r}
+# FROM DATA_CHECKS:
+# 4. VISUALIZE TOTAL DCI SCORES
+plot_dci_total_hist <- dci_scores %>%
+  filter(!is.na(DCI_Total_Score)) %>%
+  ggplot(aes(x = DCI_Total_Score)) +
+  geom_histogram(binwidth = 5, fill = "steelblue", color = "white") +
+  labs(title = "Distribution of Total DCI Scores", 
+       subtitle = "Sum of 30 items (Negative items reversed)",
+       x = "Total Score", y = "Count") +
+  theme_minimal()
+
+save_plot(plot_dci_total_hist, "BG_DCI_Total_Hist.png")
+# CHANGE FUUNCTION TO TAKE ARGUMENT OF PREFIX DP (Data Processing) or A (Analysis)
+```
+
+### Reliability of DCI scale
+
+```{r}
+  # A. Cronbach's Alpha
+  alpha_res <- bg_data %>%
+    select(all_of(scale_DCI)) %>%
+    alpha()
+  cat(sprintf("Cronbach's alpha for DCI scale = %f", alpha_res$total$raw_alpha))
+
+  
+  # B. McDonald's Omega
+  omega_res <- bg_data %>%
+    select(all_of(scale_DCI)) %>%
+    omega(nfactors = 3, plot = TRUE)
+  omega_res <- suppressMessages(omega(dci_reversed %>% select(all_of(scale_DCI)), 
+                                             nfactors = 3, plot = FALSE))
+  cat(sprintf("\nMcDonald's omega for DCI scale = %f", omega_res$omega.tot))
+```
+
+```{r}
+# OTHER FROM DATA_CHECKS TO BE INTEGRATED HERE!!!!!
+
+# 5. DYADIC CORRELATION (TOTAL SCORE)
+# Reshape to wide format
+dci_dyadic <- dci_scores %>%
+  group_by(.data[[dyad]]) %>%
+  filter(n() == 2) %>% # Ensure complete dyads
+  mutate(partner_num = rank(.data[[person]])) %>%
+  select(all_of(dyad), partner_num, DCI_Total_Score, We_Ness_Score) %>%
+  pivot_wider(
+    names_from = partner_num, 
+    values_from = c(DCI_Total_Score, We_Ness_Score),
+    names_glue = "{.value}_P{partner_num}" # Creates DCI_Total_Score_P1, etc.
+  )
+
+# Calculate Correlation
+cor_total <- cor(dci_dyadic$DCI_Total_Score_P1, dci_dyadic$DCI_Total_Score_P2, use = "complete.obs")
+header(sprintf("Dyadic Correlation (Total DCI): r = %.3f", cor_total))
+
+# Plot Scatter (Visualizing the correlation)
+plot_dci_total_corr <- dci_dyadic %>%
+  ggplot(aes(x = DCI_Total_Score_P1, y = DCI_Total_Score_P2)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", color = "blue", se = FALSE) +
+  labs(title = "Dyadic Correlation: Total DCI",
+       subtitle = paste0("Pearson r = ", round(cor_total, 3)),
+       x = "Partner 1 Score", y = "Partner 2 Score") +
+  theme_minimal()
+
+save_plot(plot_dci_total_corr, "BG_DCI_Total_Scatter.png")
+
+# 6. WE-NESS SCORE ANALYSIS
+header("We-ness score analysis")
+
+# Histogram of Personal We-ness
+plot_weness_hist <- dci_scores %>%
+  filter(!is.na(We_Ness_Score)) %>%
+  ggplot(aes(x = We_Ness_Score)) +
+  geom_histogram(binwidth = 0.1, fill = "forestgreen", color = "white") +
+  labs(title = "Distribution of 'We-ness' Scores", 
+       subtitle = "Average of 22 Positive items (No negative items)",
+       x = "We-ness Score", y = "Count") +
+  theme_minimal()
+
+save_plot(plot_weness_hist, "BG_Weness_Hist.png")
+
+# Dyadic Correlation We-ness
+cor_weness <- cor(dci_dyadic$We_Ness_Score_P1, dci_dyadic$We_Ness_Score_P2, use = "complete.obs")
+header(sprintf("Dyadic Correlation (We-ness): r = %.3f", cor_weness))
+
+# Plot Scatter We-ness
+plot_weness_corr <- dci_dyadic %>%
+  ggplot(aes(x = We_Ness_Score_P1, y = We_Ness_Score_P2)) +
+  geom_point(alpha = 0.6, color = "darkgreen") +
+  geom_smooth(method = "lm", color = "black", se = FALSE) +
+  labs(title = "Dyadic Correlation: We-ness",
+       subtitle = paste0("Pearson r = ", round(cor_weness, 3)),
+       x = "Partner 1 We-ness", y = "Partner 2 We-ness") +
+  theme_minimal()
+
+save_plot(plot_weness_corr, "BG_Weness_Scatter.png")
+
+# 7. PARTNER DIFFERENCES
+header("Partner difference analysis")
+
+# Calculate Absolute Difference in We-ness
+dci_dyadic <- dci_dyadic %>%
+  mutate(
+    Weness_Diff = abs(We_Ness_Score_P1 - We_Ness_Score_P2)
+  )
+
+cat("Summary of Absolute Differences in We-ness:\n")
+summary(dci_dyadic$Weness_Diff) %>% print()
+
+# Plot Histogram of Differences
+plot_weness_diff <- dci_dyadic %>%
+  filter(!is.na(Weness_Diff)) %>%
+  ggplot(aes(x = Weness_Diff)) +
+  geom_histogram(binwidth = 0.1, fill = "firebrick", color = "white") +
+  labs(title = "Distribution of We-ness Differences", 
+       subtitle = "Absolute difference between Partner 1 and Partner 2",
+       x = "Difference Score (|P1 - P2|)", y = "Count of Couples") +
+  theme_minimal()
+
+save_plot(plot_weness_diff, "BG_Weness_Diff_Hist.png")
+
+# 8. HIERARCHICAL CHECK FOR WE-NESS (Validation)
+  header("Hierarchical factor analysis of we-ness")
+  cat("Checking if positive items form a stronger general factor than the full DCI...\n\n")
+  
+  # Select only the We-ness items
+  weness_data <- bg_data %>%
+    select(all_of(dci_we_items)) %>%
+    mutate(across(everything(), as.numeric))
+  
+  # Run Omega with 3 factors (Theoretical: Own Provided Support, Perceived Partner Support, Stress Comm)
+  save_base_plot({
+    omega_weness <<- psych::omega(weness_data, nfactors = 3, plot = TRUE)
+  }, filename = "BG_Weness_Omega_Structure.png")
+  
+  print(omega_weness)
+  
+  # specific print for the summary stats we care about
+  cat(sprintf("\nOmega Total (Reliability): %.2f\nOmega Hierarchical (Unidimensionality): %.2f\n", 
+              omega_weness$omega.tot, 
+              omega_weness$omega_h))
+  
+  if(omega_weness$omega_h > 0.50) {
+    cat("✅ The general 'We-ness' factor explains a majority of the variance.\n")
+  } else {
+    cat("ℹ️  NOTE: The subscales (Self vs Partner) are still distinct even without negative items.\n")
+  }
+```
+
+### Reliability of we-ness construct
+
+```{r}
+
+
+```
+
+# VMR
+
+```{r VMR_setup}
+# load data
+vmr_data  <- readRDS(file.path(dir_data_ana, "vmr_ana.rds"))
+# load data configuration file 
+load_config("VMR")
+```
+
+# POST
+
+```{r POST_setup}
+# load data
+post_data  <- readRDS(file.path(dir_data_ana, "post_ana.rds"))
+# load data configuration file 
+load_config("POST")
 ```
