@@ -196,7 +196,11 @@ CONFIG_BG <- list(
   # items to be reversed (NOT EXHAUSTIVE, only for DCI, add if needed)
   reverse_items = list(
     DCI_reverse_items = c("DCI7", "DCI10", "DCI11", "DCI15", "DCI22", "DCI25",
-                          "DCI26", "DCI27")
+                          "DCI26", "DCI27"),
+    DCI_weness_items = c("DCI1", "DCI2", "DCI3", "DCI4", "DCI5", "DCI6",
+                          "DCI8", "DCI9", "DCI12", "DCI13", "DCI14", "DCI16",
+                          "DCI17", "DCI18", "DCI19", "DCI20", "DCI21", "DCI23",
+                          "DCI24", "DCI28", "DCI29", "DCI30")
   ),
   # Valid Ranges (Min, Max) for each scale
   ranges = list(

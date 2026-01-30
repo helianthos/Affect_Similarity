@@ -41,170 +41,304 @@ plot(rmcorr(dyad, cPA_own, cNA_part_act, esm_data))
 ```{r BG_setup}
 # load data
 bg_data   <- readRDS(file.path(dir_data_ana, "bg_ana.rds"))
+demographics <- readRDS(file.path(dir_data_ana, "demographics.rds"))
 # load data configuration file
 load_config("BG")
 ```
 
-### Sample demographic descriptives
+## Descriptive statistics (demographics)
 
-See `outputs/plots` directory.
+```{r demographics}
 
-### Visualize DCI scores
+plot_counter <- 1
 
-```{r}
-# FROM DATA_CHECKS:
-# 4. VISUALIZE TOTAL DCI SCORES
-plot_dci_total_hist <- dci_scores %>%
-  filter(!is.na(DCI_Total_Score)) %>%
-  ggplot(aes(x = DCI_Total_Score)) +
+# 1. AGE (numeric)
+header("Age")
+print(summary(demographics$age))
+cat(sprintf("Missing age: %d\n", sum(is.na(demographics$age))))
+plot <- demographics %>%
+  filter(!is.na(age)) %>%
+  ggplot(aes(x = age)) +
+  geom_histogram(binwidth = 2) +
+  labs(title = "Age distribution", x = "Age (years)", y = "Count") +
+  theme_minimal()
+plot
+plot_name <- sprintf("A-%d_age_hist.png", plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+# 2. GENDER
+header("Gender")
+labels <- get_label(demographics, "gender")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Gender Distribution", "Gender")
+plot
+plot_name <- sprintf("A-%d_gender_bar.png", plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+# 3. NATIONALITY
+header("Nationality")
+labels <- get_label(demographics, "nat")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Nationality Distribution", "Nationality")
+plot
+plot_name <- sprintf("A-%d_nationality_bar.png", plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+# 4. ETHNICITY
+header("Ethnicity")
+labels <- get_label(demographics, "etn")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Ethnicity Distribution", "Ethnicity")
+plot
+plot_name <- sprintf("A-%d_ethnicity_bar.png", plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+# 5. EDUCATION
+header("Education")
+labels <- get_label(demographics, "edu")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Eduction Level Distribution", "Education")
+plot
+plot_name <- sprintf("A-%d_education_bar.png", plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+# 6. CHILDREN
+header("Children")
+labels <- get_label(demographics, "child")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Children (Yes/No)", "Children?")
+plot
+plot_name <- sprintf("A-%d_chile_bar.png", plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+# 7. LIVING TOGETHER
+header("Living together")
+labels <- get_label(demographics, "liv_tog")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Living Together? (Yes/No)", "Living Together?")
+plot
+plot_name <- sprintf("A-%d_liv_tog_bar.png", plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+# 8. RELATIONSHIP DURATION (Numeric - months)
+header("Relationship duration (months)")
+print(summary(demographics$rel_dur))
+cat(sprintf("Missing relationship duration: %d\n", sum(is.na(demographics$rel_dur))))
+plot <- demographics %>%
+  filter(!is.na(rel_dur)) %>%
+  ggplot(aes(x = rel_dur)) +
+  geom_histogram(binwidth = 2) +
+  labs(title = "Relationship Duration Distribution", x = "Duration (Months)", y = "Count") +
+  theme_minimal()
+plot
+plot_name <- sprintf("A-%d_rel_dur_hist.png", plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+# 9. MEDICATION
+header("Medication")
+labels <- get_label(demographics, "med")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Medication Use? (Yes/No)", "Living Together?")
+plot
+plot_name <- sprintf("A-%d_med_bar.png", plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+## DCI descriptive statistics
+
+### DCI scores histogram
+
+```{r dci_scores_histogram}
+
+plot_dci_total_hist <- bg_data %>%
+  filter(!is.na(dci_total)) %>%
+  ggplot(aes(x = dci_total)) +
   geom_histogram(binwidth = 5, fill = "steelblue", color = "white") +
   labs(title = "Distribution of Total DCI Scores", 
        subtitle = "Sum of 30 items (Negative items reversed)",
        x = "Total Score", y = "Count") +
   theme_minimal()
-
-save_plot(plot_dci_total_hist, "BG_DCI_Total_Hist.png")
-# CHANGE FUUNCTION TO TAKE ARGUMENT OF PREFIX DP (Data Processing) or A (Analysis)
+plot_dci_total_hist
+plot_name <- sprintf("A-%d_dci_score_hist.png", plot_counter)
+save_plot(plot_dci_total_hist, plot_name)
+plot_counter <- plot_counter + 1
 ```
 
 ### Reliability of DCI scale
 
-```{r}
-  # A. Cronbach's Alpha
-  alpha_res <- bg_data %>%
+```{r dci_reliability}
+
+# A. Cronbach's Alpha
+alpha_res <- bg_data %>%
     select(all_of(scale_DCI)) %>%
     alpha()
-  cat(sprintf("Cronbach's alpha for DCI scale = %f", alpha_res$total$raw_alpha))
+cat(sprintf("Cronbach's alpha for DCI scale = %f", alpha_res$total$raw_alpha))
 
-  
-  # B. McDonald's Omega
-  omega_res <- bg_data %>%
+# B. McDonald's Omega
+omega_res <- bg_data %>%
     select(all_of(scale_DCI)) %>%
     omega(nfactors = 3, plot = TRUE)
-  omega_res <- suppressMessages(omega(dci_reversed %>% select(all_of(scale_DCI)), 
+omega_res <- suppressMessages(omega(bg_data %>% select(all_of(scale_DCI)), 
                                              nfactors = 3, plot = FALSE))
-  cat(sprintf("\nMcDonald's omega for DCI scale = %f", omega_res$omega.tot))
+cat(sprintf("\nMcDonald's omega for DCI scale = %f", omega_res$omega.tot))
 ```
 
-```{r}
-# OTHER FROM DATA_CHECKS TO BE INTEGRATED HERE!!!!!
+### DCI dyadic correlation
 
-# 5. DYADIC CORRELATION (TOTAL SCORE)
-# Reshape to wide format
-dci_dyadic <- dci_scores %>%
-  group_by(.data[[dyad]]) %>%
-  filter(n() == 2) %>% # Ensure complete dyads
-  mutate(partner_num = rank(.data[[person]])) %>%
-  select(all_of(dyad), partner_num, DCI_Total_Score, We_Ness_Score) %>%
+```{r dci_dyadic_correlation}
+
+# Create dataframe with dci_total and we_ness of partners in same row
+dci_dyadic <- bg_data %>%
+  mutate(role = if_else(person < 700, "P1", "P2")) %>%
+  select(dyad, role, dci_total, we_ness) %>%
+  group_by(dyad) %>%
   pivot_wider(
-    names_from = partner_num, 
-    values_from = c(DCI_Total_Score, We_Ness_Score),
-    names_glue = "{.value}_P{partner_num}" # Creates DCI_Total_Score_P1, etc.
-  )
+    names_from = role, 
+    values_from = c(dci_total, we_ness)
+    )
 
 # Calculate Correlation
-cor_total <- cor(dci_dyadic$DCI_Total_Score_P1, dci_dyadic$DCI_Total_Score_P2, use = "complete.obs")
+cor_total <- cor(dci_dyadic$dci_total_P1, dci_dyadic$dci_total_P2, use = "complete.obs")
 header(sprintf("Dyadic Correlation (Total DCI): r = %.3f", cor_total))
 
 # Plot Scatter (Visualizing the correlation)
 plot_dci_total_corr <- dci_dyadic %>%
-  ggplot(aes(x = DCI_Total_Score_P1, y = DCI_Total_Score_P2)) +
+  ggplot(aes(x = dci_total_P1, y = dci_total_P2)) +
   geom_point(alpha = 0.6) +
   geom_smooth(method = "lm", color = "blue", se = FALSE) +
   labs(title = "Dyadic Correlation: Total DCI",
        subtitle = paste0("Pearson r = ", round(cor_total, 3)),
        x = "Partner 1 Score", y = "Partner 2 Score") +
   theme_minimal()
+plot_dci_total_corr
 
-save_plot(plot_dci_total_corr, "BG_DCI_Total_Scatter.png")
+# Save plot
+plot_name <- sprintf("A-%d_dci_total_scatter.png", plot_counter)
+save_plot(plot_dci_total_corr, plot_name)
+plot_counter <- plot_counter + 1
 
-# 6. WE-NESS SCORE ANALYSIS
-header("We-ness score analysis")
+```
 
-# Histogram of Personal We-ness
-plot_weness_hist <- dci_scores %>%
-  filter(!is.na(We_Ness_Score)) %>%
-  ggplot(aes(x = We_Ness_Score)) +
+## We-ness descriptive statistics
+
+### We-ness scores histogram and differences between partners
+
+```{r weness_scores_histogram}
+
+# Histogram of We-ness
+plot_weness_hist <- bg_data %>%
+  filter(!is.na(we_ness)) %>%
+  ggplot(aes(x = we_ness)) +
   geom_histogram(binwidth = 0.1, fill = "forestgreen", color = "white") +
   labs(title = "Distribution of 'We-ness' Scores", 
        subtitle = "Average of 22 Positive items (No negative items)",
        x = "We-ness Score", y = "Count") +
   theme_minimal()
+plot_weness_hist
 
-save_plot(plot_weness_hist, "BG_Weness_Hist.png")
+# Save Histogram
+plot_name <- sprintf("A-%d_weness_hist.png", plot_counter)
+save_plot(plot_weness_hist, plot_name)
+plot_counter <- plot_counter + 1
+
+# Calculate Absolute Difference in We-ness
+dci_dyadic <- dci_dyadic %>%
+  mutate(
+    weness_diff = abs(we_ness_P1 - we_ness_P2)
+  )
+
+cat("Summary of Absolute Differences in We-ness between Partners:\n")
+summary(dci_dyadic$weness_diff) %>% print()
+
+# Plot Histogram of Differences
+plot_weness_diff <- dci_dyadic %>%
+  filter(!is.na(weness_diff)) %>%
+  ggplot(aes(x = weness_diff)) +
+  geom_histogram(binwidth = 0.1, fill = "firebrick", color = "white") +
+  labs(title = "Distribution of We-ness Differences", 
+       subtitle = "Absolute difference between Partner 1 and Partner 2",
+       x = "Difference Score (|P1 - P2|)", y = "Count of Couples") +
+  theme_minimal()
+plot_weness_diff
+
+# Save plot
+plot_name <- sprintf("A-%d_weness_diff_hist.png", plot_counter)
+save_plot(plot_weness_diff, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+### Reliability of we-ness construct
+
+```{r weness_reliability}
+
+# A. Cronbach's Alpha
+alpha_res <- bg_data %>%
+    select(all_of(DCI_weness_items)) %>%
+    alpha()
+cat(sprintf("Cronbach's alpha for we-nesse = %f\n", alpha_res$total$raw_alpha))
+
+# B. McDonald's Omega
+omega_res <- bg_data %>%
+    select(all_of(DCI_weness_items)) %>%
+    omega(nfactors = 3, plot = FALSE)
+cat(sprintf("\nMcDonald's omega for we-ness = %f\n\n", omega_res$omega.tot))
+print(omega_res)
+diagram <- omega.diagram(omega_res, main = "We-ness Factor Structure")
+print(diagram)
+
+# Save diagram
+plot_name <- sprintf("A-%d_weness_factor_structure.png", plot_counter)
+save_base_plot(diagram, plot_name)
+plot_counter <- plot_counter + 1
+
+```
+
+A hierarchical factor analysis (Schmid-Leiman bifactor solution) was conducted to evaluate the internal structure of the We-Ness construct. The analysis supports a hierarchical structure consisting of one General Factor (*g*) and three distinct specific group factors, confirming that "We-Ness" is an overarching construct that encompasses both giving and receiving support.
+
+**1. Reliability and Global Fit** The scale demonstrates excellent total reliability (ωt​=0.87), indicating that the items form a cohesive total scale. The Hierarchical Omega (ωh​=0.42) indicates that the General Factor accounts for a substantial portion (42%) of the common variance.
+
+**2. Factor Interpretation** The variance is partitioned into a general "We-Ness" trait and three specific sub-domains corresponding to the provider of the support and the focus of communication:
+
+-   **General Factor (*g*) — "Global We-Ness":** This factor represents the fundamental dyadic cohesion. It captures the shared tendency of the couple to function as a unit, regardless of the specific coping strategy employed.
+
+-   **Factor 1 — Supportive Dyadic Coping (Perceived Partner Support):** *(Items: DCI 5, 6, 8, 9, 13, 14)* This factor captures the variance associated with **receiving support**. These items describe the individual's perception of their partner's active efforts to help them (e.g., "My partner shows empathy and understanding to me" ). It represents the "You help me" dimension.
+
+-   **Factor 2 — Stress Communication Balance:** *(Items: Positive loading on 1–4, Negative loading on 16–19)* This bipolar factor captures the **communicative dynamic** of the dyad. It differentiates between focusing on one's own stress (Self-Communication, items 1–4) versus focusing on the partner's stress (Partner-Communication, items 16–19). This represents the "Who is talking?" dimension.
+
+-   **Factor 3 — Supportive Dyadic Coping (Own Provided Support):** *(Items: DCI 20, 21, 24, 28, 29, 30)* This factor captures the variance associated with **providing support**. Unlike Factor 1, these items reflect the individual's own active efforts to support their partner (e.g., "I show empathy and understanding to my partner" ). It represents the "I help you" dimension.
+
+### We-ness dyadic correlation
+
+```{r weness_dyadic_correlation}
 
 # Dyadic Correlation We-ness
-cor_weness <- cor(dci_dyadic$We_Ness_Score_P1, dci_dyadic$We_Ness_Score_P2, use = "complete.obs")
+cor_weness <- cor(dci_dyadic$we_ness_P1, dci_dyadic$we_ness_P2, use = "complete.obs")
 header(sprintf("Dyadic Correlation (We-ness): r = %.3f", cor_weness))
 
 # Plot Scatter We-ness
 plot_weness_corr <- dci_dyadic %>%
-  ggplot(aes(x = We_Ness_Score_P1, y = We_Ness_Score_P2)) +
+  ggplot(aes(x = we_ness_P1, y = we_ness_P2)) +
   geom_point(alpha = 0.6, color = "darkgreen") +
   geom_smooth(method = "lm", color = "black", se = FALSE) +
   labs(title = "Dyadic Correlation: We-ness",
        subtitle = paste0("Pearson r = ", round(cor_weness, 3)),
        x = "Partner 1 We-ness", y = "Partner 2 We-ness") +
   theme_minimal()
+plot_weness_corr
 
-save_plot(plot_weness_corr, "BG_Weness_Scatter.png")
-
-# 7. PARTNER DIFFERENCES
-header("Partner difference analysis")
-
-# Calculate Absolute Difference in We-ness
-dci_dyadic <- dci_dyadic %>%
-  mutate(
-    Weness_Diff = abs(We_Ness_Score_P1 - We_Ness_Score_P2)
-  )
-
-cat("Summary of Absolute Differences in We-ness:\n")
-summary(dci_dyadic$Weness_Diff) %>% print()
-
-# Plot Histogram of Differences
-plot_weness_diff <- dci_dyadic %>%
-  filter(!is.na(Weness_Diff)) %>%
-  ggplot(aes(x = Weness_Diff)) +
-  geom_histogram(binwidth = 0.1, fill = "firebrick", color = "white") +
-  labs(title = "Distribution of We-ness Differences", 
-       subtitle = "Absolute difference between Partner 1 and Partner 2",
-       x = "Difference Score (|P1 - P2|)", y = "Count of Couples") +
-  theme_minimal()
-
-save_plot(plot_weness_diff, "BG_Weness_Diff_Hist.png")
-
-# 8. HIERARCHICAL CHECK FOR WE-NESS (Validation)
-  header("Hierarchical factor analysis of we-ness")
-  cat("Checking if positive items form a stronger general factor than the full DCI...\n\n")
-  
-  # Select only the We-ness items
-  weness_data <- bg_data %>%
-    select(all_of(dci_we_items)) %>%
-    mutate(across(everything(), as.numeric))
-  
-  # Run Omega with 3 factors (Theoretical: Own Provided Support, Perceived Partner Support, Stress Comm)
-  save_base_plot({
-    omega_weness <<- psych::omega(weness_data, nfactors = 3, plot = TRUE)
-  }, filename = "BG_Weness_Omega_Structure.png")
-  
-  print(omega_weness)
-  
-  # specific print for the summary stats we care about
-  cat(sprintf("\nOmega Total (Reliability): %.2f\nOmega Hierarchical (Unidimensionality): %.2f\n", 
-              omega_weness$omega.tot, 
-              omega_weness$omega_h))
-  
-  if(omega_weness$omega_h > 0.50) {
-    cat("✅ The general 'We-ness' factor explains a majority of the variance.\n")
-  } else {
-    cat("ℹ️  NOTE: The subscales (Self vs Partner) are still distinct even without negative items.\n")
-  }
-```
-
-### Reliability of we-ness construct
-
-```{r}
-
+# Save plot
+plot_name <- sprintf("A-%d_weness_scatter.png", plot_counter)
+save_plot(plot_weness_corr, plot_name)
+plot_counter <- plot_counter + 1
 
 ```
 

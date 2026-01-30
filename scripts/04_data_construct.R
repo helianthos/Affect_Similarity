@@ -99,7 +99,7 @@ esm_data <- esm_data %>%
     NA_similarity_perc = NA_elevation_perc - NA_distance_perc
   )
 
-# 6. Save
+# 6. Save ----
 saveRDS(esm_data, file.path(dir_data_ana, "esm_ana.rds"))
 cat(sprintf("ESM data extended with centralized affect measures and similarity measures saved to %s\n", 
             file.path(dir_data_red, "esm_ana.rds")))
@@ -119,13 +119,11 @@ bg_data <- bg_data %>%
   mutate(across(all_of(DCI_reverse_items), ~ 6 - .))
 
 # 3. We-ness and total DCI ----
-dci_all_items <- paste0("DCI", 1:30)
-dci_we_items <- setdiff(dci_all_items, DCI_reverse_items)
-
 bg_data <- bg_data %>%
   mutate(
-    dci_total = rowSums(pick(all_of(dci_all_items))),
-    we_ness   = rowMeans(pick(all_of(dci_we_items)))
+    # add columns
+    dci_total = rowSums(pick(all_of(scale_DCI))),
+    we_ness   = rowMeans(pick(all_of(DCI_weness_items)))
   )
 
 # 4. Save ----
@@ -143,8 +141,47 @@ header("C. VMR Data", level = 1)
 vmr_data <- readRDS(file.path(dir_data_red, "vmr_red.rds"))
 load_config("VMR")
 
+# 2. Centering ----
+vmr_data <- vmr_data %>%
+  group_by(person) %>%   # person mean centering
+  mutate(
+    cPA_own       = PA_own - mean(PA_own, na.rm = TRUE),
+    cNA_own       = NA_own - mean(NA_own, na.rm = TRUE),
+    cPA_part_perc = PA_part_perc - mean(PA_part_perc, na.rm = TRUE),
+    cNA_part_perc = NA_part_perc - mean(NA_part_perc, na.rm = TRUE)
+  )
 
-# 2. Save ----
+# 3. Partner actual affect ----
+vmr_data <- vmr_data %>%
+  mutate(partner_id = ifelse(person < 700, person + 700, person -700)) %>%
+  left_join(
+    vmr_data %>% select(person, dyad, segment, topic, cNA_part_act = cNA_own, cPA_part_act = cPA_own),
+    by = c("dyad", "segment", "topic", "partner_id" = "person")
+  )
+
+# 4. Mean elevation and affect distance ----
+vmr_data <- vmr_data %>%
+  mutate(
+    PA_elevation_act  = (cPA_own + cPA_part_act)/2,
+    PA_elevation_perc = (cPA_own + cPA_part_perc)/2,
+    PA_distance_act   = abs(cPA_own - cPA_part_act),
+    PA_distance_perc  = abs(cPA_own - cPA_part_perc),
+    NA_elevation_act  = (cNA_own + cNA_part_act)/2,
+    NA_elevation_perc = (cNA_own + cNA_part_perc)/2,
+    NA_distance_act   = abs(cNA_own - cNA_part_act),
+    NA_distance_perc  = abs(cNA_own - cNA_part_perc)
+  )
+
+# 5. Actual and perceived similarity ----
+vmr_data <- vmr_data %>%
+  mutate(
+    PA_similarity_act  = PA_elevation_act - PA_distance_act,
+    PA_similarity_perc = PA_elevation_perc - PA_distance_perc,
+    NA_similarity_act  = NA_elevation_act - NA_distance_act,
+    NA_similarity_perc = NA_elevation_perc - NA_distance_perc
+  )
+
+# 6. Save ----
 saveRDS(vmr_data, file.path(dir_data_ana, "vmr_ana.rds"))
 cat(sprintf("VMR data saved to %s\n", 
             file.path(dir_data_red, "vmr_ana.rds")))

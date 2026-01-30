@@ -83,7 +83,7 @@ esm_data <- select_and_rename(esm_data, esm_map)
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -
 saveRDS(esm_data, file.path(dir_data_red, "esm_red.rds"))
-cat(sprintf("✅ ESM data reduced to columns of interest and saved to %s\n∑", 
+cat(sprintf("✅ ESM data reduced to columns of interest and saved to %s\n", 
             file.path(dir_data_red, "esm_red.rds")))
 clean_config("ESM") # Remove ESM-specific configuration variables
 
@@ -97,8 +97,27 @@ header("B. BG Data", level = 1)
 bg_data <- readRDS(file.path(dir_data_imp, "bg_raw.rds"))
 load_config("BG")
 
-## ---- ```` Reduce  -----------------------------------------------------------
+## ---- ```` Reduce / Split off demographics -----------------------------------
 ## --------------------------------------------------------------------------- -
+
+# mapping: new_name = old_name for demographics
+demographics_map <- c(
+  dyad       = dyad,   # right hand side dyad = "PpID"
+  person     = person,
+  age        = age,
+  gender     = gender,
+  nat        = nat,
+  etn        = etn,
+  edu        = edu,
+  child      = child,
+  liv_tog    = liv_tog,
+  rel_dur    = rel_dur,
+  med        = med
+)
+
+# select and rename demographics 
+demographics <- select_and_rename(bg_data, demographics_map)
+demographics <- demographics %>% mutate(med = replace_na(med, 0))
 
 # mapping: new_name = old_name
 bg_map <- c(
@@ -117,14 +136,17 @@ bg_data <- select_and_rename(bg_data, bg_map)
 # clear which answers belonged to which participant and they were therefore excluded
 # from ESM. They did not participate to lab sessions either, so also delete them from background data BG.
 bg_data <- bg_data %>% filter(dyad != 59)
+demographics <- demographics %>% filter(dyad != 59)
 
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -
 saveRDS(bg_data, file.path(dir_data_red, "bg_red.rds"))
 cat(sprintf("✅ BG data reduced to columns of interest and saved to %s\n", 
             file.path(dir_data_red, "bg_red.rds")))
+saveRDS(demographics, file.path(dir_data_ana, "demographics.rds"))
+cat(sprintf("✅ Demographics data saved to %s\n", 
+            file.path(dir_data_ana, "demographics.rds")))
 clean_config("BG") # Remove BG-specific configuration variables
-
 
 ## ########################################################################### #
 ## ---- C. VMR DATA -------------------------------------------------------------

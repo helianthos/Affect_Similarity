@@ -39,6 +39,8 @@ load_config <- function(config, to_global = TRUE) {
   # 2. Unpack sublists to Global Environment except if to_global = FALSE
   if(to_global) {
     sublists_to_unpack <- names(cfg)
+    # fix: exclude "value_labels" in CONFIG_BG from unpacking
+    sublists_to_unpack <- setdiff(names(cfg), "value_labels")
     for (sublist in sublists_to_unpack) {
       list2env(cfg[[sublist]], envir = .GlobalEnv)
     }
@@ -216,36 +218,23 @@ check_branch_consistency <-  function(is_gate_open, vars_conditional, label) {
 }
 
 save_plot <- function(plot_obj, filename, w=10, h=8) {
-  # 1. Create prefix (e.g., "01_", "02_")
-  # DP for data processing
-  prefix <- sprintf("DP_%02d_", plot_counter) 
-  # 2. Update filename
-  new_filename <- paste0(prefix, filename)
-  full_path <- file.path(dir_plots, new_filename)
-  # 3. Save
+  # 1. Create full path
+  full_path <- file.path(dir_plots, filename)
+  # 2. Save
   ggsave(full_path, plot_obj, width = w, height = h, bg = "white")
-  cat(sprintf("✅ Saved: %s\n   Location: %s\n", new_filename, full_path))
-  # 4. Increment counter globally
-  plot_counter <<- plot_counter + 1
+  cat(sprintf("✅ Saved: %s\n   Location: %s\n", filename, full_path))
 }
 
 save_base_plot <- function(plot_code, filename, w=10, h=8) {
-  # 1. Create prefix using global counter
-  # DP for data processing
-  prefix <- sprintf("DP_%02d_", plot_counter) 
-  # 2. Update filename
-  new_filename <- paste0(prefix, filename)
-  full_path <- file.path(dir_plots, new_filename)
-  # 3. Open PNG device
+  full_path <- file.path(dir_plots, filename)
+  # Open PNG device
   png(filename = full_path, width = w, height = h, units = "in", res = 300)
-  # 4. Execute the plotting code
-  #    use 'force()' to ensure the code block runs inside the device
+  # Execute the plotting code
+  # use 'force()' to ensure the code block runs inside the device
   force(plot_code)
-  # 5. Close device
+  # Close device
   dev.off()
-  # 6. Log and Increment
-  cat(sprintf("✅ Saved: %s\n   Location: %s\n", new_filename, full_path))
-  plot_counter <<- plot_counter + 1
+  cat(sprintf("✅ Saved: %s\n   Location: %s\n", filename, full_path))
 }
 
 check_range <- function(data, columns, min_v, max_v, name) {
@@ -310,23 +299,16 @@ check_missingness <- function (data) {
   print(miss_var_summary(subset_core) %>% head(10))
 }
 
-get_label <- function(data, name) {
-  # 1. Retrieve the column name and the label map
-  var_name <- CONFIG_BG$cols[[name]]
-  lbls     <- CONFIG_BG$value_labels[[name]]
-  # 2. Extract the data vector for var_name
-  vec <- trimws(as.character(data[[var_name]]))
-  # 3. Fix: If this is the medication column, treat NA as 0
-  if (name == "med") {
-    vec <- replace_na(vec, "0")
-  }
-  # 4. Return the Factor
+get_label <- function(data, var_name) {
+  lbls <- CONFIG_BG$value_labels[[var_name]]
+  vec <- as.character(data[[var_name]])
+  #    levels = the values in data (e.g., "1", "2")
+  #    labels = the text (e.g., "Belgian", "Dutch")
   factor(vec, levels = names(lbls), labels = lbls)
 }
 
-freq_table <- function(data, var, sort_desc = TRUE) {
-  data %>%
-    mutate(value = .data[[var]]) %>%
+freq_table <- function(vector, sort_desc = TRUE) {
+  tibble(value = vector) %>%
     count(value, name = "n", sort = sort_desc) %>%
     mutate(pct = round(100 * n / sum(n), 1))
 }
@@ -341,13 +323,16 @@ plot_hist_numeric <- function(data, var, title, xlab, binwidth = NULL) {
     theme_minimal()
 }
 
-plot_bar_categorical <- function(data, var, title, xlab) {
-  df <- data %>%
-    transmute(category = fct_na_value_to_level(as.factor(.data[[var]]), level = "(Missing)")) %>%
-    count(category, name = "n") %>%
-    mutate(category = fct_reorder(category, n))
-  ggplot(df, aes(x = category, y = n)) +
-    geom_col() +
+plot_bar_categorical <- function(vector, title, xlab) {
+  # 1. Convert the vector to a dataframe for ggplot
+  tibble(val = vector) %>%
+    mutate(val = val %>%
+             fct_na_value_to_level("(Missing)") %>%  # From forcats
+             fct_infreq() %>%                        # From forcats
+             fct_rev()) %>%
+    # 2. Plot
+    ggplot(aes(x = val)) +
+    geom_bar() +
     coord_flip() +
     labs(title = title, x = xlab, y = "Count") +
     theme_minimal()
