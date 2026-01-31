@@ -2,22 +2,23 @@
 # 04_data_construct.R
 #
 # Purpose:
-#   Construction of similarity indices and we-ness and add to datasets. Reversing
+#   Construction of similarity indices and we-ness, added to datasets. Reversing
 #   negative DCI items.
 #
 # Usage:
-#   Run source("R/04_data_construct.R") to generate execution report, saved in outputs/logs.
+#   Run source("R/04_data_construct.R") to generate execution report, saved in 
+#   outputs/logs.
 # 
 # Input :
-#   Assumes data is located in data/reduced (in variable dir_data_red),
-#   afer running 01_data_import.R + 03_data_reduction.R at least once
+#   Assumes data is located in data/reduced/ (in variable dir_data_red),
+#   after running 01_data_import.R + 03_data_reduction.R at least once
 #       * data/reduced/esm_red.rds
 #       * data/reduced/bg_red.rds
 #       * data/reduced/vmr_red.rds
 #       * data/reduced/post_red.rds
 #   
 # Output:
-#   Log file and datasets stored in data/analysis
+#   Log file and datasets stored in data/analysis/ (in variable dir_data_ana)
 #   Assumes that the output directories exist (e.g., via git clone)
 #   If not, these will as fallback be created during 00_setup.R
 #       * data/analysis (in dir_data_ana)
@@ -32,15 +33,9 @@
 # 1. Load packages, paths and data configurations
 source(here::here("R", "00_setup.R"))
 
-# 2. Load datasets
-
-vmr_data <- readRDS(file.path(dir_data_red, "vmr_red.rds"))
-post_data <- readRDS(file.path(dir_data_red, "post_red.rds"))
-
-# 3. Parameters
+# 2. Start logging
 log_file  = file.path(dir_logs, "04_data_construct_log.txt")
 
-# 4. Start logging
 sink(file=log_file, append = FALSE, split = TRUE) # for cat and print
 cat("============================================================\n")
 cat("04_data_construct.R log\n")
@@ -67,7 +62,8 @@ esm_data <- esm_data %>%
     cNA_part_perc = NA_part_perc - mean(NA_part_perc, na.rm = TRUE),
     clove         = love - mean(love, na.rm = TRUE),
     cperc_resp    = perc_resp - mean(perc_resp, na.rm = TRUE)
-  )
+  ) %>%
+  ungroup()
 
 # 3. Partner actual affect ----
 esm_data <- esm_data %>%
@@ -149,7 +145,8 @@ vmr_data <- vmr_data %>%
     cNA_own       = NA_own - mean(NA_own, na.rm = TRUE),
     cPA_part_perc = PA_part_perc - mean(PA_part_perc, na.rm = TRUE),
     cNA_part_perc = NA_part_perc - mean(NA_part_perc, na.rm = TRUE)
-  )
+  ) %>%
+  ungroup()
 
 # 3. Partner actual affect ----
 vmr_data <- vmr_data %>%

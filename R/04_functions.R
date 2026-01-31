@@ -5,11 +5,21 @@
 #   Define user functions to be used across scripts
 #
 # Usage:
-#.  Run source("R/04_functions.R") to source these functions.
+#   Run source("R/04_functions.R") to source these functions.
 #   Sourcing is included in R/00_setup.R together with R/01_paths.R, 
 #   R/02_packages.R, and R/03_data_config.R
 #
 ############################################################################## #
+
+read_csv_quiet <- function(path, ...) {
+  message("Reading: ", basename(path))
+  readr::read_csv(
+    path,
+    show_col_types = FALSE,
+    progress = FALSE,
+    ...
+  )
+}
 
 header <- function(text, level = 3) {
   if (level == 1) {

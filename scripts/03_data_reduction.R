@@ -79,7 +79,15 @@ esm_map <- c(
 # select and rename
 esm_data <- select_and_rename(esm_data, esm_map)
 
-  
+## ---- ```` Data exclusion from compliance-------------------------------------
+## --------------------------------------------------------------------------- -
+
+# dyad 74 had one partner delete with compliance ratio < 0.30 and will be excluded
+# see pre-regsitration
+
+esm_data <- esm_data %>% filter(dyad != 74) 
+cat("❗ Dyad 74 excluded from ESM data due to low compliance of one partner (< 30%)\n")
+
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -
 saveRDS(esm_data, file.path(dir_data_red, "esm_red.rds"))
@@ -136,6 +144,7 @@ bg_data <- select_and_rename(bg_data, bg_map)
 # clear which answers belonged to which participant and they were therefore excluded
 # from ESM. They did not participate to lab sessions either, so also delete them from background data BG.
 bg_data <- bg_data %>% filter(dyad != 59)
+cat("❗ Dyad 59 excluded from BG data due to deletion/reinstallation of mpath app\n")
 demographics <- demographics %>% filter(dyad != 59)
 
 ## ---- ```` Save  -------------------------------------------------------------
@@ -181,9 +190,11 @@ vmr_data <- select_and_rename(vmr_data, vmr_map)
 
 # correct CoupleID numbers higher than 700 (reduce them by 1400)
 vmr_data <- vmr_data %>% mutate(dyad = ifelse(dyad < 700, dyad, dyad - 1400))
+cat("❗ Corrected CoupleID numbers higher than 700 by reducing them by 1400\n")
 
 # exclude couple 2 since this was a test couple that should have been removed in preprocesing
 vmr_data <- vmr_data %>% filter(dyad != 2)
+cat("❗ Dyad 2 excluded from VMR data since this was a test couple\n")
 
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -
@@ -223,6 +234,7 @@ post_data <- select_and_rename(post_data, post_map)
 
 # exclude couple 2 since this was a test couple that should have been removed in preprocessing
 post_data <- post_data %>% filter(dyad != 2)
+cat("❗ Dyad 2 excluded from POST data since this was a test couple\n")
 
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -

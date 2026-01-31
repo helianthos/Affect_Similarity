@@ -2,15 +2,14 @@
 # 03_data_config.R
 #
 # Purpose:
-#   Central dataset structure and variable mappings for the 4 imported datasets,
-#   in lists:
+#   Central dataset structure and variable mappings for the 4 imported datasets:
 #       * CONFIG_ESM
 #       * CONFIG_BG
 #       * CONFIG_VMR
 #       * CONFIG_POST
-#   These lists can be unpacked in other scripts when needed, so the columns 
+#   These CONFIG files are lists of lists and can be unpacked so that columns 
 #   and variables can be directly referred to.
-
+#
 # Usage:
 #   Run source("R/03_data_config.R")
 #   Sourcing is included in R/00_setup.R together with R/01_paths.R, 
@@ -23,7 +22,7 @@
 ## ########################################################################### #
 
 CONFIG_ESM <- list(
-  # Columns mapping from codebook
+  # 'Non variable' columns mapping from codebook
   cols = list(
     dyad         = "CoupleID",              # Couple ID number
     person       = "PpID",                  # Participant ID number

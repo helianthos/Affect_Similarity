@@ -19,9 +19,10 @@
 #   - On a new machine, run renv::restore() before sourcing this file.
 # ============================================================
 
-# Core
 library(tidyverse)
 library(here)
 library(naniar)
 library(psych)
 library(rmcorr)
+library(lme4)
+library(performance)

@@ -27,7 +27,7 @@
 ## ---- GLOBAL SETUP -----------------------------------------------------------
 ## ########################################################################### #
 
-# 1. Load packages, paths and data configurations
+# 1. Load packages, paths, data configurations, and functions
 source(here::here("R", "00_setup.R"))
 
 # 2. Load datasets
@@ -41,7 +41,7 @@ post_data <- readRDS(file.path(dir_data_imp, "post_raw.rds"))
 log_file  = file.path(dir_logs, "02_data_checks_log.txt")
 plot_counter <- 1 # initialize start of plot numbering
 # ---- ESM
-min_compliance = 30
+min_compliance = 30  #   Minimum compliance (see preregistration)
 expected_beeps = 90 #    Expected = (10*5) + (4*10) = 90 beeps
 # ---- VMR
 expected_segments_per_topic = 16
@@ -741,7 +741,7 @@ if(nrow(pair_check) == 0) {
 }
 
 # 9. Row coverage table to spot holes in the segment grid across topics
-header("Coverage table: number of rows per (topic x timepoint)")
+header("Coverage table: number of rows per (topic x segment)")
 
 grid_check <- vmr_data %>%
   count(.data[[topic]], .data[[segment]], name = "n_rows") %>%

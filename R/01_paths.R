@@ -15,9 +15,10 @@
 #     dependent and needs to be provided (see README.md)
 #   - The package 'here' is used to determine file path to project/working
 #     directory and set file paths to other project sub-directories
-#   - The project directory structure should exist since it is tracked by git
-#     (in case of cloning) or included in the project compressed file.
-#   - In case the core directories would not exist, they are created
+#   - The project directory structure as expected by the scripts should exist 
+#     after cloning from Github (since it is tracked by git and is included 
+#     in the project compressed file.
+#   - In case the core directories would not exist, they are created here.
 #   - The package 'here' should be installed, in case it is not, renv will 
 #     install it when doing renv::restore() (see README.md or renv_worklflow.md)
 #   - Do NOT call install.packages() in this file.
@@ -30,7 +31,7 @@ if (!file.exists(cfg_file)) {
     paste(
       "Missing config/local_raw_data_path.R.",
       "Create it by copying config/local_raw_data_path_TEMPLATE.R",
-      "and editing RAW_DATA_DIR.",
+      "and editing RAW_DATA_DIR (see README.md).",
       sep = "\n"
     ),
     call. = FALSE
@@ -48,7 +49,7 @@ if (!exists("RAW_DATA_DIR") ||       # missing?
   )
 }
 
-# Define paths list, paths should exist since tracked by git
+# Define paths list, paths should exist
 paths <- list(
   dir_project      = here::here(),
   dir_raw_data     = RAW_DATA_DIR,

@@ -14,27 +14,177 @@ theme_set(theme_minimal() + theme(legend.position = "bottom"))
 # ESM
 
 ```{r ESM_setup}
+#| include: false
 # load data
 esm_data  <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
 # load data configuration file 
 load_config("ESM")
 ```
 
+```{r missingness}
+esm_data %>% select(NA_own, PA_own, love, perc_resp, neg_gen, pos_gen,
+                    PA_similarity_act, NA_similarity_act, PA_similarity_perc,
+                    NA_similarity_perc) %>%
+  miss_var_summary()
+```
+
+The variables 'neg_gen' (about the occurrence of any (general) negative event since previous beep) and 'pos_gen' (any positive event since previous beep) are very high in missingness (91,4%). This is because these multiple choice questions were only asked on beeps were partner was not present (i.e., in 31,9% of beeps) AND there has not been any contact with partner since previous beep (reducing the proportion of beeps that were asked the neg_gen and pos_gen items to 8,53%). This explains the full missingness.
+
+The moderation by event valence (positive vs negative) that will be analyzed (see pre-registration step 3b of study component 1) will therefore have limited data.
+
+The perceived similarity measures are missing for 18,3% of the beeps. This is the same level as for NA_own, PA_own, etc., and is 1 - compliance . The actual similarity measures are missing for 27,6%, which is more because the calculating depends in both partners answering the underlying items
+
 ### Repeated measures correlations
 
 As in @bakdashRepeatedMeasuresCorrelation2017 we look at some repeated measure correlations. This is the common within person or within dyad correlation.
 
-```{r rmcorr analysis}
+#### Intra-individual Correlation: PA vs NA ($r_{rm} = -0.60, p < .001$)
+
+```{r}
 #| warning: false
 
-# (Bakdash & Marusich, 2017)
 rmcorr(person, PA_own, NA_own, esm_data)
 plot(rmcorr(person, PA_own, NA_own, esm_data))
-rmcorr(dyad, cPA_own, cNA_part_act, esm_data)
-plot(rmcorr(dyad, cPA_own, cNA_part_act, esm_data))
+rmcorr(person, cPA_own, cNA_own, esm_data)      # showing the same but on already centered vars
+plot(rmcorr(person, cPA_own, cNA_own, esm_data))  # one line because already centered
+```
 
+The correlation between an individual's own PA and NA is strong and negative. The \`rmcorr\` plot shows consistent negative slopes across participants, suggesting that as a person's positive affect increases relative to their mean, their negative affect decreases.
+
+#### Dyadic PA Convergence: Own PA vs Partner PA ($r_{rm} = 0.23, p < .001$)
+
+```{r}
+#| warning: false
+
+rmcorr(dyad, cPA_own, cPA_part_act, esm_data)
+plot(rmcorr(dyad, cPA_own, cPA_part_act, esm_data))
+```
+
+#### Dyadic NA Convergence: Own NA vs Partner NA ($r_{rm} = 0.22, p < .001$)
+
+```{r}
+#| warning: false
+
+rmcorr(dyad, cNA_own, cNA_part_act, esm_data)
+plot(rmcorr(dyad, cNA_own, cNA_part_act, esm_data))
+```
+
+### Intraclass Correlation Coefficient (ICC)
+
+How much of the variance in the data is due to differences between people or dyads rather than within people or dyads (like moment to moment fluctuations). We calculated ICCs using a model-based approach rather than the `psych` package to properly account for the 3-level nested structure of our ESM data (Moments within Persons within Dyads) and to handle the unbalanced nature of our repeated measurements.
+
+```{r}
+
+# Variables to analyze
+target_vars <- c("PA_own", "NA_own", "NA_part_perc", "PA_part_perc", "love", "perc_resp", "PA_similarity_perc", "NA_similarity_perc")
+
+# Run the loop
+icc_table <- target_vars %>%
+  map_dfr(function(v) {
+    # Construct the 3-level formula: Moments < Person < Dyad
+    formula_str <- as.formula(paste0(v, " ~ 1 + (1 | dyad / person)"))
+    # Fit the model
+    model <- lmer(formula_str, data = esm_data)
+    # Extract ICCs and format into a single row
+    icc_data <- icc(model, by_group = TRUE)
+    # Create a clean data frame for this variable
+    data.frame(
+      Variable = v,
+      ICC_Dyad = icc_data$ICC[icc_data$Group == "dyad"],
+      ICC_Person = icc_data$ICC[icc_data$Group == "person:dyad"]
+    )
+  })
+
+# View the results
+print(icc_table)
+
+# Calculate the Residual (Momentary) variance
+plot_data <- icc_table %>%
+  mutate(Momentary = 1 - (ICC_Dyad + ICC_Person)) %>%
+  pivot_longer(cols = c(ICC_Dyad, ICC_Person, Momentary), 
+               names_to = "Level", values_to = "Proportion")
+
+plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
+  labs(title = "Variance Decomposition by Variable",
+       x = "", y = "Percentage of Total Variance") +
+  theme_minimal()
+
+# show plot
+print(plot)
+
+# save plot
+plot_counter <- 1
+prefix <- "ICC"
+plot_name <- sprintf("%s_%d_icc_variance_decomposition_1.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
 
 ```
+
+The ICC analysis for the three-level variables indicates that a substantial portion of the variance in affect and relationship perceptions is attributable to momentary, within-person fluctuations, as both dyad-level and person-level ICCs remain relatively low to moderate. Perceived responsiveness stands out with the highest dyad-level stability (ICC=0.35), suggesting it is more strongly characterized by shared couple-level baselines than the other variables. In contrast, the similarity perception variables (`PA_similarity_perc` and `NA_similarity_perc`) show very low ICCs at both the dyad and person levels, indicating that how similar partners perceive themselves to be is a highly dynamic state that changes significantly from moment to moment rather than being a stable trait of the individual or the dyad.
+
+Technical note:\
+Y∼1+(1∣dyad/person), decomposes the total variance into three independent sources:
+
+1.  σdyad2$​: Variance of the dyad-level random intercept (between-dyad differences).
+
+2.  σperson2​: Variance of the person-level random intercept nested within dyads (stable differences between partners).
+
+3.  σerror2​: The residual variance (moment-to-moment or within-person fluctuations).
+
+4.  The ICC is the proportion of variance of the total variance.
+
+The **total variance** is the sum: σtotal2​=σdyad2​+σperson2​+σerror2​.
+
+Since the `_act` similarity scores are identical for both partners, they are mathematically "dyad-level" constants at each time point, so that their data only has two levels of meaningful variation.
+
+```{r}
+
+dyad_level_vars <- c("PA_similarity_act", "NA_similarity_act")
+
+# Simplified 2-level loop (Moments < Dyad)
+icc_table_dyad_only <- dyad_level_vars %>%
+  map_dfr(function(v) {
+    formula_str <- as.formula(paste0(v, " ~ 1 + (1 | dyad)"))
+    model <- lmer(formula_str, data = esm_data)
+    icc_data <- icc(model) # Standard ICC for 2-level
+    data.frame(
+      Variable = v,
+      ICC_Dyad = icc_data$ICC_adjusted,
+      ICC_Person = "-" # Explicitly NA as it's not applicable
+    )
+  })
+
+print(icc_table_dyad_only)
+
+plot_data <- icc_table_dyad_only %>%
+  mutate(Momentary = 1 - (ICC_Dyad)) %>%
+  pivot_longer(cols = c(ICC_Dyad, Momentary), 
+               names_to = "Level", values_to = "Proportion")
+
+plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
+  labs(title = "Variance Decomposition by Variable",
+       x = "", y = "Percentage of Total Variance") +
+  theme_minimal()
+
+print(plot)
+
+plot_counter <- 1
+prefix <- "ICC"
+plot_name <- sprintf("%s_%d_icc_variance_decomposition_2.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+For the variables that are identical for both partners within a dyad, such as `PA_similarity_act`, the variance was decomposed into dyad-level stability versus momentary fluctuations. The results show a low dyad-level ICC (ICC=0.04), which reveals that actual emotional similarity is not a particularly stable characteristic of the couples in this sample. Instead, the vast majority of the variance in actual similarity is driven by transient, time-specific co-fluctuations, suggesting that partners move in and out of emotional alignment throughout the sampling period.
 
 # BG
 
@@ -51,6 +201,7 @@ load_config("BG")
 ```{r demographics}
 
 plot_counter <- 1
+prefix <- "Demo"
 
 # 1. AGE (numeric)
 header("Age")
@@ -63,7 +214,7 @@ plot <- demographics %>%
   labs(title = "Age distribution", x = "Age (years)", y = "Count") +
   theme_minimal()
 plot
-plot_name <- sprintf("A-%d_age_hist.png", plot_counter)
+plot_name <- sprintf("%s_%d_age_hist.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 
@@ -73,7 +224,7 @@ labels <- get_label(demographics, "gender")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Gender Distribution", "Gender")
 plot
-plot_name <- sprintf("A-%d_gender_bar.png", plot_counter)
+plot_name <- sprintf("%s_%d_gender_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 
@@ -83,7 +234,7 @@ labels <- get_label(demographics, "nat")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Nationality Distribution", "Nationality")
 plot
-plot_name <- sprintf("A-%d_nationality_bar.png", plot_counter)
+plot_name <- sprintf("%s_%d_nationality_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 
@@ -93,7 +244,7 @@ labels <- get_label(demographics, "etn")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Ethnicity Distribution", "Ethnicity")
 plot
-plot_name <- sprintf("A-%d_ethnicity_bar.png", plot_counter)
+plot_name <- sprintf("%s_%d_ethnicity_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 
@@ -103,7 +254,7 @@ labels <- get_label(demographics, "edu")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Eduction Level Distribution", "Education")
 plot
-plot_name <- sprintf("A-%d_education_bar.png", plot_counter)
+plot_name <- sprintf("%s_%d_education_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 
@@ -113,7 +264,7 @@ labels <- get_label(demographics, "child")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Children (Yes/No)", "Children?")
 plot
-plot_name <- sprintf("A-%d_chile_bar.png", plot_counter)
+plot_name <- sprintf("%s_%d_chile_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 
@@ -123,7 +274,7 @@ labels <- get_label(demographics, "liv_tog")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Living Together? (Yes/No)", "Living Together?")
 plot
-plot_name <- sprintf("A-%d_liv_tog_bar.png", plot_counter)
+plot_name <- sprintf("%s_%d_liv_tog_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 
@@ -138,7 +289,7 @@ plot <- demographics %>%
   labs(title = "Relationship Duration Distribution", x = "Duration (Months)", y = "Count") +
   theme_minimal()
 plot
-plot_name <- sprintf("A-%d_rel_dur_hist.png", plot_counter)
+plot_name <- sprintf("%s_%d_rel_dur_hist.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 
@@ -148,7 +299,7 @@ labels <- get_label(demographics, "med")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Medication Use? (Yes/No)", "Living Together?")
 plot
-plot_name <- sprintf("A-%d_med_bar.png", plot_counter)
+plot_name <- sprintf("%s_%d_med_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 ```
@@ -159,6 +310,9 @@ plot_counter <- plot_counter + 1
 
 ```{r dci_scores_histogram}
 
+plot_counter <- 1
+prefix <- "DCI"
+
 plot_dci_total_hist <- bg_data %>%
   filter(!is.na(dci_total)) %>%
   ggplot(aes(x = dci_total)) +
@@ -168,7 +322,7 @@ plot_dci_total_hist <- bg_data %>%
        x = "Total Score", y = "Count") +
   theme_minimal()
 plot_dci_total_hist
-plot_name <- sprintf("A-%d_dci_score_hist.png", plot_counter)
+plot_name <- sprintf("%s_%d_dci_score_hist.png", prefix, plot_counter)
 save_plot(plot_dci_total_hist, plot_name)
 plot_counter <- plot_counter + 1
 ```
@@ -222,7 +376,7 @@ plot_dci_total_corr <- dci_dyadic %>%
 plot_dci_total_corr
 
 # Save plot
-plot_name <- sprintf("A-%d_dci_total_scatter.png", plot_counter)
+plot_name <- sprintf("%s_%d_dci_total_scatter.png", prefix, plot_counter)
 save_plot(plot_dci_total_corr, plot_name)
 plot_counter <- plot_counter + 1
 
@@ -233,6 +387,9 @@ plot_counter <- plot_counter + 1
 ### We-ness scores histogram and differences between partners
 
 ```{r weness_scores_histogram}
+
+plot_counter <-1
+prefix <- "WENESS"
 
 # Histogram of We-ness
 plot_weness_hist <- bg_data %>%
@@ -246,7 +403,7 @@ plot_weness_hist <- bg_data %>%
 plot_weness_hist
 
 # Save Histogram
-plot_name <- sprintf("A-%d_weness_hist.png", plot_counter)
+plot_name <- sprintf("%s_%d_weness_hist.png", prefix, plot_counter)
 save_plot(plot_weness_hist, plot_name)
 plot_counter <- plot_counter + 1
 
@@ -271,7 +428,7 @@ plot_weness_diff <- dci_dyadic %>%
 plot_weness_diff
 
 # Save plot
-plot_name <- sprintf("A-%d_weness_diff_hist.png", plot_counter)
+plot_name <- sprintf("%s_%d_weness_diff_hist.png", prefix, plot_counter)
 save_plot(plot_weness_diff, plot_name)
 plot_counter <- plot_counter + 1
 ```
@@ -292,12 +449,12 @@ omega_res <- bg_data %>%
     omega(nfactors = 3, plot = FALSE)
 cat(sprintf("\nMcDonald's omega for we-ness = %f\n\n", omega_res$omega.tot))
 print(omega_res)
-diagram <- omega.diagram(omega_res, main = "We-ness Factor Structure")
+omega.diagram(omega_res, main = "We-ness Factor Structure")
 print(diagram)
 
 # Save diagram
-plot_name <- sprintf("A-%d_weness_factor_structure.png", plot_counter)
-save_base_plot(diagram, plot_name)
+plot_name <- sprintf("%s_%d_weness_factor_structure.png", prefix, plot_counter)
+save_base_plot(omega.diagram(omega_res, main = "We-ness Factor Structure"), plot_name)
 plot_counter <- plot_counter + 1
 
 ```
@@ -336,7 +493,7 @@ plot_weness_corr <- dci_dyadic %>%
 plot_weness_corr
 
 # Save plot
-plot_name <- sprintf("A-%d_weness_scatter.png", plot_counter)
+plot_name <- sprintf("%s_%d_weness_scatter.png", prefix, plot_counter)
 save_plot(plot_weness_corr, plot_name)
 plot_counter <- plot_counter + 1
 

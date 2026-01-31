@@ -5,6 +5,7 @@
 #     * load file paths (unpacked to .GlobalEnv) (01_paths.R)
 #     * Load packages (02_packages.R)
 #     * load data configuration lists (03_data_config.R)
+#     * load functions (04_functions.R)
 #
 # Used across scripts.
 # ============================================================
