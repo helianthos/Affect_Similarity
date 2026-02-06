@@ -130,7 +130,7 @@ The ICC analysis for the three-level variables indicates that a substantial port
 Technical note:\
 Y∼1+(1∣dyad/person), decomposes the total variance into three independent sources:
 
-1.  σdyad2$​: Variance of the dyad-level random intercept (between-dyad differences).
+1.  σdyad2\$​: Variance of the dyad-level random intercept (between-dyad differences).
 
 2.  σperson2​: Variance of the person-level random intercept nested within dyads (stable differences between partners).
 
