@@ -83,7 +83,7 @@ esm_data <- select_and_rename(esm_data, esm_map)
 ## --------------------------------------------------------------------------- -
 
 # dyad 74 had one partner delete with compliance ratio < 0.30 and will be excluded
-# see pre-regsitration
+# see pre-registration
 
 esm_data <- esm_data %>% filter(dyad != 74) 
 cat("❗ Dyad 74 excluded from ESM data due to low compliance of one partner (< 30%)\n")
@@ -195,6 +195,9 @@ cat("❗ Corrected CoupleID numbers higher than 700 by reducing them by 1400\n")
 # exclude couple 2 since this was a test couple that should have been removed in preprocesing
 vmr_data <- vmr_data %>% filter(dyad != 2)
 cat("❗ Dyad 2 excluded from VMR data since this was a test couple\n")
+
+# correct 'postief' to 'positive' as topic
+vmr_data <- vmr_data %>% mutate(topic = ifelse(topic == "positief", "positive", topic))
 
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -

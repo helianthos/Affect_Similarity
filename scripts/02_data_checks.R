@@ -46,6 +46,9 @@ expected_beeps = 90 #    Expected = (10*5) + (4*10) = 90 beeps
 # ---- VMR
 expected_segments_per_topic = 16
 expected_topics = c("positive", "negative")
+# ---- plot initialisation
+plot_counter <- 1
+prefix <- "Data_Checks"
 
 # 4. Start logging
 sink(file=log_file, append = FALSE, split = TRUE) # for cat and print
@@ -141,7 +144,9 @@ plot_time <- esm_data %>%
        x = "Hour of Day (0-24)", y = "Count of Beeps") +
   theme_minimal()
 
-save_plot(plot_time, "ESM_response_time_dist.png")
+plot_name <- sprintf("%s_%d_ESM_response_time_dist.png", prefix, plot_counter)
+save_plot(plot_time, plot_name)
+plot_counter <- plot_counter + 1
 
 # 7. Timestamp Order Check 
 header("Timestamp Logic (Scheduled < Sent < Start < Stop)")
@@ -318,7 +323,10 @@ header("Missingness Heatmap")
 plot_miss <- naniar::vis_miss(esm_data, warn_large_data = FALSE) +
   theme(axis.text.x = element_text(angle = 90)) +
   labs(title = "Missingness Map (Black = Missing)")
-save_plot(plot_miss, "ESM_missingness_map.png")
+
+plot_name <- sprintf("%s_%d_ESM_missingness_map.png", prefix, plot_counter)
+save_plot(plot_miss, plot_name)
+plot_counter <- plot_counter + 1
 
 ## ---- ```` A6. ESM COMPLIANCE ANALYSIS ---------------------------------------
 ## --------------------------------------------------------------------------- -
@@ -372,7 +380,9 @@ plot_comp_heatmap <- daily_counts %>%  # Uses object created in Section A3
   theme_minimal() +
   theme(axis.text.y = element_text(size = 6)) 
 
-save_plot(plot_comp_heatmap, "ESM_compliance_heatmap.png")
+plot_name <- sprintf("%s_%d_ESM_compliance_heatmap.png", prefix, plot_counter)
+save_plot(plot_comp_heatmap, plot_name)
+plot_counter <- plot_counter + 1
 
 # 6. Normalized compliance heatmap (saved as plot)
 header("Normalized Compliance Heatmap")
@@ -409,7 +419,9 @@ plot_norm_comp_heatmap <- esm_relative %>%
   theme_minimal() +
   theme(axis.text.y = element_text(size = 5))
 
-save_plot(plot_norm_comp_heatmap, "ESM_compliance_heatmap_normalized.png")
+plot_name <- sprintf("%s_%d_ESM_compliance_heatmap_normalized.png", prefix, plot_counter)
+save_plot(plot_norm_comp_heatmap, plot_name)
+plot_counter <- plot_counter + 1
 
 # 7. Fatigue heatmap
 header("Fatigue Heatmap")
@@ -476,7 +488,9 @@ plot_fatigue_avg <- plot_data %>%
        fill = "% Compliance") +
   theme_minimal()
 
-save_plot(plot_fatigue_avg, "ESM_fatigue_map.png")
+plot_name <- sprintf("%s_%d_ESM_fatigue_map.png", prefix, plot_counter)
+save_plot(plot_fatigue_avg, plot_name)
+plot_counter <- plot_counter + 1
 
 ## ---- ```` A7. ESM PARTNER BEEP SYNCHRONIZATION ------------------------------
 ## --------------------------------------------------------------------------- -

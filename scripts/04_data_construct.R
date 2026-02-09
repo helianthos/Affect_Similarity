@@ -6,7 +6,7 @@
 #   negative DCI items.
 #
 # Usage:
-#   Run source("R/04_data_construct.R") to generate execution report, saved in 
+#   Run source("R/04_data_construct.R") to generate execution log, saved in 
 #   outputs/logs.
 # 
 # Input :

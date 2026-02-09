@@ -3,6 +3,7 @@ title: "05_descriptives"
 ---
 
 ```{r setup}
+#| include: false
 
 # 1. Load packages, paths and data configurations
 source(here::here("R", "00_setup.R"))
@@ -19,61 +20,183 @@ theme_set(theme_minimal() + theme(legend.position = "bottom"))
 esm_data  <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
 # load data configuration file 
 load_config("ESM")
+# plot initialisation
+plot_counter <- 1
+prefix <- "ESM"
 ```
+
+## Missingness
 
 ```{r missingness}
 esm_data %>% select(NA_own, PA_own, love, perc_resp, neg_gen, pos_gen,
                     PA_similarity_act, NA_similarity_act, PA_similarity_perc,
                     NA_similarity_perc) %>%
-  miss_var_summary()
+             miss_var_summary()
+plot <- gg_miss_var(esm_data %>% select(NA_own, PA_own, love, perc_resp, neg_gen, pos_gen), show_pct = TRUE) + labs(title = "ESM Missingness per Variable")
+# save plot
+plot_name <- sprintf("%s_%d_Missingness.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+# print plot
+plot
 ```
 
 The variables 'neg_gen' (about the occurrence of any (general) negative event since previous beep) and 'pos_gen' (any positive event since previous beep) are very high in missingness (91,4%). This is because these multiple choice questions were only asked on beeps were partner was not present (i.e., in 31,9% of beeps) AND there has not been any contact with partner since previous beep (reducing the proportion of beeps that were asked the neg_gen and pos_gen items to 8,53%). This explains the full missingness.
 
-The moderation by event valence (positive vs negative) that will be analyzed (see pre-registration step 3b of study component 1) will therefore have limited data.
+The moderation by event valence (positive vs negative) that will be analyzed (see pre-registration step 3b of study component 1) will therefore have more limited data.
 
-The perceived similarity measures are missing for 18,3% of the beeps. This is the same level as for NA_own, PA_own, etc., and is 1 - compliance . The actual similarity measures are missing for 27,6%, which is more because the calculating depends in both partners answering the underlying items
+The perceived similarity measures are missing for 18,3% of the beeps. This is the same level as for NA_own, PA_own, etc., and is 1 - compliance . The actual similarity measures are missing for 27,6%, which is higher because the calculating depends on both partners answering the underlying items.
 
-### Repeated measures correlations
+## Repeated measures correlations
 
-As in @bakdashRepeatedMeasuresCorrelation2017 we look at some repeated measure correlations. This is the common within person or within dyad correlation.
+As in @bakdashRepeatedMeasuresCorrelation2017 we look at repeated measure correlations as descriptive measures but refrain from using these for inference (see below). The questions in this section is **"When one person in the couple deviates from their average, does the other person deviate from their average in the same direction?"**
 
-#### Intra-individual Correlation: PA vs NA ($r_{rm} = -0.60, p < .001$)
+We will use the function `rmcorr::rmcorr()`, which calculates the overall within-individual relationship among paired measures assessed on two or more occasions. The first argument of `rmcorr()` specifies the grouping over which commonality is sought:
 
-```{r}
+-   When using using 'person' as the first argument in `rmcorr::rmcorr()`, this is the correlation that is common across persons between two variables' deviations from their baseline (so for example own PA and own NA, what is the 'shared' or 'pooled' correlation of the within-person deviations from baseline?).
+
+-   When using 'dyad' as the first argument in `rmcorr::rmcorr()`, this is the correlation between two partner's deviations from baseline that is common across dyads. This treats the correlation as characteristic of the relationship, not of the individuals.
+
+Since correlation is symmetrical (A relates to B exactly how B relates to A), the actual r-value results of using 'person' or 'dyad' will be virtually identical.
+
+As mentioned, we will refrain from using the results from `rmcorr()` for inference. When grouping dyadic data by person in `rmcorr()`, the model treats partners as independent entities, ignoring the shared variance between them (because they belong to the same dyad). This violation of independence artificially inflates the degrees of freedom (df) and deflates p-values, making significance tests overly optimistic. However, the descriptive correlation coefficient (r) accuratelyrepresents the common within-person association across the sample.
+
+### Personal: Intrapersonal dynamics (individual level)
+
+#### Own PA vs own NA ($r_{rm} = -0.60, p < .001$)
+
+```{r ESM_rmcorr_PA_own_NA_own}
 #| warning: false
+rmc <- rmcorr(person, PA_own, NA_own, esm_data)
+# results
+create_rmc_plot_title(rmc, "ESM - ")
+rmc
+plot(rmc, main = plot_title)
+# save plot
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_na_own.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
 
-rmcorr(person, PA_own, NA_own, esm_data)
-plot(rmcorr(person, PA_own, NA_own, esm_data))
-rmcorr(person, cPA_own, cNA_own, esm_data)      # showing the same but on already centered vars
-plot(rmcorr(person, cPA_own, cNA_own, esm_data))  # one line because already centered
+# for illustration: the same but on already centered vars, so one regression line
+rmc <- rmcorr(person, cPA_own, cNA_own, esm_data)
+# results
+create_rmc_plot_title(rmc, "ESM - ")
+rmc
+plot(rmc, main = plot_title)
+# save plot
+plot_name <- sprintf("%s_%d_rmcorr_cpa_own_cna_own.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
 ```
 
-The correlation between an individual's own PA and NA is strong and negative. The \`rmcorr\` plot shows consistent negative slopes across participants, suggesting that as a person's positive affect increases relative to their mean, their negative affect decreases.
+The common within-person correlation between an individual's own PA and NA is strong and negative. The \`rmcorr\` plot shows consistent negative slopes across participants, suggesting that as a person's positive affect increases relative to their mean, their negative affect decreases.
 
-#### Dyadic PA Convergence: Own PA vs Partner PA ($r_{rm} = 0.23, p < .001$)
+#### Own PA vs perceived partner's PA ($r_{rm} = 0.36, p < .001$)
 
-```{r}
+```{r ESM_rmcorr_PA_own_PA_perceived_partner}
 #| warning: false
-
-rmcorr(dyad, cPA_own, cPA_part_act, esm_data)
-plot(rmcorr(dyad, cPA_own, cPA_part_act, esm_data))
+rmc <- rmcorr(person, cPA_own, cPA_part_perc, esm_data)
+create_rmc_plot_title(rmc, "ESM - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_pa_partner.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
 ```
 
-#### Dyadic NA Convergence: Own NA vs Partner NA ($r_{rm} = 0.22, p < .001$)
+While there was significant correlation between partners' actual Positive Affect ($r_{rm}​=.23$), participants' perceptions of their partners' PA were more strongly correlated with their own internal PA ($r_{rm}​=.36$), suggesting a degree of perceptual projection or assumed similarity.
 
-```{r}
+#### Own NA vs perceived partner's NA ($r_{rm} = 0.36, p < .001$)
+
+```{r ESM_rmcorr_NA_own_NA_perceived_partner}
 #| warning: false
-
-rmcorr(dyad, cNA_own, cNA_part_act, esm_data)
-plot(rmcorr(dyad, cNA_own, cNA_part_act, esm_data))
+rmc <- rmcorr(person, cNA_own, cNA_part_perc, esm_data)
+create_rmc_plot_title(rmc, "ESM - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_own_na_partner_perc.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
 ```
 
-### Intraclass Correlation Coefficient (ICC)
+#### Actual PA similarity vs perceived PA similarity ($r_{rm} = 0.62, p < .001$)
 
-How much of the variance in the data is due to differences between people or dyads rather than within people or dyads (like moment to moment fluctuations). We calculated ICCs using a model-based approach rather than the `psych` package to properly account for the 3-level nested structure of our ESM data (Moments within Persons within Dyads) and to handle the unbalanced nature of our repeated measurements.
+How well tuned is a person to the "state of the union"? Even though 'Actual Similarity' is a dyad-level variable repeated for both partners, the *perception* of that reality is an individual cognitive process. Grouping by person allows the model to capture how well each individual tracks the shared reality.
 
-```{r}
+```{r ESM_rmcorr_actual_perceived_sim_PA}
+#| warning: false
+rmc <- rmcorr(person, PA_similarity_act, PA_similarity_perc, esm_data)
+create_rmc_plot_title(rmc, "ESM - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_sim_act_pa_sim_perc.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+High, but probably driven by common element of own PA in both similarity measures.
+
+#### Actual NA similarity vs perceived NA similarity ($r_{rm} = 0.49, p < .001$)
+
+```{r ESM_rmcorr_actual_perceived_sim_NA}
+#| warning: false
+rmc <- rmcorr(person, NA_similarity_act, NA_similarity_perc, esm_data)
+create_rmc_plot_title(rmc, "ESM - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_sim_act_na_sim_perc.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+High, but probably driven by common element of own PA in both similarity measures.
+
+### Dyadic: Interpersonal synchrony & coupling
+
+#### Own PA vs Partner PA ($r_{rm} = 0.23, p < .001$)
+
+When looking at two variables that come from different partners (e.g., own PA and patner's PA) we will use grouping by dyad.
+
+Because the correlation between Partner A and Partner B is mathematically identical to the correlation between Partner B and Partner A, including both partners' rows for a dyad-level analysis results in exact data duplication. This redundancy artificially doubles your degrees of freedom and inflates statistical significance without adding any unique information about the couple's synchrony. Limiting the dataset to one row per dyad ensures your analysis reflects the true number of independent observations. When grouping by 'person', all rows (both partners) are retained (see above) because the analysis targets the population of individuals; while this introduces statistical non-independence, removing half the subjects would bias the estimate of the average person's experience.
+
+```{r ESM_rmcorr_PA_own_PA_partner}
+#| warning: false
+
+# filter to have only one line per dyad.
+esm_data_dyad <- esm_data %>% filter(person < 700)
+
+rmc <- rmcorr(dyad, cPA_own, cPA_part_act, esm_data_dyad)
+create_rmc_plot_title(rmc, "ESM - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_pa_partner.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+This result suggests a modest syncing of actual PA.
+
+#### Own NA vs Partner NA ($r_{rm} = 0.22, p < .001$)
+
+```{r ESM_rmcorr_NA_own_NA_partner}
+#| warning: false
+rmc <- rmcorr(dyad, cNA_own, cNA_part_act, esm_data_dyad)
+create_rmc_plot_title(rmc, "ESM - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_na_partner.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+This result suggests a modest syncing of actual NA.
+
+## Intraclass Correlation Coefficient (ICC)
+
+How much of the variance in the data is due to differences between people or dyads rather than within people or dyads (like moment to moment fluctuations). We calculated ICCs using a model-based approach rather than the `psych` package to properly account for the 3-level nested structure of our ESM data (Moments within Persons within Dyads).
+
+```{r ESM_icc}
 
 # Variables to analyze
 target_vars <- c("PA_own", "NA_own", "NA_part_perc", "PA_part_perc", "love", "perc_resp", "PA_similarity_perc", "NA_similarity_perc")
@@ -85,13 +208,16 @@ icc_table <- target_vars %>%
     formula_str <- as.formula(paste0(v, " ~ 1 + (1 | dyad / person)"))
     # Fit the model
     model <- lmer(formula_str, data = esm_data)
-    # Extract ICCs and format into a single row
+    # Extract ICCs and format into a single row, icc from performance package
     icc_data <- icc(model, by_group = TRUE)
     # Create a clean data frame for this variable
+    d_icc <- icc_data$ICC[icc_data$Group == "dyad"]
+    p_icc <- icc_data$ICC[icc_data$Group == "person:dyad"] 
     data.frame(
       Variable = v,
-      ICC_Dyad = icc_data$ICC[icc_data$Group == "dyad"],
-      ICC_Person = icc_data$ICC[icc_data$Group == "person:dyad"]
+      ICC_Dyad = d_icc,
+      ICC_Person = p_icc,
+      ICC_Moment = 1- d_icc - p_icc
     )
   })
 
@@ -109,7 +235,7 @@ plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
   coord_flip() +
   scale_y_continuous(labels = scales::percent) +
   scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
-  labs(title = "Variance Decomposition by Variable",
+  labs(title = "ESM - Variance Decomposition by Variable",
        x = "", y = "Percentage of Total Variance") +
   theme_minimal()
 
@@ -117,8 +243,6 @@ plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
 print(plot)
 
 # save plot
-plot_counter <- 1
-prefix <- "ICC"
 plot_name <- sprintf("%s_%d_icc_variance_decomposition_1.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
@@ -130,19 +254,25 @@ The ICC analysis for the three-level variables indicates that a substantial port
 Technical note:\
 Y∼1+(1∣dyad/person), decomposes the total variance into three independent sources:
 
-1.  σdyad2\$​: Variance of the dyad-level random intercept (between-dyad differences).
+1.  $\sigma_{dyad}^2$​: Variance of the dyad-level random intercept (between-dyad differences).
 
-2.  σperson2​: Variance of the person-level random intercept nested within dyads (stable differences between partners).
+2.  $\sigma_{person}^2$​: Variance of the person-level random intercept nested within dyads (stable differences between partners).
 
-3.  σerror2​: The residual variance (moment-to-moment or within-person fluctuations).
+3.  $\sigma_{error}^2$​: The residual variance (moment-to-moment or within-person fluctuations).
 
-4.  The ICC is the proportion of variance of the total variance.
+4.  The ICC is the proportion of variance of the total variance:
 
-The **total variance** is the sum: σtotal2​=σdyad2​+σperson2​+σerror2​.
+    -   **ICC_Dyad:** Stable differences between couples
 
-Since the `_act` similarity scores are identical for both partners, they are mathematically "dyad-level" constants at each time point, so that their data only has two levels of meaningful variation.
+    -   **ICC_Person:** Stable differences between individuals within those couples
 
-```{r}
+    -   **ICC_Moment:** The "within-person" variance. This captures how much a person deviates from their own average throughout the day (includes error).
+
+The **total variance** is the sum: $\sigma_{total}^2 = \sigma_{dyad}^2 + \sigma_{person}^2 + \sigma_{error}^2$.
+
+Since the `_act` similarity scores are identical for both partners, they are mathematically "dyad-level" constants at each time point, so their data only has two levels of meaningful variation.
+
+```{r ESM_icc_actual_similarity}
 
 dyad_level_vars <- c("PA_similarity_act", "NA_similarity_act")
 
@@ -177,8 +307,6 @@ plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
 
 print(plot)
 
-plot_counter <- 1
-prefix <- "ICC"
 plot_name <- sprintf("%s_%d_icc_variance_decomposition_2.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
@@ -186,25 +314,124 @@ plot_counter <- plot_counter + 1
 
 For the variables that are identical for both partners within a dyad, such as `PA_similarity_act`, the variance was decomposed into dyad-level stability versus momentary fluctuations. The results show a low dyad-level ICC (ICC=0.04), which reveals that actual emotional similarity is not a particularly stable characteristic of the couples in this sample. Instead, the vast majority of the variance in actual similarity is driven by transient, time-specific co-fluctuations, suggesting that partners move in and out of emotional alignment throughout the sampling period.
 
-# BG
+## Trajectory Plots
 
-```{r BG_setup}
-# load data
-bg_data   <- readRDS(file.path(dir_data_ana, "bg_ana.rds"))
-demographics <- readRDS(file.path(dir_data_ana, "demographics.rds"))
-# load data configuration file
-load_config("BG")
+Change the variables 'participant' and 'variable' in the code below to choose which trajectory for which participants is plotted.
+
+```{r trajectory plots}
+
+participants <- c(3, 703) # change this vector to participants to be plotted
+variable <- "PA_similarity_perc"     # change this variable to the variable to be plottee
+plot_trajectory(esm_data, variable, participants)
+ 
 ```
 
-## Descriptive statistics (demographics)
+## Time trend sensitivity analysis
 
-```{r demographics}
+### Time trend in momentary love across the ESM period
 
+From the preregistration: *"Rather than including time covariates in all primary models, we will test for systematic time trends in momentary love across the ESM period (e.g., habituation or drift across the two-week period), for example by fitting* $𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_𝑇𝑇_𝑚 + 𝜀_{𝑚𝑝𝑑}$*, with* $𝑇_𝑚$ *the chronological order of beeps, centered at the study midpoint."* In this model, $𝐿_{𝑚𝑝𝑑}$ denotes the momentary love felt for the partner by person 𝑝 in dyad 𝑑 at moment 𝑚, and $b_{0,pd} = \beta_0 + v_{0,d}+u_{0, pd}$, the sum of the fixed intercept, the dyad-level random intercept and the person-level random intercept.
+
+The preregistration continues : *"When indicated, we will re-estimate models including a linear time covariate (and, where feasible, day-in-study and time-of-day) as an additional robustness check. As an additional diagnostic, we will also inspect whether the similarity indices show systematic time trends."*
+
+```{r love_time_trend}
+
+# Create chronological order of beeps centered at study midpoint (T_m)
+# --> the Intercept then represents the average love at the middle of the study
+data <- esm_data %>%
+  mutate(
+    time_centered = beep - mean(beep, na.rm = TRUE),
+  )
+
+# preregistered model : Love_mpd = b0_pd + beta*Time + error
+# We nest Person within Dyad for the random intercept (b0_pd).
+
+model_love_time_trend <- lmer(love ~ time_centered + (1 | dyad/person), data = data)
+summary(model_love_time_trend)
+
+```
+
+The fixed effect for time_centered is slightly, but significantly positive, indicating a minor driftt upwards (love increases over time). Because of the large dataset, power is enormous and tiny fluctuations can be detected. A trend of 0.039 for every next beep, amounts to 0.2 (on a 0-100 slider scale) per weekday and 0.4 per weekend day. Over the full study duration, this is an increase of 2.7 points. This is indistinguishable from measurement noise (e.g., trying to hiet 75 and sliding to 77). **The trend is thus statistically significant but practically meaningless.**
+
+### Time trend in similarity indices
+
+In the preregistration, we also write: "*As an additional diagnostic, we will also inspect whether the similarity indices show systematic time trends."*
+
+```{r actual_similarity_indices_time_trend}
+
+# only retain one row per dyad x beep to avoiud double counting
+data_similarity <- data %>% filter(person < 700)
+
+# "Do partners become more/less similar in PA over the 2 weeks?"
+model_act_PA_sim_time_trend <- lmer(PA_similarity_act ~ time_centered + (1 | dyad), data = data_similarity)
+summary(model_act_PA_sim_time_trend)
+
+# "Do partners become more/less similar in NA over the 2 weeks?"
+model_act_NA_sim_time_trend <- lmer(NA_similarity_act ~ time_centered + (1 | dyad), data = data_similarity)
+summary(model_act_NA_sim_time_trend)
+
+```
+
+Partners within dyads are slightly increasing in actual NA and PA similarity over the course of the two weeks.
+
+```{r perceived_similarity_indices_time_trend}
+# "Does perceived NA similarity increase/decrease over the 2 weeks?"
+model_perc_NA_sim_time_trend <- lmer(NA_similarity_perc ~ time_centered + (1 | dyad/person), data = data_similarity)
+summary(model_perc_NA_sim_time_trend)
+cat("\n\n----------------------------------\n\n")
+
+# "Does perceived PA similarity increase/decrease over the 2 weeks?"
+model_perc_PA_sim_time_trend <- lmer(PA_similarity_perc ~ time_centered + (1 | dyad/person), data = data_similarity)
+summary(model_perc_PA_sim_time_trend)
+cat("\n\n----------------------------------\n\n")
+
+# # because model didn't fully converge, we will use stronger optimizer than default
+# model_perc_PA_sim_time_trend <- lmer(PA_similarity_perc ~ time_centered + (1 | dyad/person), data = data_similarity, control = lmerControl(optimizer = "bobyqa"))
+# summary(model_perc_PA_sim_time_trend)
+# cat("\n\n----------------------------------\n\n")
+
+# # because now we get a negative eigenvalue (model struggling to distinguish between a peak in the likelihid surface or a ridge), we run with all available optimizers. If result is robust acrsoss optimizers, the convergence warnings were a false alarm.
+# check_optim <- allFit(model_perc_PA_sim_time_trend)
+# summary(check_optim)
+# cat("\n\n----------------------------------\n\n")
+
+# we will also test on standardized data
+data_similarity <- data_similarity %>%
+  mutate(time_Z = scale(data_similarity$time_centered),
+    sim_PA_Z = scale(data_similarity$PA_similarity_perc),
+    sim_NA_Z = scale(data_similarity$NA_similarity_perc))
+
+model_perc_PA_sim_time_trend <- lmer(sim_PA_Z ~ time_Z + (1 | dyad/person), data = data_similarity)
+summary(model_perc_PA_sim_time_trend)
+cat("\n\n----------------------------------\n\n")
+
+model_perc_NA_sim_time_trend <- lmer(sim_NA_Z ~ time_Z + (1 | dyad/person), data = data_similarity)
+summary(model_perc_NA_sim_time_trend)
+
+```
+
+The initial perceived similarity model failed to converge using the default optimizer in `lme4,`but the gradient (0.003) became very close to the tolerance (0.002). The estimates are therefore likely accurate to several decimal places. This is probably because of differences in scale of the variables. To ensure robust estimation, we re-fit the models using the `bobyqa` optimizer (Bound Optimization BY Quadratic Approximation), which is known for superior performance with complex random-effect structures. This specification equally gave convergence warnings with a negative eigenvalue (regarding the curvature of the likelihood surface). We performed a sensitivity analysis using the `allFit` procedure which demonstrated that the fixed effect estimates were stable across five different optimization algorithms. We therefore report the results from the BOBYQA optimizer."
+
+```{r ESM unload}
+#| include: false
+clean_config("ESM")
+```
+
+# Demographics
+
+```{r demographics setup}
+# load data
+demographics <- readRDS(file.path(dir_data_ana, "demographics.rds"))
+# plot initialisation
 plot_counter <- 1
 prefix <- "Demo"
+```
 
-# 1. AGE (numeric)
-header("Age")
+## Age
+
+```{r age}
+
+# AGE = numeric
 print(summary(demographics$age))
 cat(sprintf("Missing age: %d\n", sum(is.na(demographics$age))))
 plot <- demographics %>%
@@ -218,8 +445,12 @@ plot_name <- sprintf("%s_%d_age_hist.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 
-# 2. GENDER
-header("Gender")
+```
+
+## Gender
+
+```{r gender}
+# gender = factor
 labels <- get_label(demographics, "gender")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Gender Distribution", "Gender")
@@ -227,9 +458,12 @@ plot
 plot_name <- sprintf("%s_%d_gender_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
+```
 
-# 3. NATIONALITY
-header("Nationality")
+## Nationality
+
+```{r nationality}
+# nationality = factor
 labels <- get_label(demographics, "nat")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Nationality Distribution", "Nationality")
@@ -238,8 +472,12 @@ plot_name <- sprintf("%s_%d_nationality_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 
-# 4. ETHNICITY
-header("Ethnicity")
+```
+
+## Ethnicity
+
+```{r ethnicity}
+# ethnicity = factor
 labels <- get_label(demographics, "etn")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Ethnicity Distribution", "Ethnicity")
@@ -247,9 +485,12 @@ plot
 plot_name <- sprintf("%s_%d_ethnicity_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
+```
 
-# 5. EDUCATION
-header("Education")
+## Education
+
+```{r education}
+# education = factor
 labels <- get_label(demographics, "edu")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Eduction Level Distribution", "Education")
@@ -257,9 +498,12 @@ plot
 plot_name <- sprintf("%s_%d_education_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
+```
 
-# 6. CHILDREN
-header("Children")
+## Children
+
+```{r children}
+# children = factor
 labels <- get_label(demographics, "child")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Children (Yes/No)", "Children?")
@@ -267,9 +511,12 @@ plot
 plot_name <- sprintf("%s_%d_chile_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
+```
 
-# 7. LIVING TOGETHER
-header("Living together")
+## Living Together
+
+```{r living together}
+# living together = factor
 labels <- get_label(demographics, "liv_tog")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Living Together? (Yes/No)", "Living Together?")
@@ -277,9 +524,12 @@ plot
 plot_name <- sprintf("%s_%d_liv_tog_bar.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
+```
 
-# 8. RELATIONSHIP DURATION (Numeric - months)
-header("Relationship duration (months)")
+## Relationship Duration
+
+```{r relationship duration}
+# relationship duration = numeric
 print(summary(demographics$rel_dur))
 cat(sprintf("Missing relationship duration: %d\n", sum(is.na(demographics$rel_dur))))
 plot <- demographics %>%
@@ -292,9 +542,12 @@ plot
 plot_name <- sprintf("%s_%d_rel_dur_hist.png", prefix, plot_counter)
 save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
+```
 
-# 9. MEDICATION
-header("Medication")
+## Medication
+
+```{r medication}
+# medication = factor
 labels <- get_label(demographics, "med")
 print(freq_table(labels))
 plot <- plot_bar_categorical(labels, "Medication Use? (Yes/No)", "Living Together?")
@@ -304,14 +557,23 @@ save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 ```
 
+# BG
+
+```{r BG_setup}
+# load data
+bg_data   <- readRDS(file.path(dir_data_ana, "bg_ana.rds"))
+# load data configuration file
+load_config("BG")
+# plot initialisation
+plot_counter <- 1
+prefix <- "BG"
+```
+
 ## DCI descriptive statistics
 
 ### DCI scores histogram
 
 ```{r dci_scores_histogram}
-
-plot_counter <- 1
-prefix <- "DCI"
 
 plot_dci_total_hist <- bg_data %>%
   filter(!is.na(dci_total)) %>%
@@ -327,7 +589,39 @@ save_plot(plot_dci_total_hist, plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-### Reliability of DCI scale
+Because the 30 DCI items used are Likert 1-5, the total DCI score is between 30 and 150.
+
+## Reliability of DCI scale
+
+### Alpha and Omega ($\alpha$ and $\omega$)
+
+psych::omega() estimates reliability using a factor model and assumes that items may refelect:
+
+-   One general factor (what items have in common)
+
+-   Several group factors (clusters or subscales)
+
+In the function, we therefore have to specify the number of group factors we expect. The DCI has the following 9 subscales (@bodenmannDyadicCopingInventory2018), with items 36 and 37 for evaluation (Evaluation of dyadic coping; (EDC):
+
+1.  Stress communicated by oneself (SCO): items 1, 2, 3, and 4
+
+2.  Supportive dyadic coping by oneself (SDC): items 20, 21, 23, 24, and 29
+
+3.  Delegated dyadic coping by oneself (DDCO): items 28, and 30
+
+4.  Negative dyadic coping by oneself (NDCO): items 22, 25, 26, and 27
+
+5.  Stress communication of the partner (SCP): items 16, 17, 18, and 19
+
+6.  Supportive dyadic coping of the partner (SDCP): items 5, 6, 8, 9, and 13
+
+7.  Delegated dyadic coping of the partner (DDCP): items 12 and 14
+
+8.  Negative dyadic coping by partner (NDCP): items 7, 10, 11, and 15
+
+9.  Common dyadic coping (CDC): items 31, 32, 33, 34, and 35
+
+Since items 31-37 are missing in the data, 8 subscales would be expected, and nfactors is set to 8.
 
 ```{r dci_reliability}
 
@@ -340,39 +634,183 @@ cat(sprintf("Cronbach's alpha for DCI scale = %f", alpha_res$total$raw_alpha))
 # B. McDonald's Omega
 omega_res <- bg_data %>%
     select(all_of(scale_DCI)) %>%
-    omega(nfactors = 3, plot = TRUE)
-omega_res <- suppressMessages(omega(bg_data %>% select(all_of(scale_DCI)), 
-                                             nfactors = 3, plot = FALSE))
-cat(sprintf("\nMcDonald's omega for DCI scale = %f", omega_res$omega.tot))
+    omega(nfactors = 8, plot = FALSE)
+cat(sprintf("\nMcDonald's omega for DCI scale = %f\n\n", omega_res$omega.tot))
 ```
 
-### DCI dyadic correlation
+### Hierarchical EFA with 8 factors
+
+The Schmid-Leiman transformation produces a bifactor representation (one general factor that all items can load on + orthogonal group factors capturing leftover shared variance). This. matches how questionnaires are actually built. It also produces a hierarchical omega, being the reliability of the general factor as measured by the total score (how defensible is it to treat the total score as measuring one common trait). We can look at the factor structure in more detail.
+
+Running the exploratory hierarchical factor analysis (@schmidDevelopmentHierarchicalFactor1957) with nfactors=8, the question is whether we can find the original 8 subscales on our data.\
+We use Pearson correlations (thus without the poly = TRUE argument for polychoric correlations), which should be a good approximation for 5 Likert items. As a sensitivity, we will recalculate with polychoric correlations.
+
+```{r dci_efa_8}
+omega_res <- bg_data %>%
+    select(all_of(scale_DCI)) %>%
+    omega(nfactors = 8, plot = FALSE)
+omega.diagram(omega_res) # by default factor loadings of > 0.2 are printed
+omega.diagram(omega_res, cut = .3)
+print(omega_res)
+print(omega_res, cut = .3)
+plot_name <- sprintf("%s_%d_dci_omega_factor_analysis_fact8_cut2.png", prefix, plot_counter)
+save_base_plot(omega.diagram(omega_res), plot_name)
+plot_counter <- plot_counter + 1
+plot_name <- sprintf("%s_%d_dci_omega_factor_analysis_fact8_cut3.png", prefix, plot_counter)
+save_base_plot(omega.diagram(omega_res, cut = .3), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+The DCI has very high overall reliability ($\alpha = 0.85,\ \omega = 0.92$) and the 8-factor structure fits the data closely (RMSEA/Root Mean Square Error of Approximation = 0.037 \< 0.05, BIC = -900.29).
+
+\[Note: h2=communality (proportion of variance explained by common factors, u2= uniqueness (proportion of variance not explained by common factors, 1-h2), p2=proportion of variance attributable to g, com=complexity (how cross-loaded is thjis item).\]
+
+Omega Hierarchical = 0.58, meaning that about 58% of the variance is due to "general coping", while the remaining variance is driven by the 8 factors (using cutoff for loadings of \> .2, in bold italics when \> .3):
+
+|  |  |  |  |  |
+|---------------|---------------|---------------|:--------------|---------------|
+| **Factor** | **Items Loading...** | ... and items missing... | **...for interpretation** | **Other items loading** |
+| **F1\*** | ***5*****, *6***, 8, ***9*** | 13 | Supportive Partner (SDCP)  | 24 |
+|  | 7, ***10*****, *11***, 15 | \- | part 1 of Negative Partner (NDCP)  |  |
+| **F2\*** | ***20, 21, 24*** | 23, 29 | part 1 of Supportive Self (SDC)  | 1, 26, 27 |
+| **F3\*** | ***16, 17, 18, 19*** | \- | Stress Comm. Partner (SCP)  | 7 (-), ***8, 13***, 15, 21 |
+| **F4\*** | ***1, 2, 3, 4*** | \- | Stress Comm. Self (SCO)  | 8, 13, 14, 21, 27 |
+| **F5\*** | ***22, 25***, 27 | 26 | Negative Self (NDCO)  | 2 (-), 13 |
+|  | 7, ***10, 11*** | 15 | part 2 of Negative Partner (NDCP)  |  |
+| **F6\*** | ***28, 30*** | \- | Delegated Self (DDCO)  | 17, 18, 24, 27 (-), ***29*** |
+| **F7\*** | ***23, 29*** | 20, 21, 24 | part 2 of Supportive Self (SDC) | ***26***, 27 |
+| **F8\*** | ***12, 14*** | \- | Delegated Partner (DDCP)  | 2 |
+
+Note: use fa.parallel to determine how many factors are clearly above noise.
+
+```{r dci_horn}
+bg_data %>%
+  select(all_of(scale_DCI)) %>%
+  fa.parallel()
+```
+
+### Polychoric sensitivities
+
+```{r dci_efa_8_polychoric}
+omega_res <- bg_data %>%
+    select(all_of(scale_DCI)) %>%
+    omega(nfactors = 8, plot = FALSE, poly = TRUE)
+omega.diagram(omega_res) # by default factor loadings of > 0.2 are printed
+print(omega_res, cut = .3)
+plot_name <- sprintf("%s_%d_dci_omega_factor_analysis_fact8_cut2_poly.png", prefix, plot_counter)
+save_base_plot(omega.diagram(omega_res), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+**Polychoric correlations** assume each item is an **ordinal discretization** of an underlying continuous latent response, and try to recover the correlation between those latent responses. The results produced here, indicate some instability or overfactoring:
+
+**DCI12 has h2 = 1.00 and u2 = 0.00** and a very high group loading (F7 = .94). This could indicate a **Heywood** situation or a correlation structure that is near-deterministic for that item. With polychorics this often happens when an item has **very sparse categories** (e.g., almost everyone answers 1 or 5), making polychoric estimation unstable.
+
+### Hierarchical EFA with 7 factors
+
+```{r dci_efa_7}
+omega_res <- bg_data %>%
+    select(all_of(scale_DCI)) %>%
+    omega(nfactors = 7, plot = FALSE)
+omega.diagram(omega_res) # by default factor loadings of > 0.2 are printed
+omega.diagram(omega_res, cut = .3)
+print(omega_res)
+print(omega_res, cut = .3)
+plot_name <- sprintf("%s_%d_dci_omega_factor_analysis_fact7_cut2.png", prefix, plot_counter)
+save_base_plot(omega.diagram(omega_res), plot_name)
+plot_counter <- plot_counter + 1
+plot_name <- sprintf("%s_%d_dci_omega_factor_analysis_fact7_cut3.png", prefix, plot_counter)
+save_base_plot(omega.diagram(omega_res, cut = .3), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+|  |  |  |  |  |
+|---------------|---------------|---------------|:--------------|---------------|
+| **Factor** | **Items Loading...** | ... and items missing... | **...for interpretation** | **Other items loading** |
+| **F1\*** | ***5*****, *6***, 8, ***9, 13*** | \- | Supportive Partner (SDCP)  | ***16, 19,*** 26, 28(-) |
+|  | 7, ***10*****, *11***, 15 | \- | part 1 of Negative Partner (NDCP)  |  |
+| **F2\*** | ***20, 21, 24*** | 23, 29 | part 1 of Supportive Self (SDC)  | 1, 6, 26, 27 |
+| **F3\*** | ***16, 17, 18, 19*** | \- | Stress Comm. Partner (SCP)  | 7 (-), 8, 13, 15, 26(-), ***28,*** 30 |
+| **F4\*** | ***1, 2, 3, 4*** | \- | Stress Comm. Self (SCO)  | 13, 23(-), 30 |
+| **F5\*** | ***23, 29*** | 20, 21, 24 | part 2 of Supportive Self (SDC)  | 26 |
+|  | ***28***, 30 | \- | Delegated Self (DDCO)  |  |
+| **F6\*** | ***7,*** 10, 11 | 15 | part 2 of Negative Partner (NDCP) |  |
+|  |  |  | mix? | ***22, 23(-), 25,*** 30 |
+| **F7\*** | ***12, 14*** | \- | Delegated Partner (DDCP)  | 2 |
+
+### DCI ICC
+
+```{r dci_icc}
+
+model_dci <- lmer(dci_total ~ 1 + (1 | dyad), data = bg_data)
+icc_res <- performance::icc(model_dci)
+icc_val <- icc_res$ICC_adjusted
+
+icc_table <- data.frame(
+  Level = c("ICC_Dyad", "ICC_Person (incl. error)"),
+  Proportion = c(icc_val, 1 - icc_val)
+)
+
+print(icc_table)
+
+plot <- ggplot(icc_table, aes(x = "", y = Proportion, fill = Level)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = scales::percent(Proportion, accuracy = 0.1)), 
+            position = position_stack(vjust = 0.5), color = "white") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+ scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
+  labs(title = "Variance in DCI Total",
+       subtitle = "How much of the score depends on the couple?",
+       x = "", y = "Proportion of Variance") +
+  theme_minimal()
+
+print(plot)
+
+plot_name <- sprintf("%s_%d_dci_total_icc.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+```
+
+### DCI pairwise dyadic correlation
+
+Another valid way to look at the dyadic correlation is to use every dyad twice but with partners inversed.
 
 ```{r dci_dyadic_correlation}
 
 # Create dataframe with dci_total and we_ness of partners in same row
 dci_dyadic <- bg_data %>%
   mutate(role = if_else(person < 700, "P1", "P2")) %>%
-  select(dyad, role, dci_total, we_ness) %>%
+  select(dyad, role, dci_total, we_ness) %>% # include we_ness for later chunk
   group_by(dyad) %>%
   pivot_wider(
     names_from = role, 
     values_from = c(dci_total, we_ness)
-    )
+    ) %>%
+  ungroup()
+
+# create double-entry data/symmetrical because partners are indistinguishable
+dci_double <- bind_rows(
+  dci_dyadic %>% select(val_x = dci_total_P1, val_y = dci_total_P2),
+  dci_dyadic %>% select(val_x = dci_total_P2, val_y = dci_total_P1)
+)
 
 # Calculate Correlation
-cor_total <- cor(dci_dyadic$dci_total_P1, dci_dyadic$dci_total_P2, use = "complete.obs")
+cor_total <- cor(dci_double$val_x, dci_double$val_y, use = "complete.obs")
 header(sprintf("Dyadic Correlation (Total DCI): r = %.3f", cor_total))
 
-# Plot Scatter (Visualizing the correlation)
-plot_dci_total_corr <- dci_dyadic %>%
-  ggplot(aes(x = dci_total_P1, y = dci_total_P2)) +
+# Plot Scatter 
+plot_dci_total_corr <- dci_double %>%
+  ggplot(aes(x = val_x, y = val_y)) +
   geom_point(alpha = 0.6) +
-  geom_smooth(method = "lm", color = "blue", se = FALSE) +
+  geom_smooth(method = "lm", color = "lightblue", se = FALSE) +
+  geom_abline(intercept = 0, slope = 1, color = "lightgrey") +
   labs(title = "Dyadic Correlation: Total DCI",
        subtitle = paste0("Pearson r = ", round(cor_total, 3)),
-       x = "Partner 1 Score", y = "Partner 2 Score") +
-  theme_minimal()
+       x = "Partner A Score", y = "Partner B Score") +
+  theme_minimal() +
+  coord_fixed()
 plot_dci_total_corr
 
 # Save plot
@@ -388,14 +826,11 @@ plot_counter <- plot_counter + 1
 
 ```{r weness_scores_histogram}
 
-plot_counter <-1
-prefix <- "WENESS"
-
 # Histogram of We-ness
 plot_weness_hist <- bg_data %>%
   filter(!is.na(we_ness)) %>%
   ggplot(aes(x = we_ness)) +
-  geom_histogram(binwidth = 0.1, fill = "forestgreen", color = "white") +
+  geom_histogram(binwidth = 0.1, fill = "lightgreen", color = "white") +
   labs(title = "Distribution of 'We-ness' Scores", 
        subtitle = "Average of 22 Positive items (No negative items)",
        x = "We-ness Score", y = "Count") +
@@ -420,7 +855,7 @@ summary(dci_dyadic$weness_diff) %>% print()
 plot_weness_diff <- dci_dyadic %>%
   filter(!is.na(weness_diff)) %>%
   ggplot(aes(x = weness_diff)) +
-  geom_histogram(binwidth = 0.1, fill = "firebrick", color = "white") +
+  geom_histogram(binwidth = 0.1, fill = "tomato3", color = "white") +
   labs(title = "Distribution of We-ness Differences", 
        subtitle = "Absolute difference between Partner 1 and Partner 2",
        x = "Difference Score (|P1 - P2|)", y = "Count of Couples") +
@@ -433,9 +868,31 @@ save_plot(plot_weness_diff, plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-### Reliability of we-ness construct
+## Reliability of we-ness construct
+
+### Alpha and Omega ($\alpha$ and $\omega$)
 
 ```{r weness_reliability}
+# A. Cronbach's Alpha
+alpha_res <- bg_data %>%
+    select(all_of(DCI_weness_items)) %>%
+    alpha()
+cat(sprintf("Cronbach's alpha for we-nesse = %f\n", alpha_res$total$raw_alpha))
+
+# B. McDonald's Omega
+omega_res <- bg_data %>%
+    select(all_of(DCI_weness_items)) %>%
+    omega(nfactors = 6, plot = FALSE)
+cat(sprintf("\nMcDonald's omega for we-ness = %f\n\n", omega_res$omega.tot))
+```
+
+### Hierarchical EFA with 6 factors
+
+Since we exclude the negative scales (NDCO and NDCP, with items ), we expect 6 subscales in our we-ness construct.
+
+A hierarchical factor analysis (Schmid-Leiman bifactor solution) was conducted to evaluate the internal structure of the We-Ness construct. The analysis supports a hierarchical structure consisting of one General Factor (*g*) and three distinct specific group factors, confirming that "We-Ness" is an overarching construct that encompasses both giving and receiving support.
+
+```{r weness_efa_6}
 
 # A. Cronbach's Alpha
 alpha_res <- bg_data %>%
@@ -446,11 +903,10 @@ cat(sprintf("Cronbach's alpha for we-nesse = %f\n", alpha_res$total$raw_alpha))
 # B. McDonald's Omega
 omega_res <- bg_data %>%
     select(all_of(DCI_weness_items)) %>%
-    omega(nfactors = 3, plot = FALSE)
+    omega(nfactors = 6, plot = FALSE)
 cat(sprintf("\nMcDonald's omega for we-ness = %f\n\n", omega_res$omega.tot))
 print(omega_res)
 omega.diagram(omega_res, main = "We-ness Factor Structure")
-print(diagram)
 
 # Save diagram
 plot_name <- sprintf("%s_%d_weness_factor_structure.png", prefix, plot_counter)
@@ -459,44 +915,89 @@ plot_counter <- plot_counter + 1
 
 ```
 
-A hierarchical factor analysis (Schmid-Leiman bifactor solution) was conducted to evaluate the internal structure of the We-Ness construct. The analysis supports a hierarchical structure consisting of one General Factor (*g*) and three distinct specific group factors, confirming that "We-Ness" is an overarching construct that encompasses both giving and receiving support.
+|  |  |  |  |  |
+|---------------|---------------|---------------|:--------------|---------------|
+| **Factor** | **Items Loading...** | ... and items missing... | **...for interpretation** | **Other items loading** |
+| **F1\*** | ***5*****, *6***, ***8***, ***9, 13*** | \- | Supportive Partner (SDCP)  | 14, ***16***, 19, 28(-) |
+| **F2\*** | ***20, 21, 24*** | 23, 29 | Part 1 of Supportive Self (SDC)  | ***1***, 30 |
+| **F3\*** | ***16, 17, 18, 19*** | \- | Stress Comm. Partner (SCP)  | ***8, 13,*** ***28,*** 30 |
+| **F4\*** | ***1, 2, 3, 4*** | \- | Stress Comm. Self (SCO)  | 13, 14, 23(-) |
+| F5\* | ***23, 29*** | 20, 21, 24 | Part 2 of Supportive Self (SDC) | \- |
+|  | ***28***, 30 | \- | Delegated Self (DDCO)  | \- |
+| F6\* | ***12, 14*** | \- | Delegated Partner (DDCP) | 2 |
 
-**1. Reliability and Global Fit** The scale demonstrates excellent total reliability (ωt​=0.87), indicating that the items form a cohesive total scale. The Hierarchical Omega (ωh​=0.42) indicates that the General Factor accounts for a substantial portion (42%) of the common variance.
+### We-ness ICC
 
-**2. Factor Interpretation** The variance is partitioned into a general "We-Ness" trait and three specific sub-domains corresponding to the provider of the support and the focus of communication:
+```{r weness_icc}
 
--   **General Factor (*g*) — "Global We-Ness":** This factor represents the fundamental dyadic cohesion. It captures the shared tendency of the couple to function as a unit, regardless of the specific coping strategy employed.
+model_weness <- lmer(we_ness ~ 1 + (1 | dyad), data = bg_data)
+icc_res <- performance::icc(model_weness)
+icc_val <- icc_res$ICC_adjusted
 
--   **Factor 1 — Supportive Dyadic Coping (Perceived Partner Support):** *(Items: DCI 5, 6, 8, 9, 13, 14)* This factor captures the variance associated with **receiving support**. These items describe the individual's perception of their partner's active efforts to help them (e.g., "My partner shows empathy and understanding to me" ). It represents the "You help me" dimension.
+icc_table <- data.frame(
+  Level = c("ICC_Dyad", "ICC_Person (incl. error)"),
+  Proportion = c(icc_val, 1 - icc_val)
+)
 
--   **Factor 2 — Stress Communication Balance:** *(Items: Positive loading on 1–4, Negative loading on 16–19)* This bipolar factor captures the **communicative dynamic** of the dyad. It differentiates between focusing on one's own stress (Self-Communication, items 1–4) versus focusing on the partner's stress (Partner-Communication, items 16–19). This represents the "Who is talking?" dimension.
+print(icc_table)
 
--   **Factor 3 — Supportive Dyadic Coping (Own Provided Support):** *(Items: DCI 20, 21, 24, 28, 29, 30)* This factor captures the variance associated with **providing support**. Unlike Factor 1, these items reflect the individual's own active efforts to support their partner (e.g., "I show empathy and understanding to my partner" ). It represents the "I help you" dimension.
+plot <- ggplot(icc_table, aes(x = "", y = Proportion, fill = Level)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = scales::percent(Proportion, accuracy = 0.1)), 
+            position = position_stack(vjust = 0.5), color = "white") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+ scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
+  labs(title = "Variance in We-ness",
+       subtitle = "How much of the score depends on the couple?",
+       x = "", y = "Proportion of Variance") +
+  theme_minimal()
 
-### We-ness dyadic correlation
+print(plot)
+
+plot_name <- sprintf("%s_%d_weness_icc.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+
+```
+
+### We-ness pairwise dyadic correlation
 
 ```{r weness_dyadic_correlation}
 
-# Dyadic Correlation We-ness
-cor_weness <- cor(dci_dyadic$we_ness_P1, dci_dyadic$we_ness_P2, use = "complete.obs")
-header(sprintf("Dyadic Correlation (We-ness): r = %.3f", cor_weness))
+# create double-entry data/symmetrical because partners are indistinguishable
+dci_double <- bind_rows(
+  dci_dyadic %>% select(val_x = we_ness_P1, val_y = we_ness_P2),
+  dci_dyadic %>% select(val_x = we_ness_P2, val_y = we_ness_P1)
+)
 
-# Plot Scatter We-ness
-plot_weness_corr <- dci_dyadic %>%
-  ggplot(aes(x = we_ness_P1, y = we_ness_P2)) +
-  geom_point(alpha = 0.6, color = "darkgreen") +
-  geom_smooth(method = "lm", color = "black", se = FALSE) +
+# Calculate Correlation
+cor_total <- cor(dci_double$val_x, dci_double$val_y, use = "complete.obs")
+header(sprintf("Dyadic Correlation (We-ness): r = %.3f", cor_total))
+
+# Plot Scatter
+plot <- dci_double %>%
+  ggplot(aes(x = val_x, y = val_y)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", color = "blue", se = FALSE) +
+  geom_abline(intercept = 0, slope = 1, color = "lightgrey") +
   labs(title = "Dyadic Correlation: We-ness",
-       subtitle = paste0("Pearson r = ", round(cor_weness, 3)),
-       x = "Partner 1 We-ness", y = "Partner 2 We-ness") +
-  theme_minimal()
-plot_weness_corr
+       subtitle = paste0("Pearson r = ", round(cor_total, 3)),
+       x = "Partner A Score", y = "Partner B Score") +
+  theme_minimal() +
+  coord_fixed()
+plot
 
 # Save plot
-plot_name <- sprintf("%s_%d_weness_scatter.png", prefix, plot_counter)
-save_plot(plot_weness_corr, plot_name)
+plot_name <- sprintf("%s_%d_weenss_total_scatter.png", prefix, plot_counter)
+save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
+```
 
+```{r BG unload}
+#| include: false
+clean_config("BG")
 ```
 
 # VMR
@@ -506,6 +1007,651 @@ plot_counter <- plot_counter + 1
 vmr_data  <- readRDS(file.path(dir_data_ana, "vmr_ana.rds"))
 # load data configuration file 
 load_config("VMR")
+# plot initialisation
+plot_counter <- 1
+prefix <- "VMR"
+```
+
+## Repeated measures correlations
+
+We will use `rmcorr:rmcorr()` on the VMR data in a similar way as on the ESM data. We will calculate these correlations separately for the positive and the negative interaction, next to pooled across interactions.
+
+```{r create_positive_and_negative}
+vmr_data_pos <- vmr_data %>% filter(topic == "positive")
+vmr_data_neg <- vmr_data %>% filter(topic == "negative")
+```
+
+### Personal: Intrapersonal dynamics (individual level)
+
+#### Own PA vs own NA ($r_{rm} = -0.72, p < .001$)
+
+```{r VMR_rmcorr_PA_own_NA_own}
+#| warning: false
+
+# All interactions combined
+rmc <- rmcorr(person, PA_own, NA_own, vmr_data)
+create_rmc_plot_title(rmc, "VMR All - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_na_own_all.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Positive Interaction
+rmc <- rmcorr(person, PA_own, NA_own, vmr_data_pos)
+create_rmc_plot_title(rmc, "VMR Positive - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_na_own_pos.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Negative Interaction
+rmc <- rmcorr(person, PA_own, NA_own, vmr_data_neg)
+create_rmc_plot_title(rmc, "VMR Negative - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_na_own_neg.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+```
+
+#### Own PA vs perceived partner's PA ($r_{rm} = 0.7, p < .001$)
+
+```{r VMR_rmcorr_PA_own_PA_perceived_partner}
+#| warning: false
+
+# All interactions combined
+rmc <- rmcorr(person, cPA_own, cPA_part_perc, vmr_data)
+create_rmc_plot_title(rmc, "VMR All - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_pa_partner_all.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Positive Interaction
+rmc <- rmcorr(person, cPA_own, cPA_part_perc, vmr_data_pos)
+create_rmc_plot_title(rmc, "VMR Positive - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_pa_partner_pos.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Negative Interaction
+rmc <- rmcorr(person, cPA_own, cPA_part_perc, vmr_data_neg)
+create_rmc_plot_title(rmc, "VMR Positive - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_pa_partner.png_neg", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+#### Own NA vs perceived partner's NA ($r_{rm} = 0.6, p < .001$)
+
+```{r VMR_rmcorr_NA_own_NA_perceived_partner}
+#| warning: false
+
+# All interactions combined
+rmc <- rmcorr(person, cNA_own, cNA_part_perc, vmr_data)
+create_rmc_plot_title(rmc, "VMR All - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_own_na_partner_perc_all.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Positive Interaction
+rmc <- rmcorr(person, cNA_own, cNA_part_perc, vmr_data_pos)
+create_rmc_plot_title(rmc, "VMR Positive - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_own_na_partner_perc_pos.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Negative Interaction
+rmc <- rmcorr(person, cNA_own, cNA_part_perc, vmr_data_neg)
+create_rmc_plot_title(rmc, "VMR Positive - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_own_na_partner_perc_neg.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+#### Actual PA similarity vs perceived PA similarity ($r_{rm} = 0.67, p < .001$)
+
+How well tuned is a person to the "state of the union"?
+
+```{r VMR_rmcorr_actual_perceived_sim_PA}
+#| warning: false
+
+# All interactions combined
+rmc <- rmcorr(person, PA_similarity_act, PA_similarity_perc, vmr_data)
+create_rmc_plot_title(rmc, "VMR All - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_sim_act_pa_sim_perc_all.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Positive Interaction
+rmc <- rmcorr(person, PA_similarity_act, PA_similarity_perc, vmr_data_pos)
+create_rmc_plot_title(rmc, "VMR Positive - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_sim_act_pa_sim_perc_pos.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Negative Interaction
+rmc <- rmcorr(person, PA_similarity_act, PA_similarity_perc, vmr_data_neg)
+create_rmc_plot_title(rmc)
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_sim_act_pa_sim_perc_neg.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+#### Actual NA similarity vs perceived NA similarity ($r_{rm} = 0.59, p < .001$)
+
+How well tuned is a person to the "state of the union"?
+
+```{r VMR_rmcorr_actual_perceived_sim_NA}
+#| warning: false
+
+# All interactions combined
+rmc <- rmcorr(person, NA_similarity_act, NA_similarity_perc, vmr_data)
+create_rmc_plot_title(rmc, "VMR All - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_sim_act_na_sim_perc_all.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Positive Interaction
+rmc <- rmcorr(person, NA_similarity_act, NA_similarity_perc, vmr_data_pos)
+create_rmc_plot_title(rmc, "VMR Positive - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_sim_act_na_sim_perc_pos.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Negative Interaction
+rmc <- rmcorr(person, NA_similarity_act, NA_similarity_perc, vmr_data_neg)
+create_rmc_plot_title(rmc)
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_sim_act_na_sim_perc_neg.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+### 
+
+### Dyadic: Interpersonal synchrony & coupling
+
+```{r create_wide_vmr}
+vmr_data_dyad <- vmr_data %>% filter(person < 700)
+vmr_data_dyad_pos <- vmr_data_dyad %>% filter(topic == "positive")
+vmr_data_dyad_neg <- vmr_data_dyad %>% filter(topic == "negative")
+```
+
+#### Own PA vs Partner PA ($r_{rm} = 0.45, p < .001$)
+
+```{r VMR_rmcorr_PA_own_PA_partner}
+#| warning: false
+
+# All interactions combined
+rmc <- rmcorr(dyad, cPA_own, cPA_part_act, vmr_data_dyad)
+create_rmc_plot_title(rmc, "VMR All - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_pa_partner_all.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Positive Interaction
+rmc <- rmcorr(dyad, cPA_own, cPA_part_act, vmr_data_dyad_pos)
+create_rmc_plot_title(rmc, "VMR Positive - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_pa_partner_pos.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Negative Interaction
+rmc <- rmcorr(dyad, cPA_own, cPA_part_act, vmr_data_dyad_neg)
+create_rmc_plot_title(rmc, "VMR Negative - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_pa_own_pa_partner_neg.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+```
+
+#### Own NA vs Partner NA ($r_{rm} = 0.42, p < .001$)
+
+```{r VMR_rmcorr_NA_own_NA_partner}
+#| warning: false
+
+# All interactions combined
+rmc <- rmcorr(dyad, cNA_own, cNA_part_act, vmr_data_dyad)
+create_rmc_plot_title(rmc, "VMR All - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_own_na_partner_all.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Positive Interaction
+rmc <- rmcorr(dyad, cNA_own, cNA_part_act, vmr_data_dyad_pos)
+create_rmc_plot_title(rmc, "VMR Positive - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_own_na_partner_pos.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+
+# Negative Interaction
+rmc <- rmcorr(dyad, cNA_own, cNA_part_act, vmr_data_dyad_neg)
+create_rmc_plot_title(rmc, "VMR Negative - ")
+rmc
+plot(rmc, main = plot_title)
+plot_name <- sprintf("%s_%d_rmcorr_na_own_na_partner_neg.png", prefix, plot_counter)
+save_base_plot(plot(rmc, main = plot_title), plot_name)
+plot_counter <- plot_counter + 1
+```
+
+## Intraclass Correlation Coefficient (ICC)
+
+### All interactions combined
+
+```{r vmr_icc_all}
+
+# Variables to analyze
+target_vars_vmr <- c(
+  "PA_own", "NA_own",
+  "NA_part_perc", "PA_part_perc",
+  "PA_similarity_perc", "NA_similarity_perc"
+)
+
+# Run the loop
+icc_table_all <- target_vars_vmr %>%
+  map_dfr(function(v) {
+    # Construct the 3-level formula: Moments < Person < Dyad
+    formula_str <- as.formula(paste0(v, " ~ 1 + (1 | dyad / person)"))
+    # Fit the model
+    model <- lmer(formula_str, data = vmr_data)
+    # Extract ICCs and format into a single row, icc from performance package
+    icc_data <- icc(model, by_group = TRUE)
+    # Create a clean data frame for this variable
+    d_icc <- icc_data$ICC[icc_data$Group == "dyad"]
+    p_icc <- icc_data$ICC[icc_data$Group == "person:dyad"] 
+    data.frame(
+      Variable = v,
+      ICC_Dyad = d_icc,
+      ICC_Person = p_icc,
+      ICC_Moment = 1- d_icc - p_icc
+    )
+  })
+
+# View the results
+print(icc_table_all)
+
+# Calculate the Residual (Momentary) variance
+plot_data <- icc_table_all %>%
+  mutate(Momentary = 1 - (ICC_Dyad + ICC_Person)) %>%
+  pivot_longer(cols = c(ICC_Dyad, ICC_Person, Momentary), 
+               names_to = "Level", values_to = "Proportion")
+
+plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
+  labs(title = "VMR All - Variance Decomposition by Variable",
+       x = "", y = "Percentage of Total Variance") +
+  theme_minimal()
+
+# show plot
+print(plot)
+
+# save plot
+plot_name <- sprintf("%s_%d_icc_variance_decomposition_all_1.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+```{r vmr_icc_act_all}
+# Variables to analyze (VMR)
+dyad_level_vars <- c("PA_similarity_act", "NA_similarity_act")
+
+# Simplified 2-level loop (Segments < Dyad)
+icc_table_dyad_only_all <- dyad_level_vars %>%
+  map_dfr(function(v) {
+    formula_str <- as.formula(paste0(v, " ~ 1 + (1 | dyad)"))
+    model <- lmer(formula_str, data = vmr_data)
+    icc_data <- icc(model) # Standard ICC for 2-level
+    data.frame(
+      Variable = v,
+      ICC_Dyad = icc_data$ICC_adjusted,
+      ICC_Person = "-" # not applicable in 2-level model
+    )
+  })
+
+print(icc_table_dyad_only_all)
+
+plot_data <- icc_table_dyad_only_all %>%
+  mutate(Momentary = 1 - (ICC_Dyad)) %>%
+  pivot_longer(
+    cols = c(ICC_Dyad, Momentary),
+    names_to = "Level",
+    values_to = "Proportion"
+  )
+
+plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
+  labs(title = "VMR All - Variance Decomposition by Variable",
+       x = "", y = "Percentage of Total Variance") +
+  theme_minimal()
+
+print(plot)
+
+plot_name <- sprintf("%s_%d_vmr_icc_variance_decomposition_all_2.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+```
+
+### Positive interaction
+
+```{r vmr_icc_pos}
+
+# Variables to analyze
+target_vars_vmr <- c(
+  "PA_own", "NA_own",
+  "NA_part_perc", "PA_part_perc",
+  "PA_similarity_perc", "NA_similarity_perc"
+)
+
+# Run the loop
+icc_table_pos <- target_vars_vmr %>%
+  map_dfr(function(v) {
+    # Construct the 3-level formula: Moments < Person < Dyad
+    formula_str <- as.formula(paste0(v, " ~ 1 + (1 | dyad / person)"))
+    # Fit the model
+    model <- lmer(formula_str, data = vmr_data_pos)
+    # Extract ICCs and format into a single row, icc from performance package
+    icc_data <- icc(model, by_group = TRUE)
+    # Create a clean data frame for this variable
+    d_icc <- icc_data$ICC[icc_data$Group == "dyad"]
+    p_icc <- icc_data$ICC[icc_data$Group == "person:dyad"] 
+    data.frame(
+      Variable = v,
+      ICC_Dyad = d_icc,
+      ICC_Person = p_icc,
+      ICC_Moment = 1- d_icc - p_icc
+    )
+  })
+
+# View the results
+print(icc_table_pos)
+
+# Calculate the Residual (Momentary) variance
+plot_data <- icc_table_pos %>%
+  mutate(Momentary = 1 - (ICC_Dyad + ICC_Person)) %>%
+  pivot_longer(cols = c(ICC_Dyad, ICC_Person, Momentary), 
+               names_to = "Level", values_to = "Proportion")
+
+plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
+  labs(title = "VMR Positive - Variance Decomposition by Variable",
+       x = "", y = "Percentage of Total Variance") +
+  theme_minimal()
+
+# show plot
+print(plot)
+
+# save plot
+plot_name <- sprintf("%s_%d_icc_variance_decomposition_pos_1.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+```{r vmr_icc_act_all}
+# Variables to analyze (VMR)
+dyad_level_vars <- c("PA_similarity_act", "NA_similarity_act")
+
+# Simplified 2-level loop (Segments < Dyad)
+icc_table_dyad_only_pos <- dyad_level_vars %>%
+  map_dfr(function(v) {
+    formula_str <- as.formula(paste0(v, " ~ 1 + (1 | dyad)"))
+    model <- lmer(formula_str, data = vmr_data_pos)
+    icc_data <- icc(model) # Standard ICC for 2-level
+    data.frame(
+      Variable = v,
+      ICC_Dyad = icc_data$ICC_adjusted,
+      ICC_Person = "-" # not applicable in 2-level model
+    )
+  })
+
+print(icc_table_dyad_only_pos)
+
+plot_data <- icc_table_dyad_only_pos %>%
+  mutate(Momentary = 1 - (ICC_Dyad)) %>%
+  pivot_longer(
+    cols = c(ICC_Dyad, Momentary),
+    names_to = "Level",
+    values_to = "Proportion"
+  )
+
+plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
+  labs(title = "VMR Positive - Variance Decomposition by Variable",
+       x = "", y = "Percentage of Total Variance") +
+  theme_minimal()
+
+print(plot)
+
+plot_name <- sprintf("%s_%d_vmr_icc_variance_decomposition_pos_2.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+```
+
+### Negative interaction
+
+```{r vmr_icc_neg}
+
+# Variables to analyze
+target_vars_vmr <- c(
+  "PA_own", "NA_own",
+  "NA_part_perc", "PA_part_perc",
+  "PA_similarity_perc", "NA_similarity_perc"
+)
+
+# Run the loop
+icc_table_neg <- target_vars_vmr %>%
+  map_dfr(function(v) {
+    # Construct the 3-level formula: Moments < Person < Dyad
+    formula_str <- as.formula(paste0(v, " ~ 1 + (1 | dyad / person)"))
+    # Fit the model
+    model <- lmer(formula_str, data = vmr_data_neg)
+    # Extract ICCs and format into a single row, icc from performance package
+    icc_data <- icc(model, by_group = TRUE)
+    # Create a clean data frame for this variable
+    d_icc <- icc_data$ICC[icc_data$Group == "dyad"]
+    p_icc <- icc_data$ICC[icc_data$Group == "person:dyad"] 
+    data.frame(
+      Variable = v,
+      ICC_Dyad = d_icc,
+      ICC_Person = p_icc,
+      ICC_Moment = 1- d_icc - p_icc
+    )
+  })
+
+# View the results
+print(icc_table_neg)
+
+# Calculate the Residual (Momentary) variance
+plot_data <- icc_table_neg %>%
+  mutate(Momentary = 1 - (ICC_Dyad + ICC_Person)) %>%
+  pivot_longer(cols = c(ICC_Dyad, ICC_Person, Momentary), 
+               names_to = "Level", values_to = "Proportion")
+
+plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
+  labs(title = "VMR Negative - Variance Decomposition by Variable",
+       x = "", y = "Percentage of Total Variance") +
+  theme_minimal()
+
+# show plot
+print(plot)
+
+# save plot
+plot_name <- sprintf("%s_%d_icc_variance_decomposition_neg_1.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+```{r vmr_icc_act_neg}
+# Variables to analyze (VMR)
+dyad_level_vars <- c("PA_similarity_act", "NA_similarity_act")
+
+# Simplified 2-level loop (Segments < Dyad)
+icc_table_dyad_only_neg <- dyad_level_vars %>%
+  map_dfr(function(v) {
+    formula_str <- as.formula(paste0(v, " ~ 1 + (1 | dyad)"))
+    model <- lmer(formula_str, data = vmr_data_neg)
+    icc_data <- icc(model) # Standard ICC for 2-level
+    data.frame(
+      Variable = v,
+      ICC_Dyad = icc_data$ICC_adjusted,
+      ICC_Person = "-" # not applicable in 2-level model
+    )
+  })
+
+print(icc_table_dyad_only_neg)
+
+plot_data <- icc_table_dyad_only_neg %>%
+  mutate(Momentary = 1 - (ICC_Dyad)) %>%
+  pivot_longer(
+    cols = c(ICC_Dyad, Momentary),
+    names_to = "Level",
+    values_to = "Proportion"
+  )
+
+plot <- ggplot(plot_data, aes(x = Variable, y = Proportion, fill = Level)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_discrete(type = hcl.colors(4, palette = "Grays", alpha = 0.8)) +
+  labs(title = "VMR Negative - Variance Decomposition by Variable",
+       x = "", y = "Percentage of Total Variance") +
+  theme_minimal()
+
+print(plot)
+
+plot_name <- sprintf("%s_%d_vmr_icc_variance_decomposition_neg_2.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+```
+
+### Comparison
+
+```{r VMR_icc_comparison}
+# 1) Bind + reshape to wide with a stable naming scheme: <Interaction>__<Metric>
+icc_table_wide <- bind_rows(
+  "All"      = icc_table_all,
+  "Pos" = icc_table_pos,
+  "Neg" = icc_table_neg,
+  .id = "Interaction"
+) %>%
+  pivot_longer(
+    cols      = c(ICC_Dyad, ICC_Person, ICC_Moment),
+    names_to  = "Metric",
+    values_to = "Value"
+  ) %>%
+  pivot_wider(
+    names_from  = c(Interaction, Metric),
+    values_from = Value,
+    names_sep   = "_"
+  ) %>%
+  select(
+    Variable,
+    All_ICC_Dyad,      All_ICC_Person,      All_ICC_Moment,
+    Pos_ICC_Dyad, Pos_ICC_Person, Pos_ICC_Moment,
+    Neg_ICC_Dyad, Neg_ICC_Person, Neg_ICC_Moment
+  )
+
+# 2) gt table with spanners + repeated subheaders + vertical separators
+icc_table_wide %>%
+  gt() %>%
+  tab_spanner(
+    label   = "All interactions",
+    columns = c(All_ICC_Dyad, All_ICC_Person, All_ICC_Moment)
+  ) %>%
+  tab_spanner(
+    label   = "Positive interaction",
+    columns = c(Pos_ICC_Dyad, Pos_ICC_Person, Pos_ICC_Moment)
+  ) %>%
+  tab_spanner(
+    label   = "Negative interaction",
+    columns = c(Neg_ICC_Dyad, Neg_ICC_Person, Neg_ICC_Moment)
+  ) %>%
+  cols_label(
+    All_ICC_Dyad = "Dyad", All_ICC_Person = "Person", All_ICC_Moment = "Moment",
+    Pos_ICC_Dyad = "Dyad", Pos_ICC_Person = "Person", Pos_ICC_Moment = "Moment",
+    Neg_ICC_Dyad = "Dyad", Neg_ICC_Person = "Person", Neg_ICC_Moment = "Moment"
+  ) %>%
+  fmt_number(
+    columns = -Variable,
+    decimals = 2
+  ) %>%
+  cols_align("left",   columns = Variable) %>%
+  cols_align("center", columns = -Variable) %>%
+  tab_options(table.font.size = px(12),
+    table.background.color = "white",
+    heading.background.color = "white",
+    column_labels.background.color = "white",
+    row_group.background.color = "white"
+  )
+```
+
+Some observations:
+
+-   Within positive interactions, perceived NA similarity fluctuates less moment-to-moment and is more attributable to stable person/dyad differences. In a positive interaction, noticing negative cues may be more person/couple-specific, hence more between-person/dyad. Also perceived PA similarity becomes more dyad/person-linked in negative interactions than in positive interactions.
+
+    Note: not analysed, but floor effects in NA during positive interactions can cause this I think.
+
+-   Dyad-level variance is much larger in negative interactions for NA_own: .10 (All) → .04 (Positive) → .26 (Negative). This suggests couples differ much more in their overall NA during negative interactions.
+
+-   The perceived partner affects show more stable components in the valenced subsets. So perceptions of the partner are less “moment-only” once you condition on interaction valence.
+
+```{r VMR unload}
+#| include: false
+clean_config("VMR")
 ```
 
 # POST
@@ -515,4 +1661,68 @@ load_config("VMR")
 post_data  <- readRDS(file.path(dir_data_ana, "post_ana.rds"))
 # load data configuration file 
 load_config("POST")
+# plot intialisation
+plot_counter <- 1
+prefix <- "POST"
+```
+
+### Relation between closeness and love
+
+```{r data_prep}
+# from wide to long format, with two rows per person, one for pos, one for neg
+post_data_long <- post_data %>%
+  pivot_longer(
+    cols = c(love_neg, love_pos, close_neg, close_pos),
+    names_to = c(".value", "context"), # Splitting names into variable + context
+    names_sep = "_"                    # Separator is the underscore
+  )
+
+data_neg <- post_data_long %>% filter(context == "neg")
+data_pos <- post_data_long %>% filter(context == "pos")
+```
+
+```{r pos_neg_pooled}
+#| warning: false
+
+# Q: "Is Love associated with Closeness across all contexts?"
+
+# rmcorr
+rmcorr(person, love, close, dataset = post_data_long)
+
+# multilevel model
+model_overall <- lmer(close ~ love + (1 | dyad/person), data = post_data_long)
+summary(model_overall)
+```
+
+Random intercepts absorb person and dyad baselines (stable dyad and person differences) such that fixed effects are more reliable. Random effects absorb the stable, baseline differences between dyads (e.g., Dyad A is always closer than Dyad B). This prevents these baseline differences from skewing the results and ensures the Fixed Effect (the relationship between Love and Closeness) is estimated with the correct level of certainty (standard error), avoiding false positives due to non-independence.
+
+Strong, positive, and statistically significant association between the love felt after pooled interaction and the closeness felt. Slope = .69, p \< .001.
+
+```{r neg}
+model_neg <- lmer(close ~ love + (1 | dyad), data = data_neg)
+summary(model_neg)
+
+# data_neg_scaled <- data_neg %>% 
+#   mutate(love = scale(love), close = scale(close))
+
+# r_neg_model <- lmer(close ~ love + (1 | dyad), data = data_neg_scaled)
+# summary(r_neg_model) # The estimate for 'love' is your correlation r.
+```
+
+Strong, positive, and statistically significant association between the love felt after a negative interaction and the closeness felt after that same interaction. Slope = .66, p \< .001. Dyad variance = 75.31 and residual variance = 154.59. ICC = 75.31/(75.31 + 154.59) = 0.33. About 33% of variation in closeness is due to the dyad the person belongs to.
+
+```{r pos}
+model_pos <- lmer(close ~ love + (1 | dyad), data = data_pos)
+summary(model_pos)
+```
+
+Even stronger association with slope of .81 (p \< .001).
+
+Remarkable: the variance for the random dyad intercept is 0, so the model found no stable differences between couples in how much closeness people feel. So, in the context of positive interactions, knowing which couple someone belongs to provides no additional information about their closeness **beyond what is already explained by their love**. After the negative scenario, couples had different baselines (variance = 75.31). **Some couples stayed closer than others even when love was low after the negative interaction.**
+
+The association between love and closeness was significantly stronger following positive interactions (β=0.81) compared to negative interactions (β=0.66). This suggests that while love acts as a buffer during conflict—maintaining connection despite the friction of the argument—it acts as an enhancer during positive moments, where the absence of defensive barriers allows feelings of affection to translate more directly into feelings of intimacy.
+
+```{r POST unload}
+#| include: false
+clean_config("POST")
 ```

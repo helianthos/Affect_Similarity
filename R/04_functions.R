@@ -373,3 +373,10 @@ plot_trajectory <- function(data, variable, person_ids) {
       color = "Person ID"
     )
 }
+
+create_rmc_plot_title <- function(rmc, label = "") {
+  r_val <- round(rmc$r, 2)
+  p_val <- ifelse(rmc$p < 0.001, "< .001", sprintf("= %.3f", rmc_res$p))
+  df_val <- rmc$df
+  plot_title <<- sprintf("%s Rmcorr: r = %s, p %s (df = %d)", label, r_val, p_val, df_val)
+}
