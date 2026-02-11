@@ -400,3 +400,20 @@ add_layer <- function(base_plot, data, x_var, y_var, z_var, title, x_lab, y_lab,
       )
     )
 }
+
+plot_corr_heatmap <- function(cor_matrix, title) {
+  cor_matrix_long <- as.data.frame(cor_matrix) |>
+    rownames_to_column("Var1") |>
+    pivot_longer(cols = -Var1, names_to = "Var2", values_to = "value")
+  
+  ggplot(cor_matrix_long, aes(x = Var1, y = Var2, fill = value)) +
+    geom_tile() +
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                         midpoint = 0, limits = c(-1, 1),
+                         name = "Pearson\nCorrelation") +
+    coord_fixed() +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    geom_text(aes(label = round(value, 2)), size = 3) +
+    labs(title = title, x = "", y = "")
+}

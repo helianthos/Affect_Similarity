@@ -14,8 +14,9 @@ format:
   html:
     theme: cosmo          
     toc: true             
-    toc-location: left    
-    toc-depth: 4          
+    toc-location: left
+    css: project.css
+    toc-depth: 4
     number-sections: true 
     code-fold: true       
     code-tools: true      

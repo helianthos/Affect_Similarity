@@ -1,0 +1,14 @@
+/* --- Hex logo above TOC --- */
+nav#TOC, #TOC {
+  background-image: url("affectlogo.png");
+  background-repeat: no-repeat;
+  background-position: -10px -10px; /* Move left/right + up/down */
+  background-size: 250px auto;
+  padding-top: 225px !important;
+}
+
+/* --- Title size --- */
+  .quarto-title-block .title { 
+    font-size: 2.6rem;
+    line-height: 1.15; 
+}

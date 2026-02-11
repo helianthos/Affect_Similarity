@@ -1,5 +1,5 @@
 ---
-title: "05_descriptives"
+title: "Data Descriptives"
 ---
 
 ```{r setup}
@@ -185,7 +185,7 @@ The variables 'neg_gen' (about the occurrence of any (general) negative event si
 
 The moderation by event valence (positive vs negative) that will be analyzed (see pre-registration step 3b of study component 1) will therefore have more limited data.
 
-The perceived similarity measures are missing for 18,3% of the beeps. This is the same level as for NA_own, PA_own, etc., and is 1 - compliance . The actual similarity measures are missing for 27,6%, which is higher because the calculating depends on both partners answering the underlying items.
+The perceived similarity measures are missing for 18,3% of the beeps. This is the same level as for NA_own, PA_own, etc., and is ≈ 1 - compliance . The actual similarity measures are missing for 27,6%, which is higher because the calculating depends on both partners answering the underlying items.
 
 ## Repeated measures correlations
 
@@ -196,8 +196,6 @@ We will use the function `rmcorr::rmcorr()`, which calculates the overall within
 -   When using using 'person' as the first argument in `rmcorr::rmcorr()`, this is the correlation that is common across persons between two variables' deviations from their baseline (so for example own PA and own NA, what is the 'shared' or 'pooled' correlation of the within-person deviations from baseline?).
 
 -   When using 'dyad' as the first argument in `rmcorr::rmcorr()`, this is the correlation between two partner's deviations from baseline that is common across dyads. This treats the correlation as characteristic of the relationship, not of the individuals.
-
-Since correlation is symmetrical (A relates to B exactly how B relates to A), the actual r-value results of using 'person' or 'dyad' will be virtually identical.
 
 As mentioned, we will refrain from using the results from `rmcorr()` for inference. When grouping dyadic data by person in `rmcorr()`, the model treats partners as independent entities, ignoring the shared variance between them (because they belong to the same dyad). This violation of independence artificially inflates the degrees of freedom (df) and deflates p-values, making significance tests overly optimistic. However, the descriptive correlation coefficient (r) accurately represents the common within-person association across the sample.
 
@@ -249,7 +247,7 @@ save_base_plot(plot(rmc, main = plot_title), plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-While there was significant correlation between partners' actual Positive Affect ($r_{rm}​=.23$), participants' perceptions of their partners' PA were more strongly correlated with their own internal PA ($r_{rm}​=.36$), suggesting a degree of perceptual projection or assumed similarity.
+While there was significant correlation between partners' actual Positive Affect ($r_{rm}​=.23$), participants' perceptions of their partners' PA were more strongly correlated with their own internal PA ($r_{rm}​=.36$), suggesting a degree of perceptual projection and/or shared context effects.
 
 #### Own NA vs perceived partner's NA
 
@@ -283,7 +281,7 @@ save_base_plot(plot(rmc, main = plot_title), plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-High, but probably driven by common element of own PA in both similarity measures.
+High, but probably can be because of the common element of own PA in both similarity measures.
 
 #### Actual NA similarity vs perceived NA similarity
 
@@ -300,9 +298,9 @@ save_base_plot(plot(rmc, main = plot_title), plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-High, but probably driven by common element of own PA in both similarity measures.
+High, but part of the association may be mechanical because both indices share the actor’s own affect component (and both combine elevation and mismatch).
 
-### Dyadic: Interpersonal synchrony & coupling
+### Dyadic: Interpersonal covariation
 
 #### Own PA vs Partner PA
 
@@ -310,7 +308,7 @@ High, but probably driven by common element of own PA in both similarity measure
 
 When looking at two variables that come from different partners (e.g., own PA and patner's PA) we will use grouping by dyad.
 
-Because the correlation between Partner A and Partner B is mathematically identical to the correlation between Partner B and Partner A, including both partners' rows for a dyad-level analysis results in data duplication. This redundancy artificially doubles the degrees of freedom and inflates statistical significance without adding unique information about the couple's synchrony. Limiting the dataset to one row per dyad ensures that the analysis reflects the true number of independent observations. When grouping by 'person' (as above), all rows (both partners) are retained because the analysis targets individuals; this introduces statistical non-independence but removing half the subjects would bias the estimate of the average person's experience.
+Dyad members are treated as indistinguishable. The correlation between Partner A and Partner B is mathematically identical to the correlation between Partner B and Partner A, including both partners' rows for a dyad-level analysis results in data duplication. This redundancy artificially doubles the degrees of freedom and inflates statistical significance without adding unique information about the couple's synchrony. Limiting the dataset to one row per dyad ensures that the analysis reflects the true number of independent observations. When grouping by 'person' (as above), all rows (both partners) are retained because the analysis targets individuals; this introduces statistical non-independence but removing half the subjects would bias the estimate of the average person's experience.
 
 ```{r ESM_rmcorr_PA_own_PA_partner}
 #| warning: false
@@ -403,10 +401,10 @@ plot_counter <- plot_counter + 1
 
 ```
 
-The ICC analysis for the three-level variables indicates that a substantial portion of the variance in affect and relationship perceptions is attributable to momentary, within-person fluctuations, as both dyad-level and person-level ICCs remain relatively low to moderate. Perceived responsiveness stands out with the highest dyad-level stability (ICC=0.35), suggesting it is more strongly characterized by shared couple-level baselines than the other variables. In contrast, the similarity perception variables (`PA_similarity_perc` and `NA_similarity_perc`) show very low ICCs at both the dyad and person levels, indicating that how similar partners perceive themselves to be is a highly dynamic state that changes significantly from moment to moment rather than being a stable trait of the individual or the dyad.
+The ICC analysis for the three-level variables indicates that a substantial portion of the variance in affect and relationship perceptions is attributable to momentary, within-person fluctuations, as both dyad-level and person-level ICCs remain relatively low to moderate. Perceived responsiveness stands out with the highest dyad-level stability (ICC=0.35), suggesting it is more strongly characterized by shared couple-level baselines than the other variables. In contrast, the similarity perception variables (`PA_similarity_perc` and `NA_similarity_perc`) show very low ICCs at both the dyad and person levels, indicating that how similar partners perceive themselves to be is a highly dynamic state that changes significantly from moment to moment rather than being a stable trait of the individual or the dyad. Note that the Momentary ICC also contains measurement error.
 
 Technical note:\
-Y∼1+(1∣dyad/person), decomposes the total variance into three independent sources:
+$Y∼1+(1∣dyad/person)$ , decomposes the total variance into three independent sources:
 
 1.  $\sigma_{dyad}^2$​: Variance of the dyad-level random intercept (between-dyad differences).
 
@@ -569,7 +567,7 @@ print(sapply(esm_data[, sim_cols], range, na.rm = TRUE))
 
 base_surface %>%
   add_layer(
-    data = esm_data,
+    data = esm_data, # %>% filter(person == 703),
     x = ~cPA_own,
     y = ~cPA_part_act,    
     z = ~PA_similarity_act,     
@@ -605,7 +603,7 @@ base_surface %>%
 
 base_surface %>%
   add_layer(
-    data = esm_data,
+    data = esm_data, #%>% filter(dyad == 3),
     x = ~cPA_own,
     y = ~cPA_part_perc,    
     z = ~PA_similarity_perc,   
@@ -665,7 +663,7 @@ The fixed effect for time_centered is slightly, but significantly positive, indi
 
 In the preregistration, we also write: "*As an additional diagnostic, we will also inspect whether the similarity indices show systematic time trends."*
 
-```{r data_prep}
+```{r data_prep_2}
 # only retain one row per dyad x beep to avoiud double counting
 data_similarity <- data_w_time %>% filter(person < 700)
 ```
@@ -725,6 +723,7 @@ Note again the high residual variance (\~174.6) relative to the person (9.7) and
 ## Autocorrelation analysis
 
 ```{r esm_autocorrelation}
+#| warning: false
 
 target_vars <- c("cPA_own", "cNA_own", "cPA_part_act", "cNA_part_act", 
                  "cPA_part_perc", "cNA_part_perc", "clove")
@@ -774,7 +773,12 @@ ggplot(acf_long, aes(x = Variable, y = Autocorrelation, fill = Variable)) +
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-mean autocorrelation values range from 0.30 to 0.38, which is moderate temporal dependence. This means that about 30%-35% of a person's state is carried over from the previous beep. If this would be 0ù then AR(1) would be unnecessary, and if this would be near 100% there would be a random walk (TO CHECK).
+The autocorrelation values range from 0.30 (love) to 0.38 (perceived PA similarity), which is a moderate temporal dependence. The SDs are \~ .20–.25, so there is substantial heterogeneity across persons. If this would be 0 then AR(1) would be unnecessary, and if this would be close to 1 there would be more like a random walk.\
+Without doing statistical testing, at first sight perception of similarity seems to be 'stickier' (more temporal inert or persistent) than actual similarity.
+
+**Important:** we calculate lag across days, so correlate end-of-day with next-day which might create a discontinuity. Raw ACF, as calculated here, can be influenced by these discontinuities or driven by time-of-day, etc. The real target is the residual autocorrelation after fitting the moddel. Furthermore, this analyses presumes an equal spacing between beeps.
+
+Visual inspection of the lag-1 autocorrelation for the centered variables revealed moderate temporal dependence (​≈.30−.38), indicating that any assumption of independent within-person errors would be violated. Consistent with the preregistration and the recommendations for intensive longitudinal data (@bolgerIntensiveLongitudinalMethods2013 and @snijderstomMultilevelAnalysisIntroduction2012), we will use a first-order autoregressive \[AR(1)\] covariance structure to account for this serial correlation. Given the caveats in the analysis here, we will fir models with and without the AR(1) structure.
 
 ```{r ESM unload}
 #| include: false
@@ -790,6 +794,52 @@ load_config("BG")
 plot_counter <- 1
 prefix <- "BG"
 ```
+
+## Correlation analyses
+
+We preregistered: *" We will additionally fit models including the individual (actual or perceived) affect levels as covariates to check whether the effect of similarity changes meaningfully. Specifically, when feasible (i.e., converging), we will add the person-mean centered actor and partner affects and the corresponding average actor and partner affect levels across the ESM period (grand-mean centered) as covariates. In other words, we test whether ‘we feel the same’ predicts love beyond simply ‘I feel good’. **We will also inspect correlations between momentary love and the candidate covariates.** If these correlations are small (e.g., \|r\| \< .30; following the reasoning in Sels et al., 2020), this provides some reassurance even if the larger sensitivity models do not converge."*
+
+The idea is that in the models prediciting momentary love from similarity, the similarity indices can pick up effects of the underlying individual affect levels. See @selsActualPerceivedEmotional2020. This can arguably even be more the case when using our similarity constructs because these contains an elevation term (the mean). This is why we will also inspect the individual component-outcome associations (via correlations) as a heuristic for whether omitting the individual affect levels is likely to matter. If these correlations are low (and we, as Sels, proposed \|r\| \< .30 as a heuristic criterion), this reduces the concern that a similarity effect is merely a disguised level effect.
+
+```{r predictors_correlation_w_love }
+
+# See Sels et al., 2020
+
+corr_df <- esm_data %>%
+  select(
+   clove,
+   PA_similarity_act, NA_similarity_act,
+   PA_similarity_perc, NA_similarity_perc,
+   cPA_own, cNA_own,
+   cPA_part_act, cNA_part_act,
+   cPA_part_perc, cNA_part_perc
+  )
+
+corr_outcome <- corr_df %>%
+  summarise(across(-clove, ~ cor(clove, .x, use = "pairwise.complete.obs"))) %>%
+  pivot_longer(cols = everything(), names_to = "predictor", values_to = "r") %>%
+  mutate(abs_r = abs(r)) %>%
+  arrange(desc(abs_r))
+
+corr_outcome
+
+cor_matrix <- cor(corr_df, use = "pairwise.complete.obs")
+
+plot <- plot_corr_heatmap(
+  cor_matrix,
+  "Outcome–predictor correlations (person-mean centered variables)"
+)
+
+print(plot) 
+
+plot_name <- sprintf("%s_%d_outcome_predictors_correlations.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+The numbers show that the individual affect levels are not trivially related to momentary love. There are small-to-moderate correlations with `clove`, with the largest around \|r\| ≈ .34. The similarity indices also correlate with `clove` and these are similar to the correlations of the individual affect levels with `clove`. This plausibly reflect that a similarity effect could plausibly reflect affect-level effects, not only being 'similar'. Consistent with the preregistered sensitivity strategy, we will estimate models that include the component affect levels (within–between decomposed) and compare the similarity coefficients across specifications. The similarity indices (mean − \|diff\|) embed elevation by construction, so some overlap with affect levels is expected; sensitivity models will clarify whether similarity contributes beyond levels.
+
+The correlations between the individual affect levels and the similarity constructs are relatively high (\~.63 -.69). This is no surprise given that the similarity indices are constructed using the mean affect levels. This implies that sensitivity models that include both similarity and component levels will estimate the effect of similarity beyond affect levels and may yield larger SEs and attenuated coefficients. Therefore, we will treat these covariate-added models as sensitivity analyses rather than the primary specification and will interpret changes in the similarity effect accordingly. Importantly, collinearity should be evaluated using the exact predictors used in the preregistered within–between models (i.e., similarity_w and similarity_b), not the raw similarity scores.
 
 # BG
 
@@ -1094,7 +1144,7 @@ plot_counter <- plot_counter + 1
 
 ## Reliability of we-ness construct
 
-### Alpha and Omega ($\alpha$ and $\omega$)
+### Alpha and Omega
 
 ```{r weness_reliability}
 # A. Cronbach's Alpha
@@ -1112,7 +1162,7 @@ cat(sprintf("\nMcDonald's omega for we-ness = %f\n\n", omega_res$omega.tot))
 
 ### Hierarchical EFA with 6 factors
 
-Since we exclude the negative scales (NDCO and NDCP, with items ), we expect 6 subscales in our we-ness construct.
+Since we exclude the negative scales (NDCO and NDCP, with items 7, 10, 11, 15, 22, 25, 26, and 27), we expect 6 subscales in our we-ness construct.
 
 A hierarchical factor analysis (Schmid-Leiman bifactor solution) was conducted to evaluate the internal structure of the We-Ness construct. The analysis supports a hierarchical structure consisting of one General Factor (*g*) and three distinct specific group factors, confirming that "We-Ness" is an overarching construct that encompasses both giving and receiving support.
 
@@ -1427,7 +1477,7 @@ save_base_plot(plot(rmc, main = plot_title), plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-### Dyadic: Interpersonal synchrony & coupling
+### Dyadic: Interpersonal covariation
 
 ```{r create_wide_vmr}
 vmr_data_dyad <- vmr_data %>% filter(person < 700)
@@ -1997,6 +2047,69 @@ base_surface %>%
   )
 ```
 
+## Autocorrelation analysis
+
+```{r vmr_autocorrelation}
+#| warning: false
+
+target_vars <- c("cPA_own", "cNA_own", "cPA_part_act", "cNA_part_act", 
+                 "cPA_part_perc", "cNA_part_perc")
+
+# calculate Lag-1 ac per person
+# We group by dyad/person to ensure we don't lag across different people
+acf_results <- vmr_data %>%
+  group_by(dyad, person, topic) %>% # also group by topic here
+  arrange(dyad, person, topic, segment) %>% # order by topic and time!
+  summarise(
+    across(all_of(target_vars), 
+          ~ cor(., dplyr::lag(.), use = "pairwise.complete.obs"),
+           .names = "{.col}"
+    ),
+    .groups = "drop"
+  )
+
+# reshape for easy checking/plotting
+acf_long <- acf_results %>%
+  pivot_longer(cols = all_of(target_vars), 
+               names_to = "Variable", 
+               values_to = "Autocorrelation")
+
+# summary
+cat("--- Average Lag-1 Autocorrelation (Temporal Dependence) ---\n")
+acf_summary <- acf_long %>%
+  group_by(topic, Variable) %>%
+  summarise(
+    Mean_ACF = mean(Autocorrelation, na.rm = TRUE),
+    Median_ACF = median(Autocorrelation, na.rm = TRUE),
+    SD_ACF = sd(Autocorrelation, na.rm = TRUE)
+  )
+print(acf_summary)
+
+# Plot
+ggplot(acf_long, aes(x = Variable, y = Autocorrelation, fill = Variable)) +
+  geom_boxplot(alpha = 0.6, outlier.shape = NA) +
+  geom_jitter(width = 0.2, alpha = 0.3, size = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~topic) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Lag-1 Autocorrelation per Person",
+    subtitle = "Faceted by interaction type",
+    y = "Lag-1 Correlation (r)",
+    x = NULL
+  ) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+The mean lag-1 autocorrelations in the VMR data are lower than in the ESM data and have large between-person variability (SDs). Because each person only has T=16 segments (per interaction topic), each correlation r is estimated from only n=T-1=15 adjacent pairs (or fewer when missingness is present). This can lead to
+
+-   substantial downward bias in estimates of the correlations, known as the Hurwicz or Kendall bias (see Table 4 in @solanasLagoneAutocorrelationShort2010)
+
+-   substantial sampling error. Using Fisher's z-transformation, the transformed correlation is approximately normal with $SE(z)≈1/\sqrt{(n−3)}$​, see @fisherProbableErrorCoefficient1921. Via back-transormation this implies $SE(r)≈(1−r^2)/\sqrt{n−3}$​. However, this SE is a rough heuristic and can even be too small since it assumes independent pairs, while the data are serially dependent.
+
+The lower lag-1 correlations and higher SDs in VMR may therefore come from these bias and noise effects due to short series length in addition to potentially faster, more reactive affect dynamics at the 30 seconds timescale.
+
 ```{r VMR unload}
 #| include: false
 clean_config("VMR")
@@ -2016,7 +2129,7 @@ prefix <- "POST"
 
 ### Relation between closeness and love
 
-```{r data_prep}
+```{r data_prep_1}
 # from wide to long format, with two rows per person, one for pos, one for neg
 post_data_long <- post_data %>%
   pivot_longer(
@@ -2066,7 +2179,7 @@ summary(model_pos)
 
 Even stronger association with slope of .81 (p \< .001).
 
-Remarkable: the variance for the random dyad intercept is 0, so the model found no stable differences between couples in how much closeness people feel. So, in the context of positive interactions, knowing which couple someone belongs to provides no additional information about their closeness **beyond what is already explained by their love**. After the negative scenario, couples had different baselines (variance = 75.31). **Some couples stayed closer than others even when love was low after the negative interaction.**
+Remarkable: the variance for the random dyad intercept is 0. This should be interpreted carefully but suggests that the model found no stable differences between couples in how much closeness people feel. So, in the context of positive interactions, knowing which couple someone belongs to provides no additional information about their closeness **beyond what is already explained by their love**. After the negative scenario, couples had different baselines (variance = 75.31). **Some couples stayed closer than others even when love was low after the negative interaction.**
 
 The association between love and closeness was significantly stronger following positive interactions (β=0.81) compared to negative interactions (β=0.66). This suggests that while love acts as a buffer during conflict—maintaining connection despite the friction of the argument—it acts as an enhancer during positive moments, where the absence of defensive barriers allows feelings of affection to translate more directly into feelings of intimacy.
 

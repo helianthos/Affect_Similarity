@@ -54,7 +54,8 @@ load_config("ESM")
 
 # 2. Centering ----
 esm_data <- esm_data %>%
-  group_by(person) %>%   # person mean centering
+  group_by(person) %>%
+  # Naming logic: c* = person-mean centered variable
   mutate(
     cPA_own       = PA_own - mean(PA_own, na.rm = TRUE),
     cNA_own       = NA_own - mean(NA_own, na.rm = TRUE),
@@ -95,7 +96,57 @@ esm_data <- esm_data %>%
     NA_similarity_perc = NA_elevation_perc - NA_distance_perc
   )
 
-# 6. Save ----
+# 6. Perceived similarity centering (person-level) + within-between decomposition ----
+# Naming logic:
+#   c*      = person-mean centered
+#   *_w     = within-unit deviation (here: within-person for *_perc, within-dyad for *_act)
+#   *_b     = between-unit component (unit mean, grand-mean centered)
+
+# Person-mean center perceived similarity (person-level) ---
+esm_data <- esm_data %>%
+  group_by(person) %>%
+  mutate(
+    cPA_similarity_perc = PA_similarity_perc - mean(PA_similarity_perc, na.rm = TRUE),
+    cNA_similarity_perc = NA_similarity_perc - mean(NA_similarity_perc, na.rm = TRUE),
+    
+    PA_similarity_perc_w = cPA_similarity_perc,
+    NA_similarity_perc_w = cNA_similarity_perc,
+    
+    PA_similarity_perc_b = mean(PA_similarity_perc, na.rm = TRUE), # to be grand-mean centered in next step
+    NA_similarity_perc_b = mean(NA_similarity_perc, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Grand-mean center the between component for perceived similarity
+esm_data <- esm_data %>%
+  mutate(
+    PA_similarity_perc_b = PA_similarity_perc_b - mean(PA_similarity_perc_b, na.rm = TRUE),
+    NA_similarity_perc_b = NA_similarity_perc_b - mean(NA_similarity_perc_b, na.rm = TRUE)
+  )
+
+# 7. Actual similarity centering (dyad-level)+ within-between decomposition ----
+esm_data <- esm_data %>%
+  group_by(dyad) %>%
+  mutate(
+    cPA_similarity_act = PA_similarity_act - mean(PA_similarity_act, na.rm = TRUE),
+    cNA_similarity_act = NA_similarity_act - mean(NA_similarity_act, na.rm = TRUE),
+    
+    PA_similarity_act_w = cPA_similarity_act,
+    NA_similarity_act_w = cNA_similarity_act,
+    
+    PA_similarity_act_b = mean(PA_similarity_act, na.rm = TRUE),
+    NA_similarity_act_b = mean(NA_similarity_act, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Grand-mean center the between component for actual similarity
+esm_data <- esm_data %>%
+  mutate(
+    PA_similarity_act_b = PA_similarity_act_b - mean(PA_similarity_act_b, na.rm = TRUE),
+    NA_similarity_act_b = NA_similarity_act_b - mean(NA_similarity_act_b, na.rm = TRUE)
+  )
+
+# 8. Save ----
 saveRDS(esm_data, file.path(dir_data_ana, "esm_ana.rds"))
 cat(sprintf("ESM data extended with centralized affect measures and similarity measures saved to %s\n", 
             file.path(dir_data_red, "esm_ana.rds")))
