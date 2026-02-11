@@ -15,7 +15,7 @@ format:
     theme: cosmo          
     toc: true             
     toc-location: left    
-    toc-depth: 3          
+    toc-depth: 4          
     number-sections: true 
     code-fold: true       
     code-tools: true      

@@ -198,6 +198,7 @@ cat("❗ Dyad 2 excluded from VMR data since this was a test couple\n")
 
 # correct 'postief' to 'positive' as topic
 vmr_data <- vmr_data %>% mutate(topic = ifelse(topic == "positief", "positive", topic))
+cat("❗ Topics 'positief' corrected to 'positive'\n")
 
 ## ---- ```` Save  -------------------------------------------------------------
 ## --------------------------------------------------------------------------- -

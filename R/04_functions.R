@@ -232,7 +232,7 @@ save_plot <- function(plot_obj, filename, w=10, h=8) {
   full_path <- file.path(dir_plots, filename)
   # 2. Save
   ggsave(full_path, plot_obj, width = w, height = h, bg = "white")
-  cat(sprintf("✅ Saved: %s\n   Location: %s\n", filename, full_path))
+  cat(sprintf("✅ Saved: %s\n   Location: %s\n", filename, dirname(full_path)))
 }
 
 save_base_plot <- function(plot_code, filename, w=10, h=8) {
@@ -244,7 +244,7 @@ save_base_plot <- function(plot_code, filename, w=10, h=8) {
   force(plot_code)
   # Close device
   dev.off()
-  cat(sprintf("✅ Saved: %s\n   Location: %s\n", filename, full_path))
+  cat(sprintf("✅ Saved: %s\n   Location: %s\n", filename, dirname(full_path)))
 }
 
 check_range <- function(data, columns, min_v, max_v, name) {
@@ -379,4 +379,24 @@ create_rmc_plot_title <- function(rmc, label = "") {
   p_val <- ifelse(rmc$p < 0.001, "< .001", sprintf("= %.3f", rmc_res$p))
   df_val <- rmc$df
   plot_title <<- sprintf("%s Rmcorr: r = %s, p %s (df = %d)", label, r_val, p_val, df_val)
+}
+
+add_layer <- function(base_plot, data, x_var, y_var, z_var, title, x_lab, y_lab, z_lab) {
+  base_plot %>%
+    add_markers(
+      data = data,
+      x = x_var,
+      y = y_var,
+      z = z_var,
+      marker = list(size = 3, color = "black", opacity = 0.5),
+      name = "Observed Data"
+    ) %>%
+    layout(
+      title = list(text = title, y = 0.95),
+      scene = list(
+        xaxis = list(title = x_lab),
+        yaxis = list(title = y_lab),
+        zaxis = list(title = z_lab)
+      )
+    )
 }

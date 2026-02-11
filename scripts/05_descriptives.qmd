@@ -12,6 +12,146 @@ source(here::here("R", "00_setup.R"))
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
 
+# Demographics
+
+```{r demographics setup}
+# load data
+demographics <- readRDS(file.path(dir_data_ana, "demographics.rds"))
+# plot initialisation
+plot_counter <- 1
+prefix <- "Demo"
+```
+
+## Age
+
+```{r age}
+
+# AGE = numeric
+print(summary(demographics$age))
+cat(sprintf("Missing age: %d\n", sum(is.na(demographics$age))))
+plot <- demographics %>%
+  filter(!is.na(age)) %>%
+  ggplot(aes(x = age)) +
+  geom_histogram(binwidth = 2) +
+  labs(title = "Age distribution", x = "Age (years)", y = "Count") +
+  theme_minimal()
+plot
+plot_name <- sprintf("%s_%d_age_hist.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+```
+
+## Gender
+
+```{r gender}
+# gender = factor
+labels <- get_label(demographics, "gender")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Gender Distribution", "Gender")
+plot
+plot_name <- sprintf("%s_%d_gender_bar.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+## Nationality
+
+```{r nationality}
+# nationality = factor
+labels <- get_label(demographics, "nat")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Nationality Distribution", "Nationality")
+plot
+plot_name <- sprintf("%s_%d_nationality_bar.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+
+```
+
+## Ethnicity
+
+```{r ethnicity}
+# ethnicity = factor
+labels <- get_label(demographics, "etn")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Ethnicity Distribution", "Ethnicity")
+plot
+plot_name <- sprintf("%s_%d_ethnicity_bar.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+## Education
+
+```{r education}
+# education = factor
+labels <- get_label(demographics, "edu")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Eduction Level Distribution", "Education")
+plot
+plot_name <- sprintf("%s_%d_education_bar.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+## Children
+
+```{r children}
+# children = factor
+labels <- get_label(demographics, "child")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Children (Yes/No)", "Children?")
+plot
+plot_name <- sprintf("%s_%d_chile_bar.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+## Living Together
+
+```{r living together}
+# living together = factor
+labels <- get_label(demographics, "liv_tog")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Living Together? (Yes/No)", "Living Together?")
+plot
+plot_name <- sprintf("%s_%d_liv_tog_bar.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+## Relationship Duration
+
+```{r relationship duration}
+# relationship duration = numeric
+print(summary(demographics$rel_dur))
+cat(sprintf("Missing relationship duration: %d\n", sum(is.na(demographics$rel_dur))))
+plot <- demographics %>%
+  filter(!is.na(rel_dur)) %>%
+  ggplot(aes(x = rel_dur)) +
+  geom_histogram(binwidth = 2) +
+  labs(title = "Relationship Duration Distribution", x = "Duration (Months)", y = "Count") +
+  theme_minimal()
+plot
+plot_name <- sprintf("%s_%d_rel_dur_hist.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
+## Medication
+
+```{r medication}
+# medication = factor
+labels <- get_label(demographics, "med")
+print(freq_table(labels))
+plot <- plot_bar_categorical(labels, "Medication Use? (Yes/No)", "Living Together?")
+plot
+plot_name <- sprintf("%s_%d_med_bar.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
+```
+
 # ESM
 
 ```{r ESM_setup}
@@ -59,11 +199,13 @@ We will use the function `rmcorr::rmcorr()`, which calculates the overall within
 
 Since correlation is symmetrical (A relates to B exactly how B relates to A), the actual r-value results of using 'person' or 'dyad' will be virtually identical.
 
-As mentioned, we will refrain from using the results from `rmcorr()` for inference. When grouping dyadic data by person in `rmcorr()`, the model treats partners as independent entities, ignoring the shared variance between them (because they belong to the same dyad). This violation of independence artificially inflates the degrees of freedom (df) and deflates p-values, making significance tests overly optimistic. However, the descriptive correlation coefficient (r) accuratelyrepresents the common within-person association across the sample.
+As mentioned, we will refrain from using the results from `rmcorr()` for inference. When grouping dyadic data by person in `rmcorr()`, the model treats partners as independent entities, ignoring the shared variance between them (because they belong to the same dyad). This violation of independence artificially inflates the degrees of freedom (df) and deflates p-values, making significance tests overly optimistic. However, the descriptive correlation coefficient (r) accurately represents the common within-person association across the sample.
 
 ### Personal: Intrapersonal dynamics (individual level)
 
-#### Own PA vs own NA ($r_{rm} = -0.60, p < .001$)
+#### Own PA vs own NA
+
+($r_{rm} = -0.60, p < .001$)
 
 ```{r ESM_rmcorr_PA_own_NA_own}
 #| warning: false
@@ -92,7 +234,9 @@ plot_counter <- plot_counter + 1
 
 The common within-person correlation between an individual's own PA and NA is strong and negative. The \`rmcorr\` plot shows consistent negative slopes across participants, suggesting that as a person's positive affect increases relative to their mean, their negative affect decreases.
 
-#### Own PA vs perceived partner's PA ($r_{rm} = 0.36, p < .001$)
+#### Own PA vs perceived partner's PA
+
+($r_{rm} = 0.36, p < .001$)
 
 ```{r ESM_rmcorr_PA_own_PA_perceived_partner}
 #| warning: false
@@ -107,7 +251,9 @@ plot_counter <- plot_counter + 1
 
 While there was significant correlation between partners' actual Positive Affect ($r_{rm}​=.23$), participants' perceptions of their partners' PA were more strongly correlated with their own internal PA ($r_{rm}​=.36$), suggesting a degree of perceptual projection or assumed similarity.
 
-#### Own NA vs perceived partner's NA ($r_{rm} = 0.36, p < .001$)
+#### Own NA vs perceived partner's NA
+
+($r_{rm} = 0.36, p < .001$)
 
 ```{r ESM_rmcorr_NA_own_NA_perceived_partner}
 #| warning: false
@@ -120,7 +266,9 @@ save_base_plot(plot(rmc, main = plot_title), plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-#### Actual PA similarity vs perceived PA similarity ($r_{rm} = 0.62, p < .001$)
+#### Actual PA similarity vs perceived PA similarity
+
+($r_{rm} = 0.62, p < .001$)
 
 How well tuned is a person to the "state of the union"? Even though 'Actual Similarity' is a dyad-level variable repeated for both partners, the *perception* of that reality is an individual cognitive process. Grouping by person allows the model to capture how well each individual tracks the shared reality.
 
@@ -137,7 +285,9 @@ plot_counter <- plot_counter + 1
 
 High, but probably driven by common element of own PA in both similarity measures.
 
-#### Actual NA similarity vs perceived NA similarity ($r_{rm} = 0.49, p < .001$)
+#### Actual NA similarity vs perceived NA similarity
+
+($r_{rm} = 0.49, p < .001$)
 
 ```{r ESM_rmcorr_actual_perceived_sim_NA}
 #| warning: false
@@ -154,11 +304,13 @@ High, but probably driven by common element of own PA in both similarity measure
 
 ### Dyadic: Interpersonal synchrony & coupling
 
-#### Own PA vs Partner PA ($r_{rm} = 0.23, p < .001$)
+#### Own PA vs Partner PA
+
+($r_{rm} = 0.23, p < .001$)
 
 When looking at two variables that come from different partners (e.g., own PA and patner's PA) we will use grouping by dyad.
 
-Because the correlation between Partner A and Partner B is mathematically identical to the correlation between Partner B and Partner A, including both partners' rows for a dyad-level analysis results in exact data duplication. This redundancy artificially doubles your degrees of freedom and inflates statistical significance without adding any unique information about the couple's synchrony. Limiting the dataset to one row per dyad ensures your analysis reflects the true number of independent observations. When grouping by 'person', all rows (both partners) are retained (see above) because the analysis targets the population of individuals; while this introduces statistical non-independence, removing half the subjects would bias the estimate of the average person's experience.
+Because the correlation between Partner A and Partner B is mathematically identical to the correlation between Partner B and Partner A, including both partners' rows for a dyad-level analysis results in data duplication. This redundancy artificially doubles the degrees of freedom and inflates statistical significance without adding unique information about the couple's synchrony. Limiting the dataset to one row per dyad ensures that the analysis reflects the true number of independent observations. When grouping by 'person' (as above), all rows (both partners) are retained because the analysis targets individuals; this introduces statistical non-independence but removing half the subjects would bias the estimate of the average person's experience.
 
 ```{r ESM_rmcorr_PA_own_PA_partner}
 #| warning: false
@@ -177,7 +329,9 @@ plot_counter <- plot_counter + 1
 
 This result suggests a modest syncing of actual PA.
 
-#### Own NA vs Partner NA ($r_{rm} = 0.22, p < .001$)
+#### Own NA vs Partner NA
+
+($r_{rm} = 0.22, p < .001$)
 
 ```{r ESM_rmcorr_NA_own_NA_partner}
 #| warning: false
@@ -326,238 +480,306 @@ plot_trajectory(esm_data, variable, participants)
  
 ```
 
+## Similarity indices
+
+Theoretically, the similarity indices can range from -200 to +100:
+
+-   The -200 would be when one partner has baseline of +100 and rates at 0 (so -100 deviation) while the other partner has baseline of 0 and rates at +100 (so deviation of +100), giving a mean elevation of 0, while their distance is at 200.
+
+-   The +100 would be when both partners' baseline would be at 0 and they both rate at +100 (so deviation of +100), bringing the mean elevation to 100 and the distance to 0.
+
+```{r base_theoretical_similarity_surface}
+
+# Theoretical ranges -100 to 100 because of centering
+x <- seq(-100, 100, length.out = 200) # 'resolution' of 200
+y <- seq(-100, 100, length.out = 200)
+
+# function Z = (X + Y)/2 - abs(X - Y)
+similarity <- function(X, Y) {
+  elevation <- (X + Y) / 2
+  mismatch <- abs(X - Y)
+  return(elevation - mismatch)
+}
+
+# create z matrix, 'outer' applies similarity function to all combinations.
+z <- outer(x, y, similarity)
+
+# dynamic plot using plotly::plot_ly()
+base_surface <- plot_ly(x = ~x, y = ~y, z = ~z) %>%
+  add_surface(
+    colorbar = list(title = "Similarity"),
+    colorscale = "Viridis",
+    opacity = 0.8
+  ) 
+```
+
+### Theoretical similarity surface
+
+```{r theoretical_surface}
+base_surface %>%
+  layout(
+    title = list(text = "Similarity Surface: S = (X+Y)/2 - |X-Y|", y = 0.95),
+    scene = list(
+      xaxis = list(title = "Affect 1 (X)"),
+      yaxis = list(title = "Affect 2 (Y)"),
+      zaxis = list(title = "Similarity Index (S)"),
+      # initial camera angle
+      camera = list(eye = list(x = 1.5, y = 1.5, z = 1.2))
+    )
+  )
+```
+
+In practice, these edge cases will not appear. In the data, the similarity indices ranges are between approximately -150 and +70, and the bulk of the data has similarity between -75 and +50.
+
+### Similarity in the sample
+
+#### Ranges and distribution
+
+```{r practical_ranges}
+
+sim_cols <- c("PA_similarity_act", "NA_similarity_act", 
+              "PA_similarity_perc", "NA_similarity_perc")
+
+draw_violin_plot <- function() {
+  vioplot(esm_data[, sim_cols],
+            main = "Range and Distribution of Affect Similarity",
+            col = c("#A6CEE3", "#FB9A99", "#A6CEE3", "#FB9A99"),
+            names = c("PA\nActual", "NA\nActual", "PA\nPerceived", "NA\nPerceived"),
+            areaEqual = FALSE,
+            rectCol = "gray30", lineCol = "gray30", border = "gray30"
+    )
+    title(ylab = "Similarity (S = M - D)", line = 2)
+    abline(h = 0, col = "black", lty = 2, lwd = 1.5)
+}
+draw_violin_plot()
+
+plot_name <- sprintf("%s_%d_violin.png", prefix, plot_counter)
+save_base_plot(draw_violin_plot(), plot_name)
+plot_counter <- plot_counter + 1
+
+# numerical ranges
+cat("\nRanges (Min/Max):\n")
+print(sapply(esm_data[, sim_cols], range, na.rm = TRUE))
+```
+
+#### Actual PA similarity
+
+```{r PA_act_obs_vs_theo}
+#| warning: false
+
+base_surface %>%
+  add_layer(
+    data = esm_data,
+    x = ~cPA_own,
+    y = ~cPA_part_act,    
+    z = ~PA_similarity_act,     
+    title = "PA Actual Similarity: Observed vs. Theoretical",
+    x_lab = "Actor PA (Cent.)",
+    y_lab = "Partner PA (Cent.)",
+    z_lab = "Actual PA Similarity Index"
+  )
+```
+
+#### Actual NA similarity
+
+```{r NA_act_obs_vs_theo}
+#| warning: false
+
+base_surface %>%
+  add_layer(
+    data = esm_data,
+    x = ~cNA_own,
+    y = ~cNA_part_act,    
+    z = ~NA_similarity_act,   
+    title = "NA Actual Similarity: Observed vs. Theoretical",
+    x_lab = "Actor NA (Cent.)",
+    y_lab = "Partner NA (Cent.)",
+    z_lab = "Actual NA Similarity Index"
+  )
+```
+
+#### Perceived PA similarity
+
+```{r PA_perc_obs_vs_theo}
+#| warning: false
+
+base_surface %>%
+  add_layer(
+    data = esm_data,
+    x = ~cPA_own,
+    y = ~cPA_part_perc,    
+    z = ~PA_similarity_perc,   
+    title = "PA Perceived Similarity: Observed vs. Theoretical",
+    x_lab = "Actor PA (Cent.)",
+    y_lab = "Perceived Partner PA (Cent.)",
+    z_lab = "Perceived PA Similarity Index"
+  )
+```
+
+#### Perceived NA similarity
+
+```{r NA_perc_obs_vs_theo}
+#| warning: false
+
+base_surface %>%
+  add_layer(
+    data = esm_data,
+    x = ~cNA_own,
+    y = ~cNA_part_perc,    
+    z = ~NA_similarity_perc,   
+    title = "NA Perceived Similarity: Observed vs. Theoretical",
+    x_lab = "Actor NA (Cent.)",
+    y_lab = "Perceived Partner NA (Cent.)",
+    z_lab = "Perceived NA Similarity Index"
+  )
+```
+
 ## Time trend sensitivity analysis
 
-### Time trend in momentary love across the ESM period
+### Time trend in momentary love
 
 From the preregistration: *"Rather than including time covariates in all primary models, we will test for systematic time trends in momentary love across the ESM period (e.g., habituation or drift across the two-week period), for example by fitting* $𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_𝑇𝑇_𝑚 + 𝜀_{𝑚𝑝𝑑}$*, with* $𝑇_𝑚$ *the chronological order of beeps, centered at the study midpoint."* In this model, $𝐿_{𝑚𝑝𝑑}$ denotes the momentary love felt for the partner by person 𝑝 in dyad 𝑑 at moment 𝑚, and $b_{0,pd} = \beta_0 + v_{0,d}+u_{0, pd}$, the sum of the fixed intercept, the dyad-level random intercept and the person-level random intercept.
 
 The preregistration continues : *"When indicated, we will re-estimate models including a linear time covariate (and, where feasible, day-in-study and time-of-day) as an additional robustness check. As an additional diagnostic, we will also inspect whether the similarity indices show systematic time trends."*
 
-```{r love_time_trend}
-
+```{r create_centered_time_trend}
 # Create chronological order of beeps centered at study midpoint (T_m)
 # --> the Intercept then represents the average love at the middle of the study
-data <- esm_data %>%
+data_w_time <- esm_data %>%
   mutate(
     time_centered = beep - mean(beep, na.rm = TRUE),
   )
+```
 
+```{r love_time_trend}
 # preregistered model : Love_mpd = b0_pd + beta*Time + error
 # We nest Person within Dyad for the random intercept (b0_pd).
 
-model_love_time_trend <- lmer(love ~ time_centered + (1 | dyad/person), data = data)
+model_love_time_trend <- lmer(love ~ time_centered + (1 | dyad/person), data = data_w_time)
 summary(model_love_time_trend)
-
 ```
 
-The fixed effect for time_centered is slightly, but significantly positive, indicating a minor driftt upwards (love increases over time). Because of the large dataset, power is enormous and tiny fluctuations can be detected. A trend of 0.039 for every next beep, amounts to 0.2 (on a 0-100 slider scale) per weekday and 0.4 per weekend day. Over the full study duration, this is an increase of 2.7 points. This is indistinguishable from measurement noise (e.g., trying to hiet 75 and sliding to 77). **The trend is thus statistically significant but practically meaningless.**
+The fixed effect for time_centered is slightly, but significantly positive, indicating a minor drift upwards (love increases over time). Because of the large dataset, power is large and tiny fluctuations can be detected. A trend of 0.039 for every next beep, amounts to 0.2 (on a 0-100 slider scale) per weekday and 0.4 per weekend day. Over the full study duration, this is an increase of 2.7 points. This is indistinguishable from measurement noise (e.g., trying to hit 75 and sliding to 77). **The trend is thus statistically significant but practically meaningless.**
 
-### Time trend in similarity indices
+### Time trend in similarity
 
 In the preregistration, we also write: "*As an additional diagnostic, we will also inspect whether the similarity indices show systematic time trends."*
 
-```{r actual_similarity_indices_time_trend}
-
+```{r data_prep}
 # only retain one row per dyad x beep to avoiud double counting
-data_similarity <- data %>% filter(person < 700)
+data_similarity <- data_w_time %>% filter(person < 700)
+```
 
+When modelling the actual similarity indices (which are symmetric within a couple) in function of time, we use one line in the dataset for every dyad, since using both rows would treat both partners as independent observations and artificially inflate degrees of freedom and significance.
+
+#### Actual PA similarity
+
+```{r actual_PA_similarity_time_trend}
 # "Do partners become more/less similar in PA over the 2 weeks?"
 model_act_PA_sim_time_trend <- lmer(PA_similarity_act ~ time_centered + (1 | dyad), data = data_similarity)
 summary(model_act_PA_sim_time_trend)
+```
 
+Dyads are slightly increasing in actual PA similarity over the course of the two weeks $\beta = 0.039, p < .001$. Again, this is a very small effects, given the theoretical (-200, +100) and practical (-153, +62) range of this index. One beep further, actual PA similarity increases by 0.039, which would amount to an increase of 3.51 over the ESM period.
+
+Note the high residual variance (454.21), compared to the smaller variances for the dyad random intercept. This is because, as we've seen when calculating ICC, actual PA similarity is a highly fluctuating state. This residual variance also means that the slight upward time trend that was detected is a 'slow tide' beneath 'huge waves'.
+
+#### Actual NA similarity
+
+```{r actual_NA_similarity_time_trend}
 # "Do partners become more/less similar in NA over the 2 weeks?"
 model_act_NA_sim_time_trend <- lmer(NA_similarity_act ~ time_centered + (1 | dyad), data = data_similarity)
 summary(model_act_NA_sim_time_trend)
-
 ```
 
-Partners within dyads are slightly increasing in actual NA and PA similarity over the course of the two weeks.
+Dyads are slightly increasing in actual NA similarity over the course of the two weeks $\beta = 0.024, p < .001$. Again, this is a very small effects, given the theoretical (-200, +100) and practical (-106, +60) range of this index. One beep further, actual NA similarity increases by 0.024, which would amount to an increase of 2.16 over the ESM period.
 
-```{r perceived_similarity_indices_time_trend}
-# "Does perceived NA similarity increase/decrease over the 2 weeks?"
-model_perc_NA_sim_time_trend <- lmer(NA_similarity_perc ~ time_centered + (1 | dyad/person), data = data_similarity)
-summary(model_perc_NA_sim_time_trend)
-cat("\n\n----------------------------------\n\n")
+Again, note the high residual variance (168.70), compared to the smaller variances for the dyad random intercept. This is lower than for actual PA similarity but alsi indicates that actual NA similarity is a fluctuating state. This residual variance also means that the slight upward time trend that was detected is a 'slow tide' beneath 'huge waves'.
 
+#### Perceived PA similarity
+
+For the perceived similarity indices, we use the data from all persons, since the perceived indices are person-specific.
+
+```{r perceived_PA_similarity_time_trend}
 # "Does perceived PA similarity increase/decrease over the 2 weeks?"
-model_perc_PA_sim_time_trend <- lmer(PA_similarity_perc ~ time_centered + (1 | dyad/person), data = data_similarity)
+model_perc_PA_sim_time_trend <- lmer(PA_similarity_perc ~ time_centered + (1 | dyad/person), data = data_w_time)
 summary(model_perc_PA_sim_time_trend)
-cat("\n\n----------------------------------\n\n")
-
-# # because model didn't fully converge, we will use stronger optimizer than default
-# model_perc_PA_sim_time_trend <- lmer(PA_similarity_perc ~ time_centered + (1 | dyad/person), data = data_similarity, control = lmerControl(optimizer = "bobyqa"))
-# summary(model_perc_PA_sim_time_trend)
-# cat("\n\n----------------------------------\n\n")
-
-# # because now we get a negative eigenvalue (model struggling to distinguish between a peak in the likelihid surface or a ridge), we run with all available optimizers. If result is robust acrsoss optimizers, the convergence warnings were a false alarm.
-# check_optim <- allFit(model_perc_PA_sim_time_trend)
-# summary(check_optim)
-# cat("\n\n----------------------------------\n\n")
-
-# we will also test on standardized data
-data_similarity <- data_similarity %>%
-  mutate(time_Z = scale(data_similarity$time_centered),
-    sim_PA_Z = scale(data_similarity$PA_similarity_perc),
-    sim_NA_Z = scale(data_similarity$NA_similarity_perc))
-
-model_perc_PA_sim_time_trend <- lmer(sim_PA_Z ~ time_Z + (1 | dyad/person), data = data_similarity)
-summary(model_perc_PA_sim_time_trend)
-cat("\n\n----------------------------------\n\n")
-
-model_perc_NA_sim_time_trend <- lmer(sim_NA_Z ~ time_Z + (1 | dyad/person), data = data_similarity)
-summary(model_perc_NA_sim_time_trend)
-
 ```
 
-The initial perceived similarity model failed to converge using the default optimizer in `lme4,`but the gradient (0.003) became very close to the tolerance (0.002). The estimates are therefore likely accurate to several decimal places. This is probably because of differences in scale of the variables. To ensure robust estimation, we re-fit the models using the `bobyqa` optimizer (Bound Optimization BY Quadratic Approximation), which is known for superior performance with complex random-effect structures. This specification equally gave convergence warnings with a negative eigenvalue (regarding the curvature of the likelihood surface). We performed a sensitivity analysis using the `allFit` procedure which demonstrated that the fixed effect estimates were stable across five different optimization algorithms. We therefore report the results from the BOBYQA optimizer."
+Persons within dyads are slightly increasing ($\beta = 0.05, p < .001$) in perceived PA similarity over the course of the two weeks. Again, this is a very small effects, given the theoretical (-200, +100) and practical (-146, +50) range of this index. One beep further, perceived PA similarity increases by 0.05, which would amount to an increase of 4.48 over the ESM period.
+
+Note tagain he high residual variance (408.67), compared to the smaller variances for the person (10) and dyad (6.92) random intercepts. This is because, as we've seen when calculating ICC, perceived PA similarity is a highly fluctuating state. The variance proportions found here largely correspond to what was found in the ICC calculations. This residual variance also means that the slight upward time trend that was detected is a 'slow tide' beneath 'huge waves'.
+
+#### Perceived NA similarity
+
+```{r perceived_NA_similarity_time_trend}
+# "Does perceived NA similarity increase/decrease over the 2 weeks?"
+model_perc_NA_sim_time_trend <- lmer(NA_similarity_perc ~ time_centered + (1 | dyad/person), data = data_w_time)
+summary(model_perc_NA_sim_time_trend)
+```
+
+Persons within dyads are showing a marginally significant, very slight increase in perceived NA similarity over the course of the two weeks ($\beta = 0.008, p=.048$). However, this effect is negligible, even compared to the perceived PA similarity findings. One beep further, perceived NA similarity increases by only 0.008, which would amount to a total increase of just 0.74 points over the entire ESM period (90 beeps). Given the theoretical range of the index (-200 to +100) and the practical range of (-105, +71), this trend is practically invisible.
+
+Note again the high residual variance (\~174.6) relative to the person (9.7) and dyad (13.6) random intercept variances. As with PA, perceived NA similarity is a highly fluctuating state rather than a stable trait, although the overall volatility is lower here than for PA (Residual variance of \~175 vs \~409). The 'slow tide' metaphor applies here as well, but in this case, the tide is barely moving at all beneath the waves.
+
+## Autocorrelation analysis
+
+```{r esm_autocorrelation}
+
+target_vars <- c("cPA_own", "cNA_own", "cPA_part_act", "cNA_part_act", 
+                 "cPA_part_perc", "cNA_part_perc", "clove")
+
+# calculate Lag-1 ac per person
+# We group by dyad/person to ensure we don't lag across different people
+acf_results <- esm_data %>%
+  group_by(dyad, person) %>% 
+  arrange(dyad, person, beep) %>% # order by time!
+  summarise(
+    across(all_of(target_vars), 
+          ~ cor(., dplyr::lag(.), use = "pairwise.complete.obs"),
+           .names = "{.col}"
+    ),
+    .groups = "drop"
+  )
+
+# reshape for easy checking/plotting
+acf_long <- acf_results %>%
+  pivot_longer(cols = all_of(target_vars), 
+               names_to = "Variable", 
+               values_to = "Autocorrelation")
+
+# summary
+cat("--- Average Lag-1 Autocorrelation (Temporal Dependence) ---\n")
+acf_summary <- acf_long %>%
+  group_by(Variable) %>%
+  summarise(
+    Mean_ACF = mean(Autocorrelation, na.rm = TRUE),
+    Median_ACF = median(Autocorrelation, na.rm = TRUE),
+    SD_ACF = sd(Autocorrelation, na.rm = TRUE)
+  )
+print(acf_summary)
+
+# Plot
+ggplot(acf_long, aes(x = Variable, y = Autocorrelation, fill = Variable)) +
+  geom_boxplot(alpha = 0.6, outlier.shape = NA) +
+  geom_jitter(width = 0.2, alpha = 0.3, size = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Lag-1 Autocorrelation per Person",
+    subtitle = "Higher values indicate stronger temporal dependence (validating AR(1))",
+    y = "Lag-1 Correlation (r)",
+    x = NULL
+  ) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+mean autocorrelation values range from 0.30 to 0.38, which is moderate temporal dependence. This means that about 30%-35% of a person's state is carried over from the previous beep. If this would be 0ù then AR(1) would be unnecessary, and if this would be near 100% there would be a random walk (TO CHECK).
 
 ```{r ESM unload}
 #| include: false
 clean_config("ESM")
 ```
-
-# Demographics
-
-```{r demographics setup}
-# load data
-demographics <- readRDS(file.path(dir_data_ana, "demographics.rds"))
-# plot initialisation
-plot_counter <- 1
-prefix <- "Demo"
-```
-
-## Age
-
-```{r age}
-
-# AGE = numeric
-print(summary(demographics$age))
-cat(sprintf("Missing age: %d\n", sum(is.na(demographics$age))))
-plot <- demographics %>%
-  filter(!is.na(age)) %>%
-  ggplot(aes(x = age)) +
-  geom_histogram(binwidth = 2) +
-  labs(title = "Age distribution", x = "Age (years)", y = "Count") +
-  theme_minimal()
-plot
-plot_name <- sprintf("%s_%d_age_hist.png", prefix, plot_counter)
-save_plot(plot, plot_name)
-plot_counter <- plot_counter + 1
-
-```
-
-## Gender
-
-```{r gender}
-# gender = factor
-labels <- get_label(demographics, "gender")
-print(freq_table(labels))
-plot <- plot_bar_categorical(labels, "Gender Distribution", "Gender")
-plot
-plot_name <- sprintf("%s_%d_gender_bar.png", prefix, plot_counter)
-save_plot(plot, plot_name)
-plot_counter <- plot_counter + 1
-```
-
-## Nationality
-
-```{r nationality}
-# nationality = factor
-labels <- get_label(demographics, "nat")
-print(freq_table(labels))
-plot <- plot_bar_categorical(labels, "Nationality Distribution", "Nationality")
-plot
-plot_name <- sprintf("%s_%d_nationality_bar.png", prefix, plot_counter)
-save_plot(plot, plot_name)
-plot_counter <- plot_counter + 1
-
-```
-
-## Ethnicity
-
-```{r ethnicity}
-# ethnicity = factor
-labels <- get_label(demographics, "etn")
-print(freq_table(labels))
-plot <- plot_bar_categorical(labels, "Ethnicity Distribution", "Ethnicity")
-plot
-plot_name <- sprintf("%s_%d_ethnicity_bar.png", prefix, plot_counter)
-save_plot(plot, plot_name)
-plot_counter <- plot_counter + 1
-```
-
-## Education
-
-```{r education}
-# education = factor
-labels <- get_label(demographics, "edu")
-print(freq_table(labels))
-plot <- plot_bar_categorical(labels, "Eduction Level Distribution", "Education")
-plot
-plot_name <- sprintf("%s_%d_education_bar.png", prefix, plot_counter)
-save_plot(plot, plot_name)
-plot_counter <- plot_counter + 1
-```
-
-## Children
-
-```{r children}
-# children = factor
-labels <- get_label(demographics, "child")
-print(freq_table(labels))
-plot <- plot_bar_categorical(labels, "Children (Yes/No)", "Children?")
-plot
-plot_name <- sprintf("%s_%d_chile_bar.png", prefix, plot_counter)
-save_plot(plot, plot_name)
-plot_counter <- plot_counter + 1
-```
-
-## Living Together
-
-```{r living together}
-# living together = factor
-labels <- get_label(demographics, "liv_tog")
-print(freq_table(labels))
-plot <- plot_bar_categorical(labels, "Living Together? (Yes/No)", "Living Together?")
-plot
-plot_name <- sprintf("%s_%d_liv_tog_bar.png", prefix, plot_counter)
-save_plot(plot, plot_name)
-plot_counter <- plot_counter + 1
-```
-
-## Relationship Duration
-
-```{r relationship duration}
-# relationship duration = numeric
-print(summary(demographics$rel_dur))
-cat(sprintf("Missing relationship duration: %d\n", sum(is.na(demographics$rel_dur))))
-plot <- demographics %>%
-  filter(!is.na(rel_dur)) %>%
-  ggplot(aes(x = rel_dur)) +
-  geom_histogram(binwidth = 2) +
-  labs(title = "Relationship Duration Distribution", x = "Duration (Months)", y = "Count") +
-  theme_minimal()
-plot
-plot_name <- sprintf("%s_%d_rel_dur_hist.png", prefix, plot_counter)
-save_plot(plot, plot_name)
-plot_counter <- plot_counter + 1
-```
-
-## Medication
-
-```{r medication}
-# medication = factor
-labels <- get_label(demographics, "med")
-print(freq_table(labels))
-plot <- plot_bar_categorical(labels, "Medication Use? (Yes/No)", "Living Together?")
-plot
-plot_name <- sprintf("%s_%d_med_bar.png", prefix, plot_counter)
-save_plot(plot, plot_name)
-plot_counter <- plot_counter + 1
-```
-
-# BG
 
 ```{r BG_setup}
 # load data
@@ -568,6 +790,8 @@ load_config("BG")
 plot_counter <- 1
 prefix <- "BG"
 ```
+
+# BG
 
 ## DCI descriptive statistics
 
@@ -1023,7 +1247,9 @@ vmr_data_neg <- vmr_data %>% filter(topic == "negative")
 
 ### Personal: Intrapersonal dynamics (individual level)
 
-#### Own PA vs own NA ($r_{rm} = -0.72, p < .001$)
+#### Own PA vs own NA
+
+($r_{rm} = -0.72, p < .001$)
 
 ```{r VMR_rmcorr_PA_own_NA_own}
 #| warning: false
@@ -1057,7 +1283,9 @@ plot_counter <- plot_counter + 1
 
 ```
 
-#### Own PA vs perceived partner's PA ($r_{rm} = 0.7, p < .001$)
+#### Own PA vs perceived partner's PA
+
+($r_{rm} = 0.7, p < .001$)
 
 ```{r VMR_rmcorr_PA_own_PA_perceived_partner}
 #| warning: false
@@ -1090,7 +1318,9 @@ save_base_plot(plot(rmc, main = plot_title), plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-#### Own NA vs perceived partner's NA ($r_{rm} = 0.6, p < .001$)
+#### Own NA vs perceived partner's NA
+
+($r_{rm} = 0.6, p < .001$)
 
 ```{r VMR_rmcorr_NA_own_NA_perceived_partner}
 #| warning: false
@@ -1123,7 +1353,9 @@ save_base_plot(plot(rmc, main = plot_title), plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-#### Actual PA similarity vs perceived PA similarity ($r_{rm} = 0.67, p < .001$)
+#### Actual PA similarity vs perceived PA similarity
+
+($r_{rm} = 0.67, p < .001$)
 
 How well tuned is a person to the "state of the union"?
 
@@ -1158,7 +1390,9 @@ save_base_plot(plot(rmc, main = plot_title), plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-#### Actual NA similarity vs perceived NA similarity ($r_{rm} = 0.59, p < .001$)
+#### Actual NA similarity vs perceived NA similarity
+
+($r_{rm} = 0.59, p < .001$)
 
 How well tuned is a person to the "state of the union"?
 
@@ -1193,8 +1427,6 @@ save_base_plot(plot(rmc, main = plot_title), plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-### 
-
 ### Dyadic: Interpersonal synchrony & coupling
 
 ```{r create_wide_vmr}
@@ -1203,7 +1435,9 @@ vmr_data_dyad_pos <- vmr_data_dyad %>% filter(topic == "positive")
 vmr_data_dyad_neg <- vmr_data_dyad %>% filter(topic == "negative")
 ```
 
-#### Own PA vs Partner PA ($r_{rm} = 0.45, p < .001$)
+#### Own PA vs Partner PA
+
+($r_{rm} = 0.45, p < .001$)
 
 ```{r VMR_rmcorr_PA_own_PA_partner}
 #| warning: false
@@ -1237,7 +1471,9 @@ plot_counter <- plot_counter + 1
 
 ```
 
-#### Own NA vs Partner NA ($r_{rm} = 0.42, p < .001$)
+#### Own NA vs Partner NA
+
+($r_{rm} = 0.42, p < .001$)
 
 ```{r VMR_rmcorr_NA_own_NA_partner}
 #| warning: false
@@ -1432,7 +1668,7 @@ save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-```{r vmr_icc_act_all}
+```{r vmr_icc_act_pos}
 # Variables to analyze (VMR)
 dyad_level_vars <- c("PA_similarity_act", "NA_similarity_act")
 
@@ -1648,6 +1884,118 @@ Some observations:
 -   Dyad-level variance is much larger in negative interactions for NA_own: .10 (All) → .04 (Positive) → .26 (Negative). This suggests couples differ much more in their overall NA during negative interactions.
 
 -   The perceived partner affects show more stable components in the valenced subsets. So perceptions of the partner are less “moment-only” once you condition on interaction valence.
+
+## Similarity indices
+
+### Theoretical similarity surface
+
+The similarity indices are constructed in the same way as for the ESM data, so the `base_surface` is the same.
+
+### Similarity in the sample
+
+#### Ranges and distribution
+
+```{r VMR_similarity_pracical_ranges}
+
+sim_cols <- c("PA_similarity_act", "NA_similarity_act", 
+              "PA_similarity_perc", "NA_similarity_perc")
+
+draw_violin_plot <- function() {
+  vioplot(vmr_data[, sim_cols],
+        main = "Range and Distribution of Affect Similarity",
+        col = c("#A6CEE3", "#FB9A99", "#A6CEE3", "#FB9A99"),
+        names = c("PA\nActual", "NA\nActual", "PA\nPerceived", "NA\nPerceived"),
+        areaEqual = FALSE,   # FALSE = width is proportional to data density
+        rectCol = "gray30",  # Color of the inner boxplot
+        lineCol = "gray30",  # Color of the median line
+        border = "gray30"    # Color of the violin border
+)
+title(ylab = "Similarity (S = M - D)", line = 2)
+abline(h = 0, col = "black", lty = 2, lwd = 1.5) # Zero line
+}
+
+draw_violin_plot()
+
+plot_name <- sprintf("%s_%d_violin.png", prefix, plot_counter)
+save_base_plot(draw_violin_plot(), plot_name)
+plot_counter <- plot_counter + 1
+
+# numerical ranges
+cat("Ranges (Min/Max):\n")
+print(sapply(vmr_data[, sim_cols], range, na.rm = TRUE))
+```
+
+#### Actual PA similarity
+
+```{r VMR_PA_act_obs_vs_theo}
+#| warning: false
+
+base_surface %>%
+  add_layer(
+    data = vmr_data,
+    x = ~cPA_own,
+    y = ~cPA_part_act,    
+    z = ~PA_similarity_act,     
+    title = "PA Actual Similarity: Observed vs. Theoretical",
+    x_lab = "Actor PA (Cent.)",
+    y_lab = "Partner PA (Cent.)",
+    z_lab = "Actual PA Similarity Index"
+  )
+```
+
+#### Actual NA similarity
+
+```{r VMR_NA_act_obs_vs_theo}
+#| warning: false
+
+base_surface %>%
+  add_layer(
+    data = vmr_data,
+    x = ~cNA_own,
+    y = ~cNA_part_act,    
+    z = ~NA_similarity_act,   
+    title = "NA Actual Similarity: Observed vs. Theoretical",
+    x_lab = "Actor NA (Cent.)",
+    y_lab = "Partner NA (Cent.)",
+    z_lab = "Actual NA Similarity Index"
+  )
+```
+
+#### Perceived PA similarity
+
+```{r VMR_PA_perc_obs_vs_theo}
+#| warning: false
+
+base_surface %>%
+  add_layer(
+    data = vmr_data,
+    x = ~cPA_own,
+    y = ~cPA_part_perc,    
+    z = ~PA_similarity_perc,   
+    title = "PA Perceived Similarity: Observed vs. Theoretical",
+    x_lab = "Actor PA (Cent.)",
+    y_lab = "Perceived Partner PA (Cent.)",
+    z_lab = "Perceived PA Similarity Index"
+  )
+```
+
+#### Perceived NA similarity
+
+```{r VMR_NA_perc_obs_vs_theo}
+#| warning: false
+
+base_surface %>%
+  add_layer(
+    data = vmr_data,
+    x = ~cNA_own,
+    y = ~cNA_part_perc,    
+    z = ~NA_similarity_perc,   
+    title = "NA Perceived Similarity: Observed vs. Theoretical",
+    x_lab = "Actor NA (Cent.)",
+    y_lab = "Perceived Partner NA (Cent.)",
+    z_lab = "Perceived NA Similarity Index"
+  )
+```
 
 ```{r VMR unload}
 #| include: false
