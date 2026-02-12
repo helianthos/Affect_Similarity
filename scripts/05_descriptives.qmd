@@ -152,6 +152,8 @@ save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 ```
 
+------------------------------------------------------------------------
+
 # ESM
 
 ```{r ESM_setup}
@@ -837,9 +839,23 @@ save_plot(plot, plot_name)
 plot_counter <- plot_counter + 1
 ```
 
-The numbers show that the individual affect levels are not trivially related to momentary love. There are small-to-moderate correlations with `clove`, with the largest around \|r\| ≈ .34. The similarity indices also correlate with `clove` and these are similar to the correlations of the individual affect levels with `clove`. This plausibly reflect that a similarity effect could plausibly reflect affect-level effects, not only being 'similar'. Consistent with the preregistered sensitivity strategy, we will estimate models that include the component affect levels (within–between decomposed) and compare the similarity coefficients across specifications. The similarity indices (mean − \|diff\|) embed elevation by construction, so some overlap with affect levels is expected; sensitivity models will clarify whether similarity contributes beyond levels.
+To evaluate the potential role of individual affect levels, we examined the preregistered diagnostic correlations between the person-mean centered affect components and the centered outcome (`clove`). We focus on centered variables here because the fixed effect for the time-varying similarity predictor $S^{within}$ in our preregistered mixed models estimates associations within persons. We do not report parallel between-person diagnostics here, as the present checks are intended solely to probe momentary (within-person) confounding relevant to $S^{within}$. Between-person effects are addressed directly in the multilevel models through the inclusion of the decomposed $S^{between}$ component and corresponding between-level covariates in the sensitivity analyses.
 
-The correlations between the individual affect levels and the similarity constructs are relatively high (\~.63 -.69). This is no surprise given that the similarity indices are constructed using the mean affect levels. This implies that sensitivity models that include both similarity and component levels will estimate the effect of similarity beyond affect levels and may yield larger SEs and attenuated coefficients. Therefore, we will treat these covariate-added models as sensitivity analyses rather than the primary specification and will interpret changes in the similarity effect accordingly. Importantly, collinearity should be evaluated using the exact predictors used in the preregistered within–between models (i.e., similarity_w and similarity_b), not the raw similarity scores.
+**1. Correlation with Outcome (`clove`).** Consistent with standard dyadic research findings (e.g., @kennyDyadicDataAnalysis2020), actor effects are generally stronger than partner effects. The person-mean centered affect components (`cPA_own`, `cNA_own`) show moderate bivariate correlations with `clove` ($r≈.34$ for PA, $r≈−.32$ for NA). Partner effects were smaller ($r≈.17$ for PA, $r≈−.18$ for NA).
+
+**2. Correlation with Similarity Predictors.** The similarity indices themselves showed substantial bivariate overlap with the affect components, as expected given their construction (calculated as Mean − \|Difference\|). This is **a definition-induced overlap**. From the data:
+
+-   **For Positive Affect (PA):** The actual similarity index (`PA_similarity_act)` correlates strongly with individual affect levels ($r≈.63$ for both actor and partner).
+
+-   **For Negative Affect (NA):** The overlap was moderate ($r≈.37$).
+
+Consequently, models that include affect levels as covariates shift the interpretation of the similarity coefficient toward similarity beyond levels.
+
+**3. Sensitivity Rationale.** @selsActualPerceivedEmotional2020 used low correlations as a heuristic to omit component controls, but our checks here reveal that it necessitates a more rigorous approach. Because affect levels correlate small-to-moderately with the outcome ($r≈.17–.34$) **and** strongly with the similarity predictor ($r≈.37–.63$), excluding them risks an ambiguous interpretation in which the variance of feeling good (or bad) is attributed to 'similarity'.
+
+Therefore, the preregistered sensitivity analyses are important for interpretability and for evaluating whether the similarity construct contributes beyond level. In these models, we will add the person-mean centered momentary affect levels (actor and partner) and the grand-mean centered average affect levels as covariates. This matches the decomposition of our primary similarity predictor (into $S^{within}$ and $S^{between}$). If the hypothesized similarity effect attenuates substantially after controlling for levels, this would suggest that the index's predictive power is largely driven by level.
+
+------------------------------------------------------------------------
 
 # BG
 
@@ -1273,6 +1289,8 @@ plot_counter <- plot_counter + 1
 #| include: false
 clean_config("BG")
 ```
+
+------------------------------------------------------------------------
 
 # VMR
 
@@ -2114,6 +2132,8 @@ The lower lag-1 correlations and higher SDs in VMR may therefore come from these
 #| include: false
 clean_config("VMR")
 ```
+
+------------------------------------------------------------------------
 
 # POST
 

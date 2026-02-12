@@ -115,7 +115,7 @@ project/
 │   └── Automatically activates renv when the project is opened
 │
 ├── _quarto.yml
-│   └── Global project-wide quarto report settings 
+│   └── Global project-wide quarto report settings
 │
 ├── references.bib
 │   └── Citation data for the rendered Quarto reports 

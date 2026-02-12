@@ -31,3 +31,4 @@ library(GPArotation)
 library(gt)
 library(plotly)
 library(vioplot)
+library(nlme) # for corAR1 in lme models; not in renv.lock because in R's default installed packages.

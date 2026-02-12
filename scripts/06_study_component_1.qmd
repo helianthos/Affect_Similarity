@@ -1,0 +1,427 @@
+---
+title: "Study Component 1: Affect Similarity in Daily Life (ESM)"
+---
+
+```{r setup}
+#| include: false
+
+# 1. Load packages, paths and data configurations
+source(here::here("R", "00_setup.R"))
+
+# 2. Set a global theme for plots
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+```
+
+```{r ESM_setup}
+#| include: false
+# load data
+esm_data  <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
+# load data configuration file 
+load_config("ESM")
+# plot initialisation
+plot_counter <- 1
+prefix <- "ESM"
+```
+
+# Introduction
+
+## Overview
+
+Study Component 1 examines how **momentary affect similarity** in daily life relates to **momentary love toward the partner**, using experience sampling data from romantic couples.
+
+We distinguish:
+
+-   **Positive Affect (PA)** and **Negative Affect (NA)** (analyzed separately)
+-   **Actual similarity** (self-reported affect compared to partner's self-reported affect)
+-   **Perceived similarity** (self-reported affect compared to actor's perception of partner's affect)
+
+Similarity is conceptualized as **shared, co-experienced elevated affect**, operationalized as:
+
+-   Dyadic elevation (mean level)
+-   Penalized by mismatch (absolute difference)
+
+The main research questions are:
+
+1.  Does momentary affect similarity predict momentary love? (H1)
+2.  Is this association mediated by perceived similarity? (H2)
+3.  Are these associations moderated by perceived responsiveness and event valence? (H3)
+
+All analyses use multilevel models with moments (m) nested within persons (p) nested within dyads (d).
+
+## Conceptualization and Operationalization
+
+### Notation and Multilevel Structure
+
+Let:
+
+-   $L_{mpd}$ = momentary love
+-   $A_{mpd}$ = actor affect
+-   $P^{act}_{mpd}$ = partner's actual affect
+-   $P^{perc}_{mpd}$ = partner affect as perceived by actor
+
+Three-level structure:
+
+-   Moments ($m$)
+-   Persons ($p$)
+-   Dyads ($d$)
+
+### Person-Mean Centering
+
+We person-mean center affect variables:
+
+$$
+X_{mpd} = A_{mpd} - \bar{A}_{pd}
+$$
+
+$$
+Y^{act}_{mpd} = P^{act}_{mpd} - \bar{P}^{act}_{pd}
+$$
+
+$$
+Y^{perc}_{mpd} = P^{perc}_{mpd} - \bar{P}^{perc}_{pd}
+$$
+
+### Similarity indices
+
+ 
+
+#### Actual Similarity
+
+Mean component:
+
+$$
+M^{act}_{mpd} = \frac{X_{mpd} + Y^{act}_{mpd}}{2}
+$$
+
+Mismatch component:
+
+$$
+D^{act}_{mpd} = |X_{mpd} - Y^{act}_{mpd}|
+$$
+
+Similarity index:
+
+$$
+S^{act}_{mpd} = M^{act}_{mpd} - D^{act}_{mpd}
+$$
+
+Actual affect similarity is symmetric within a couple at a given moment (it compares the two partners’ self-reported affect), such that $S^{act}_{mpd}$ is conceptually a dyad–moment construct that is identical for both partners.
+
+#### Perceived Similarity
+
+$$
+M^{perc}_{mpd} = \frac{X_{mpd} + Y^{perc}_{mpd}}{2}
+$$
+
+$$
+D^{perc}_{mpd} = |X_{mpd} - Y^{perc}_{mpd}|
+$$
+
+$$
+S^{perc}_{mpd} = M^{perc}_{mpd} - D^{perc}_{mpd}
+$$
+
+Perceived similarity is actor-specific because it compares the actor’s affect to the actor’s perception of the partner’s affect, so $S^{perc}_{mpd}$ can differ between partners within the same dyad.
+
+### Decomposition into Within and Between Components
+
+#### Actual Similarity
+
+Dyad mean, and grand-mean:
+
+$$
+\bar{S}^{act}_d, \bar{\bar{S}}^{act}
+$$
+
+Within-dyad:
+
+$$
+S^{act,within}_{mpd} = S^{act}_{mpd} - \bar{S}^{act}_d
+$$
+
+Between-dyad:
+
+$$
+\bar{S}^{act,between}_d = \bar{S}^{act}_d - \bar{\bar{S}}^{act}
+$$
+
+#### Perceived Similarity
+
+Person mean, and grand-mean:
+
+$$
+\bar{S}^{perc}_{pd}, \bar{\bar{S}}^{perc}
+$$
+
+Within-person:
+
+$$
+S^{perc,within}_{mpd} = S^{perc}_{mpd} - \bar{S}^{perc}_{pd}
+$$
+
+Between-person:
+
+$$
+\bar{S}^{perc,between}_{pd} = \bar{S}^{perc}_{pd} - \bar{\bar{S}}^{perc}
+$$
+
+## Assumptions and Robustness Checks
+
+### Random Effects
+
+-   Random intercepts for dyads
+-   Random intercepts for persons nested within dyads
+-   No random slopes in primary models
+
+### Temporal Dependence
+
+-   AR(1) residual covariance structure within persons
+
+### Sensitivity Analyses
+
+1.  **Elevation sensitivity** (actor/partner affect covariates)
+
+    We will in run all models with the individual affect levels as covariates to analyse what our similarity indices add above and beyond the individual affect levels. This is conceptually important because our similarity operationalization includes a level component (the mean of the individual affect scores), creating inherent overlap between similarity and individual levels.
+
+    As an initial check, we inspected bivariate correlations on the within-person/dyad scale (i.e., between centered momentary love as(outcome) and candidate covariates, as in @selsActualPerceivedEmotional2020. These analyses (see`/scripts/05_descriptives.qmd`) indicated that momentary affect levels were small-to-moderately associated with momentary love (largest $r≈.34$) and showed substantial construct-induced overlap with the similarity indices.
+
+    Given this overlap, models that omit affect levels would leave the similarity coefficient open to an ambiguous interpretation. Including affect levels therefore allows us to evaluate whether similarity predicts love beyond level effects.
+
+2.  **Time-trend sensitivity**
+
+    We tested for systematic time trends in momentary love across the ESM period by fitting $𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_𝑇𝑇_𝑚 + 𝜀_{𝑚𝑝𝑑}$, with $𝑇_𝑚$ the chronological order of beeps, centered at the study midpoint (see `/scripts/05_descriptives.qmd`), and found that there was a small, statistically significant but practically meaningless drift upwards (love increases over time). It is therefore **not indicated to rerun models with a time covariate**.
+
+3.  **Random-slope robustness checks**
+
+    We will attempt models that add random slopes for key level 1 predictors like within-dyad actual similarity or within-person perceived similarity.
+
+------------------------------------------------------------------------
+
+# Step 1a: Main Effects of Actual Similarity (H1.1-H1.2)
+
+Primary multilevel model:
+
+$$
+L_{mpd} = b_{0,pd} + 
+\beta_1 S^{act,within}_{mpd} +
+\beta_2 \bar{S}^{act,between}_d +
+\varepsilon_{mpd}
+$$
+
+Random intercept structure:
+
+$$
+b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}
+$$
+
+-   $v_{0,d} \sim N(0, \tau_d^2)$
+-   $u_{0,pd} \sim N(0, \tau_p^2)$
+-   AR(1) residual structure within persons. This means that $ε_{mpd}​=ρε_{m−1,pd}​+e_{mpd}$​, assuming that unexplained fluctuations in love are autocorrelated. The regression part remains about momentary associations, as compared to including lagged love in the equation (which would model love inertia explicitely). Doing the latter would answer a different question: does similarity predict love above prior love?
+
+Interpretation:
+
+-   $\beta_1$: within-dyad association. When I (we) am (are) more similar **than usual** (moment-to-moment fluctuation), do I feel more love than usual?
+
+-   $\beta_2$: between-dyad association. Do dyads who are generally/on average more similar report generally/on average higher levels of love?
+
+## H1.1 – Actual PA Similarity
+
+```{r}
+
+esm_dat <- esm_data %>% arrange(dyad, person, time_min) # should already be the case
+
+# --- model in nlme ---
+h11 <- lme(
+  fixed = love ~ PA_similarity_act_w + PA_similarity_act_b,
+  random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+  correlation = corCAR1(form = ~ time_min | dyad/person),  # continuous AR(1) 
+  data = esm_data,
+  method = "REML",
+  na.action = na.exclude,
+  control = lmeControl(opt = "optim")
+)
+
+summary(h11)
+intervals(h11, which = "fixed")  # CIs for fixed effects + variance components + AR(1) rho
+VarCorr(h11)
+
+# Optional: extract AR(1) parameter (rho)
+coef(h11$modelStruct$corStruct, unconstrained = FALSE)
+
+```
+
+**Within-person effect:** $β_1=0.138$, $p<.001$, 95% CI: $[0.128, 0.147]$
+
+When a person reports higher-than-usual actual PA similarity with their partner at a given moment (relative to that person’s typical similarity), they also report higher love at that moment.
+
+Within persons, a 1 SD increase in actual PA similarity was associated with a 2.9-point increase in momentary love (0–100).
+
+**Between-person/dyad effect is not significant**:\
+\$β^{between}=0.212$, $p = .43$, $[−0.317,0.741]$. \
+only 102 dyads informing between estimate.
+
+Check phi: seems substantive
+
+## H1.2 – Actual NA Similarity
+
+```{r}
+
+```
+
+------------------------------------------------------------------------
+
+# Step 1b: Additive Model (H1.3)
+
+$$
+L_{mpd} =
+b_{0,pd} +
+\beta_1 S^{act,within}_{mpd} +
+\beta_2 \bar{S}^{act,between}_d +
+\beta_3 S^{perc,within}_{mpd} +
+\beta_4 \bar{S}^{perc,between}_{pd} +
+\varepsilon_{mpd}
+$$
+
+Goals:
+
+-   Test whether perceived similarity predicts love above actual similarity
+
+-   Examine attenuation of actual similarity coefficients
+
+Interpretation:
+
+-   $𝛽_3$ indicates whether at moments when an actor perceives more similarity than they typically do (i.e., higher $S^{perc, within}_{mpd}$), they report higher/lower love over and above what can be explained by actual similarity at that moment.
+
+-   $𝛽_4$ indicates whether persons who tend to perceive more similarity on average report higher/lower love overall, controlling for the dyad’s average actual similarity. As noted in the preregistration, this between-person component combines differences between dyads and stable differences between partners within dyads.
+
+If $𝛽_3$ and $𝛽_4$ are comparable in direction to the corresponding actual-similarity effects in Step 1a, and the actual-similarity association with love are being reduced in magnitude when perceived similarity is included, this is consistent with H1.3.
+
+## H1.3 – Adding Perceived Similarity
+
+```{r}
+
+```
+
+------------------------------------------------------------------------
+
+# Step 1c: Actual × Perceived Interaction
+
+## Exploratory analysis
+
+$$
+L_{mpd} =
+b_{0,pd} +
+\beta_1 S^{act,within}_{mpd} +
+\beta_2 \bar{S}^{act,between}_d +
+\beta_3 S^{perc,within}_{mpd} +
+\beta_4 \bar{S}^{perc,between}_{pd}
+$$$$
++ \beta_5 (S^{act,within}_{mpd} \times S^{perc,within}_{mpd})
++ \beta_6 (\bar{S}^{act,between}_d \times \bar{S}^{perc,between}_{pd})
++ \varepsilon_{mpd}
+$$
+
+Predicted values will be probed at −1 SD, mean, and +1 SD.
+
+```{r}
+
+```
+
+------------------------------------------------------------------------
+
+# Step 2: Multilevel mediation (H2.1-H2.2)
+
+We test whether perceived similarity mediates the association between actual similarity and love.
+
+**Mediator Model**
+
+$$
+S^{perc}_{mpd} =
+t_{0,pd} +
+\theta_1 S^{act,within}_{mpd} +
+\theta_2 \bar{S}^{act,between}_d +
+\varepsilon^M_{mpd}
+$$
+
+**Outcome Model**
+
+$$
+L_{mpd} =
+f_{0,pd} +
+\phi_1 S^{perc,within}_{mpd} +
+\phi_2 \bar{S}^{perc,between}_{pd} +
+\phi_3 S^{act,within}_{mpd} +
+\phi_4 \bar{S}^{act,between}_d +
+\varepsilon^L_{mpd}
+$$
+
+Indirect effects:
+
+-   Within-person: $\theta_1 \phi_1$
+-   Between-dyad: $\theta_2 \phi_2$
+
+## H2.1 - PA mediation
+
+```{r}
+
+```
+
+## H2.2 - NA mediation
+
+```{r}
+
+```
+
+------------------------------------------------------------------------
+
+# Step 3a: Moderation by responsiveness (H3.1-H3.2)
+
+General model structure:
+
+$$
+L_{mpd} =
+... +
+\beta (Similarity \times Responsiveness) +
+\varepsilon_{mpd}
+$$
+
+Interpretation: - Responsiveness as amplifier (PA) - Responsiveness as buffer (NA)
+
+## H3.1 – PA Similarity × Responsiveness
+
+```{r}
+
+```
+
+## H3.2 – NA Similarity × Responsiveness
+
+```{r}
+
+```
+
+------------------------------------------------------------------------
+
+# Step 3b: Moderation by Event Valence (H3.3-H3.4)
+
+Event valence derived from:
+
+-   Positive event
+-   Negative event
+
+Mismatch hypotheses:
+
+-   PA similarity strongest in negative moments
+-   NA similarity most harmful in positive moments
+
+## H3.3 – PA Similarity × Event Valence
+
+```{r}
+
+```
+
+## H3.4 – NA Similarity × Event Valence
+
+```{r}
+
+```

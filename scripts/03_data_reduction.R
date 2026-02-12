@@ -62,7 +62,7 @@ load_config("ESM")
 
 # mapping: new_name = old_name
 esm_map <- c(
-  dyad     = dyad,   # right hand side dyad = "PpID"
+  dyad     = dyad,   # right hand side dyad = "CoupleID"
   person   = person,
   part_no  = part_no,
   beep     = beep,
@@ -73,7 +73,9 @@ esm_map <- c(
   love     = love,
   perc_resp= perc_resp,
   neg_gen  = neg_gen,
-  pos_gen  = pos_gen
+  pos_gen  = pos_gen,
+  ts_start = ts_start,   # timestamps needed for AR(1) residual structure
+  ts_stop  = ts_stop  
 )
 
 # select and rename

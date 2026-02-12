@@ -146,7 +146,20 @@ esm_data <- esm_data %>%
     NA_similarity_act_b = NA_similarity_act_b - mean(NA_similarity_act_b, na.rm = TRUE)
   )
 
-# 8. Save ----
+# 8. Timestamp to time in minutes for AR(1) residual structure in multilevel models ----
+esm_data <- esm_data %>%
+  mutate(
+    ts_mid   = ts_start + (ts_stop - ts_start)/2
+  ) %>%
+  arrange(dyad, person, ts_mid) %>%
+  group_by(dyad, person) %>%
+  mutate(
+    time_min = as.numeric(difftime(ts_mid, first(ts_mid), units = "mins"))
+  ) %>%
+  ungroup() %>%
+  select(-ts_mid, -ts_start, -ts_stop)
+
+# 9. Save ----
 saveRDS(esm_data, file.path(dir_data_ana, "esm_ana.rds"))
 cat(sprintf("ESM data extended with centralized affect measures and similarity measures saved to %s\n", 
             file.path(dir_data_red, "esm_ana.rds")))
