@@ -146,7 +146,23 @@ esm_data <- esm_data %>%
     NA_similarity_act_b = NA_similarity_act_b - mean(NA_similarity_act_b, na.rm = TRUE)
   )
 
-# 8. Timestamp to time in minutes for AR(1) residual structure in multilevel models ----
+# 8. Create a day_index column, restarting per person ----
+esm_data <- esm_data %>%
+  mutate(
+    date_only = as.Date(ts_start) # extract date part 
+  ) %>%
+  group_by(person) %>%
+  mutate(
+    # dense_rank from dplyr orders the dates and assigns 1, 2, 3... to the unique dates found
+    day_index = dense_rank(date_only)
+  ) %>%
+  ungroup() %>%
+  select(-date_only)
+
+# Optional: View the result to verify
+head(esm_data_days %>% select(person, ts_start, day_index))
+
+# 9. Timestamp to time in minutes for CAR(1) residual structure in multilevel models ----
 esm_data <- esm_data %>%
   mutate(
     ts_mid   = ts_start + (ts_stop - ts_start)/2
@@ -154,12 +170,12 @@ esm_data <- esm_data %>%
   arrange(dyad, person, ts_mid) %>%
   group_by(dyad, person) %>%
   mutate(
-    time_min = as.numeric(difftime(ts_mid, first(ts_mid), units = "mins"))
+    time = as.numeric(difftime(ts_mid, first(ts_mid), units = "hours"))
   ) %>%
   ungroup() %>%
   select(-ts_mid, -ts_start, -ts_stop)
 
-# 9. Save ----
+# 10. Save ----
 saveRDS(esm_data, file.path(dir_data_ana, "esm_ana.rds"))
 cat(sprintf("ESM data extended with centralized affect measures and similarity measures saved to %s\n", 
             file.path(dir_data_red, "esm_ana.rds")))

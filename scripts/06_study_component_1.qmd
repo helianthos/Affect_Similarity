@@ -26,6 +26,8 @@ prefix <- "ESM"
 
 # Introduction
 
+See also [OSF preregistration](https://doi.org/10.17605/OSF.IO/V7T9F){.uri}.
+
 ## Overview
 
 Study Component 1 examines how **momentary affect similarity** in daily life relates to **momentary love toward the partner**, using experience sampling data from romantic couples.
@@ -84,8 +86,6 @@ $$
 
 ### Similarity indices
 
- 
-
 #### Actual Similarity
 
 Mean component:
@@ -126,6 +126,8 @@ Perceived similarity is actor-specific because it compares the actor’s affect 
 
 ### Decomposition into Within and Between Components
 
+We split between a between-dyad component and a within-dyad (momentary) component, to estimate and interpret separately the within-dyad time-varying association and the stable (between-dyad) association.
+
 #### Actual Similarity
 
 Dyad mean, and grand-mean:
@@ -145,6 +147,29 @@ Between-dyad:
 $$
 \bar{S}^{act,between}_d = \bar{S}^{act}_d - \bar{\bar{S}}^{act}
 $$
+
+The decomposition can be understood by specifying a model in different steps. For example, for the step 1a model (see below):
+
+$$
+L_{mpd} = b_{0,pd} + 
+\beta_1 S^{act,within}_{mpd} +
+\beta_2 \bar{S}^{act,between}_d +
+\varepsilon_{mpd},\;\text{with}\; b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}
+$$
+
+we could equally write
+
+1.  Level 1 (modelling the momentary level): $L_{mpd} = \pi_{0,pd} + \beta_1 S^{act,within}_{mpd} + \varepsilon_{mpd},$
+
+    with $\pi_{0,pd}$ the total person intercept (baseline love for person p in dyad d, averaged across moments). This is what happens within a person.
+
+2.  Level 2 (modelling the person level, within a dyad): $π_{0,pd}​=δ_{0,d}​\;+\;u_{0,pd},$
+
+    with $\delta_{0,d}$​ the total dyad intercept (baseline love for dyad, averaged across partners) and $u_{0,pd}$ the person-specific random effect, capturing how much a person deviates from the dyad average.
+
+3.  Level 3 (modelling the dyad level): $δ_{0,d}​=β_0​+β_2​(\bar{S}_d^{act,between}​)+v_{0,d}​$
+
+    with $v_{0,d}$ the dyad-specific random effect, capturing the couple effect (how much couples deviate from each other).
 
 #### Perceived Similarity
 
@@ -176,7 +201,82 @@ $$
 
 ### Temporal Dependence
 
--   AR(1) residual covariance structure within persons
+#### CAR(1)
+
+We use a continuous AR(1) residual covariance structure within persons. The preregistration specifies: "*Because beeps are unequally spaced, we will implement AR(1) using the actual time stamps (continuous-time AR(1))*". Beeps are unequally space for example because of missed beeps, no beeps during the night or during working hours, next to slight variations because of the protocol.
+
+This means that we assume $\text{Corr}(\varepsilon_{mpd},\varepsilon_{{m'}pd})=\phi^{|\Delta t|}$ with $\Delta t$ the time difference between beeps at moment m and m'. An equivalent expression is $\text{Corr}(\varepsilon_{mpd},\varepsilon_{{m'}pd}) = \exp(-\lambda \Delta t)$ with $\lambda=-\log(\phi)$, $\lambda$ being a 'decay' parameter.
+
+The unit/scale of the continuous time variable can be freely chosen and we have opted for **1 hour units**; the $\phi\in(0,1)$ will be estimated from the data and will reflect the correlation between residuals from observations that are one time unit apart. The choice of the time unit thus only determines the interpretation of $\phi$.
+
+Note 1: If the time variable is chosen too small (e.g., seconds), the true $\phi$ might be effectively 0 or 1. If the likelihood surface is flat near the starting value of 0.2, the optimizer may simply return 0.2 as the final estimate without moving, leading to spurious results. If $\phi$ is estimated as 0.2, this can be a red flag. It is best to use the average time between beeps as time unit.
+
+Note 2: Using lagged love in the equation instead of a CAR(1) residuals would model love inertia explicitly and answer a different question: does similarity predict love above prior love?
+
+#### Time differences between beeps
+
+Based on the columns 'time' (expressed in hours since the first beep for every person, increasing over the ESM period) and 'day_index', we can analyse how equal beeps are separated.
+
+```{r within_dat_time_differences_between_beeps}
+# time differences per person
+esm_data_calc <- esm_data %>%
+  group_by(person, day_index) %>%
+  mutate(within_day_time_diff = time - lag(time)) %>%
+  ungroup()
+
+#  average difference per person within days
+person_means <- esm_data_calc %>%
+  group_by(person) %>%
+  summarise(
+    avg_diff_person = mean(within_day_time_diff, na.rm = TRUE)
+  )
+
+# overall grand-mean difference
+grand_mean <- mean(esm_data_calc$within_day_time_diff, na.rm = TRUE)
+sprintf("Overall Grand-Mean Difference: %f hours", grand_mean)
+
+# histogram of person-average differences
+plot_hist_numeric(
+  data = person_means, 
+  var = "avg_diff_person", 
+  title = "Distribution of Person-Average Within-Day Time Intervals", 
+  xlab = "Average Time Between Beeps (Hours)",
+  binwidth = 1/60 # minutes
+)
+```
+
+```{r overnight_time_differences_between_beeps}
+
+# overnight differences
+overnight_calc <- esm_data %>%
+  group_by(person) %>%
+  mutate(
+    is_day_change = day_index > lag(day_index)
+  ) %>%
+  filter(is_day_change == TRUE) %>%
+  mutate(overnight_time_diff = time - lag(time)) %>%
+  ungroup()
+
+# average overnight difference per person
+person_overnight_means <- overnight_calc %>%
+  group_by(person) %>%
+  summarise(
+    avg_overnight_diff = mean(overnight_time_diff, na.rm = TRUE)
+  )
+
+# overall grand-mean
+grand_mean_overnight <- mean(overnight_calc$overnight_time_diff, na.rm = TRUE)
+sprintf("Overall Grand-Mean Overnight Difference: %f hours", grand_mean_overnight)
+
+# histogram
+plot_hist_numeric(
+  data = person_overnight_means, 
+  var = "avg_overnight_diff", 
+  title = "Distribution of Person-Average Overnight Intervals", 
+  xlab = "Average Overnight Gap (Hours)",
+  binwidth = 0.25 
+)
+```
 
 ### Sensitivity Analyses
 
@@ -195,6 +295,32 @@ $$
 3.  **Random-slope robustness checks**
 
     We will attempt models that add random slopes for key level 1 predictors like within-dyad actual similarity or within-person perceived similarity.
+
+## Model specification in R
+
+We use the function `lme()` from the `nlme` package, designed for linear mixed-effects models with nested random effects, and it also allows correlated within-group residuals (see <https://rdrr.io/cran/nlme/man/lme.html>). Contrary to `lme4`, `nlme` allows easy specification of residual correlation structures. See also @pinheiroNlmeLinearNonlinear1999 and @batesFittingLinearMixedEffects2015.
+
+The lme() formula has the core signature:
+
+> `lme(fixed, data, random, correlation, weights, subset, method, na.action, control, ...)`
+
+with the arguments
+
+-   `fixed` specifying the fixed-effects regression
+
+-   `random` specifying the random effects and how the data is nested. \~ 1 indicates random intercepts, \~ x random slopes for variable x, and dyad/person applies this for dyad and person-within-dyad. x/y means that y is nested in x.
+
+-   `correlation` adds a residual correlation structure. We use `correlation = corCAR1(form = ~ time | dyad/person)` to define a continuous-time AR(1) structure. Because we specify the grouping dyad/person, the correlarion only applies within the same group; different groups are treated as uncorrelated. The time variable does not need to be integer-valued. By default, $\phi$ is esrtimated starting from a value of $0.2$ and then allowed to vary to be estimated from the data. See also <https://rdrr.io/cran/nlme/man/corCAR1.html>.
+
+-   `na.action` specifies \<hat to do with rows that have missing values. The default is `na.fail`, meaning that `lme()` will stop with an error. To allow missing beeps, we will specify `na.action = na.exclude`. Both na.omit and na.exclude drop incomplete rows for estimation
+
+-   `control` adjusts optimisation behaviour and convergence (optimiser choice, iteration limits, tolerances,...), passing a list from `lmeControl()`. The optimiser choice is passed with `opt = c("nlminb","optim")`, defaulting to `"nlminb"` (nonlinear minimization subject to box constraints; generally robust. `optim` is a general-purpose optimiser offering several algorithms, like BFGS (Broyden-Fletcher-Goldfarb-Shanno) which sometimes navigates complex surfaces better (`optimMethod = "BFGS"`, the default when choosing `opt = "optim"`).
+
+    We will use default values and switch only in case of convergence issues. In that case, we will increase the iteration limits and/or try `opt = "optim"`.
+
+-   `method` chooses whether the model is fitted using restricted maximum likelihood ("REML", default) or full maximum likelihood ("ML"). We will use the default method = "REML". Note however that results are then no comparable across differenr fixed-effects model specifications (see guidance for `lme()` on <https://stat.ethz.ch/pipermail/r-help/2006-October/115739.html>). Comparing different fixed effects should use `method = "ML"`.
+
+    Note that lme() does not scale internally, so in case of convergence problems, data needs to be pre-scaled.
 
 ------------------------------------------------------------------------
 
@@ -216,8 +342,8 @@ b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}
 $$
 
 -   $v_{0,d} \sim N(0, \tau_d^2)$
--   $u_{0,pd} \sim N(0, \tau_p^2)$
--   AR(1) residual structure within persons. This means that $ε_{mpd}​=ρε_{m−1,pd}​+e_{mpd}$​, assuming that unexplained fluctuations in love are autocorrelated. The regression part remains about momentary associations, as compared to including lagged love in the equation (which would model love inertia explicitely). Doing the latter would answer a different question: does similarity predict love above prior love?
+-   . .
+-   Continuous time AR(1) residual structure within persons
 
 Interpretation:
 
@@ -225,21 +351,43 @@ Interpretation:
 
 -   $\beta_2$: between-dyad association. Do dyads who are generally/on average more similar report generally/on average higher levels of love?
 
+```{r normality_test_love}
+# histogram
+plot_hist_numeric(esm_data, "love", "Ditribution of Outcome Variable 'love'", "love (0-100)",2)
+# QQ-plot
+esm_data %>%
+  ggplot(aes(sample = love)) +
+  stat_qq() +
+  stat_qq_line(color = "red") +
+  labs(title = "Normal Q-Q Plot",
+       subtitle = "Points should follow the red line for normality") +
+  theme_minimal()
+# shapiro-wilk too sensitive for n > 5000
+shapiro_results <- esm_data %>%
+  slice_sample(n=3000) %>% # sample because shapiro.test works for n <5000
+  pull(love) %>% # pull gives vector as needed by shapiro.test(), select gives df
+  shapiro.test()
+
+print(shapiro_results)
+```
+
 ## H1.1 – Actual PA Similarity
 
-```{r}
+### Results
 
-esm_dat <- esm_data %>% arrange(dyad, person, time_min) # should already be the case
+```{r h11_model}
+
+esm_dat <- esm_data %>% arrange(dyad, person, time) # should already be the case
 
 # --- model in nlme ---
 h11 <- lme(
   fixed = love ~ PA_similarity_act_w + PA_similarity_act_b,
   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
-  correlation = corCAR1(form = ~ time_min | dyad/person),  # continuous AR(1) 
+  correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
   data = esm_data,
-  method = "REML",
+  method = "REML",   # the default but specified for transparancy
   na.action = na.exclude,
-  control = lmeControl(opt = "optim")
+  control = lmeControl(opt = "nlminb")   # the default but specified for transparancy
 )
 
 summary(h11)
@@ -251,17 +399,103 @@ coef(h11$modelStruct$corStruct, unconstrained = FALSE)
 
 ```
 
-**Within-person effect:** $β_1=0.138$, $p<.001$, 95% CI: $[0.128, 0.147]$
+1.  **Within-person effect is significant:** $β_1=0.113$, $p<.001$, 95% CI: $[0.104, 0.122]$
 
-When a person reports higher-than-usual actual PA similarity with their partner at a given moment (relative to that person’s typical similarity), they also report higher love at that moment.
+    When a person has higher-than-usual actual PA similarity with their partner at a given moment (relative to the typical similarity), they also report higher love at that moment.
 
-Within persons, a 1 SD increase in actual PA similarity was associated with a 2.9-point increase in momentary love (0–100).
+    Within persons, a 1 SD increase in actual PA similarity was associated with a 2.9-point increase in momentary love (0–100).
 
-**Between-person/dyad effect is not significant**:\
-\$β^{between}=0.212$, $p = .43$, $[−0.317,0.741]$. \
-only 102 dyads informing between estimate.
+2.  **Between-person/dyad effect is not significant**: $\beta_2=0.214$, $p = .43$ , 95% CI $[−0.314,0.742]$.\
+    only 102 dyads informing between estimate.
 
-Check phi: seems substantive
+3.  $\phi=0.434$ is the estimated correlation between residuals for 1-hour time differences.
+
+### Robustness/Sensitivity
+
+There are no estimation changes when re-estimating the model with
+
+-   `control = lmeControl(opt = "optim")`
+
+-   `method = "ML"`
+
+-   with `correlation = corCAR1(form = ~ time | dyad/person/day_index)`, which makes that the correlation between residuals from the last beep on a day and the first beep of the next day are explicitly set to 0.
+
+### Fit diagnostics
+
+```{r h11_fit_diagnostics}
+
+diag_df <- data.frame(
+  fitted = fitted(h11), # fitted values
+  res_raw = resid(h11, type = "response")    # raw residuals
+)
+
+# residuals vs fitted (raw residuals)
+plot(diag_df$fitted, diag_df$res_raw,
+     xlab = "Fitted values",
+     ylab = "Raw residuals (y - fitted)",
+     main = "Raw residuals vs Fitted")
+abline(h = 0, lty = 2)
+lines(lowess(diag_df$fitted, diag_df$res_raw, delta = 1e-6), lwd = 2)
+
+# QQ-plot of residuals
+qqnorm(diag_df$res_raw, main = "Normal QQ-plot (raw residuals)")
+qqline(diag_df$res_raw, lwd = 2)
+
+# Scale-location plot (variance vs fitted)
+plot(diag_df$fitted, sqrt(abs(diag_df$res_raw)),
+     xlab = "Fitted values",
+     ylab = "sqrt(|raw residual|)",
+     main = "Scale-Location (heteroscedasticity check)")
+lines(lowess(diag_df$fitted, sqrt(abs(diag_df$res_raw)), delta = 1e-6), lwd = 2)
+
+# do fitted values exceed 100?
+# Conditional fitted values (includes random effects)
+pred_cond <- diag_df$fitted
+
+# fixed-effects-only predictions for nlme objects
+pred_fixed <- predict(h11, level = 0)
+
+boundary_summary <- function(pred, upper = 100, lower = 0, name = "pred") {
+  over  <- pred > upper
+  under <- pred < lower
+  data.frame(
+    which = name,
+    n = length(pred),
+    n_over = sum(over, na.rm = TRUE),
+    pct_over = 100 * mean(over, na.rm = TRUE),
+    max_over = if (any(over, na.rm = TRUE)) max(pred[over], na.rm = TRUE) else NA_real_,
+    n_under = sum(under, na.rm = TRUE),
+    pct_under = 100 * mean(under, na.rm = TRUE),
+    min_under = if (any(under, na.rm = TRUE)) min(pred[under], na.rm = TRUE) else NA_real_
+  )
+}
+
+bound_cond  <- boundary_summary(pred_cond,  name = "conditional (includes RE)")
+bound_fixed <- boundary_summary(pred_fixed, name = "fixed only (level=0)")
+
+rbind(bound_cond, bound_fixed)
+
+## visualize where violations occur
+plot(pred_cond, pch = 16,
+     ylab = "Conditional fitted love",
+     xlab = "Observation index",
+     main = "Conditional fitted values with 0/100 bounds")
+abline(h = c(0, 100), lty = 2)
+
+## ---- 6) Quick check: residuals near the ceiling (optional) ----
+# If you have the observed y aligned, check residual patterns at high observed values
+
+y_obs <- esm_data$love
+ok <- !is.na(y_obs) & !is.na(pred_cond) & !is.na(res_pearson)
+
+plot(y_obs[ok], res_pearson[ok],
+     xlab = "Observed love (0-100)",
+     ylab = "Pearson residuals",
+     main = "Residuals vs Observed (ceiling check)")
+abline(h = 0, lty = 2)
+lines(lowess(y_obs[ok], res_pearson[ok], delta = 1e-6), lwd = 2)
+
+```
 
 ## H1.2 – Actual NA Similarity
 
