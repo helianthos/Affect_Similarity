@@ -159,9 +159,6 @@ esm_data <- esm_data %>%
   ungroup() %>%
   select(-date_only)
 
-# Optional: View the result to verify
-head(esm_data_days %>% select(person, ts_start, day_index))
-
 # 9. Timestamp to time in minutes for CAR(1) residual structure in multilevel models ----
 esm_data <- esm_data %>%
   mutate(

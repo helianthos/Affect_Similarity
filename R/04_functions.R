@@ -417,3 +417,18 @@ plot_corr_heatmap <- function(cor_matrix, title) {
     geom_text(aes(label = round(value, 2)), size = 3) +
     labs(title = title, x = "", y = "")
 }
+
+boundary_summary <- function(pred, upper = 100, lower = 0, name = "pred") {
+  over  <- pred > upper
+  under <- pred < lower
+  data.frame(
+    which = name,
+    n = length(pred),
+    n_over = sum(over, na.rm = TRUE),
+    pct_over = 100 * mean(over, na.rm = TRUE),
+    max_over = if (any(over, na.rm = TRUE)) max(pred[over], na.rm = TRUE) else NA_real_,
+    n_under = sum(under, na.rm = TRUE),
+    pct_under = 100 * mean(under, na.rm = TRUE),
+    min_under = if (any(under, na.rm = TRUE)) min(pred[under], na.rm = TRUE) else NA_real_
+  )
+}
