@@ -432,3 +432,38 @@ boundary_summary <- function(pred, upper = 100, lower = 0, name = "pred") {
     min_under = if (any(under, na.rm = TRUE)) min(pred[under], na.rm = TRUE) else NA_real_
   )
 }
+
+lme_diagnostics <- function(model, max_lag = 10) {
+  
+  diag_data <- getData(model) %>%
+    as_tibble() %>%
+    mutate(
+      .fitted     = fitted(model),
+      .resid_norm = resid(model, type = "normalized")
+    )
+  
+  # Plot 1: Residuals vs fitted
+  p <- ggplot(diag_data, aes(x = .fitted, y = .resid_norm)) +
+    geom_point(alpha = 0.5) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    geom_smooth(method = "loess", se = FALSE, color = "blue") +
+    labs(title = "Normalized Residuals vs. Fitted Values",
+         subtitle = "Check for linearity (loess) and homoscedasticity",
+         x = "Fitted Values",
+         y = "Normalized Residuals") +
+    theme_minimal()
+  print(p)
+  
+  # Plot 2: QQ-plot
+  qqnorm(diag_data$.resid_norm, main = "Normal QQ-plot (normalized residuals)")
+  qqline(diag_data$.resid_norm, lwd = 2)
+  
+  # Plot 3: ACF
+  print(
+    plot(ACF(model, resType = "normalized", maxLag = max_lag),
+       alpha = 0.05,
+       main = "ACF of Normalized Residuals")
+  )
+  
+  invisible(diag_data)
+}

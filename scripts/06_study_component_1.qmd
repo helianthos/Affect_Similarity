@@ -308,17 +308,17 @@ with the arguments
 
 -   `fixed` specifying the fixed-effects regression
 
--   `random` specifying the random effects and how the data is nested. \~ 1 indicates random intercepts, \~ x random slopes for variable x, and dyad/person applies this for dyad and person-within-dyad. x/y means that y is nested in x.
+-   `random` specifying the random effects and how the data is nested. \~ 1 indicates random intercepts, \~ x random slopes for variable x, and what is written behind the pipe '\|', e.g., dyad/person applies this for dyad and person-within-dyad. x/y means that y is nested in x. `random` can also be specified using a list, specifiying different structures at each level of nesting.
 
 -   `correlation` adds a residual correlation structure. We use `correlation = corCAR1(form = ~ time | dyad/person)` to define a continuous-time AR(1) structure. Because we specify the grouping dyad/person, the correlarion only applies within the same group; different groups are treated as uncorrelated. The time variable does not need to be integer-valued. By default, $\phi$ is esrtimated starting from a value of $0.2$ and then allowed to vary to be estimated from the data. See also <https://rdrr.io/cran/nlme/man/corCAR1.html>.
 
--   `na.action` specifies \<hat to do with rows that have missing values. The default is `na.fail`, meaning that `lme()` will stop with an error. To allow missing beeps, we will specify `na.action = na.exclude`. Both na.omit and na.exclude drop incomplete rows for estimation
+-   `na.action` specifies what to do with rows that have missing values. The default is `na.fail`, meaning that `lme()` will stop with an error. To allow missing beeps, we will specify `na.action = na.exclude`. Both na.omit and na.exclude drop incomplete rows for estimation (listwise deletion of rows where any variable, outcome or predictors, is NA).
 
 -   `control` adjusts optimisation behaviour and convergence (optimiser choice, iteration limits, tolerances,...), passing a list from `lmeControl()`. The optimiser choice is passed with `opt = c("nlminb","optim")`, defaulting to `"nlminb"` (nonlinear minimization subject to box constraints; generally robust. `optim` is a general-purpose optimiser offering several algorithms, like BFGS (Broyden-Fletcher-Goldfarb-Shanno) which sometimes navigates complex surfaces better (`optimMethod = "BFGS"`, the default when choosing `opt = "optim"`).
 
     We will use default values and switch only in case of convergence issues. In that case, we will increase the iteration limits and/or try `opt = "optim"`.
 
--   `method` chooses whether the model is fitted using restricted maximum likelihood ("REML", default) or full maximum likelihood ("ML"). We will use the default method = "REML". Note however that results are then no comparable across differenr fixed-effects model specifications (see guidance for `lme()` on <https://stat.ethz.ch/pipermail/r-help/2006-October/115739.html>). Comparing different fixed effects should use `method = "ML"`.
+-   `method` chooses whether the model is fitted using restricted maximum likelihood ("REML", default) or full maximum likelihood ("ML"). We will use the default method = "REML". Note however that results are then not comparable across different fixed-effects model specifications (see guidance for `lme()` on <https://stat.ethz.ch/pipermail/r-help/2006-October/115739.html>). Comparing different fixed effects should use `method = "ML"`.
 
     Note that lme() does not scale internally, so in case of convergence problems, data needs to be pre-scaled.
 
@@ -372,12 +372,15 @@ h11 <- lme(
 )
 
 summary(h11)
+# ranef(h11)
 intervals(h11, which = "fixed")  # 95% CIs for fixed effects
 VarCorr(h11)
 
 ```
 
-1.  $β_0=75.94$, $p<.001$, 95% CI: $[73.48,78.38]$ is the reported love when all predictors are zero, thus for the average dyad at an average moment (given the centering).
+1.  $β_0=75.94$, $p<.001$, 95% CI: $[73.48,78.39]$ is the reported love when all predictors are zero, thus for the average dyad at an average moment (given the centering).
+
+    The dyad random intercept has $SD = 9.82$ (26% of the variance) and person-within-dyad random intercept has $SD = 11.09$ (34% of the variance). This means that there is substantial baseline variability in `love`.
 
 2.  **Within-person effect is significant:** $β_1=0.113$, $p<.001$, 95% CI: $[0.104, 0.122]$
 
@@ -390,11 +393,11 @@ VarCorr(h11)
 
     So there is no reliable evidence that dyads who are (on average) more similar also have (on average) higher love.
 
-4.  The dyad random intercept $SD = 9.82$ (26% of the variance) and person-within-dyad random intercept $SD = 11.09$ (34% of the variance). Residual $SD = 12.05$ (40% of the variance), the remaining moment-to-moment unexplained variability.
+4.  Residual $SD = 12.05$ (40% of the variance), the remaining moment-to-moment unexplained variability.
 
 5.  $\phi=0.434$ is the estimated correlation between residuals for 1-hour time differences.
 
-### Fit diagnostics
+### Diagnostics
 
 #### Heteroscedasticity and Linearity
 
@@ -477,7 +480,7 @@ Looking at the normalized residuals per dyad:
 
 -   Some variability in residual spread across dyads, but not extreme or structurally patterned. No strong dyad-specific heteroscedasticity
 
-Looking at the residuals in function of time, we again see the small time trend, which we previosuly tested and found to be significant but immaterial.
+Looking at the residuals in function of time, we again see the small time trend, which we previously tested and found to be significant but immaterial.
 
 #### Normality of residuals (QQ-plot)
 
@@ -539,7 +542,7 @@ diag_plot <- diag_data %>%
     values_to = "pred"
   ) %>%
   mutate(
-    pred_type = recode(
+    pred_type = dplyr::recode(
       pred_type,
       pred_cond = "mixed effect (all RE)",
       pred_fixed = "fixed only (level = 0)"
@@ -562,14 +565,10 @@ ggplot(diag_plot, aes(x = pred, y = love)) +
 ```
 
 -   **Fixed-effect predictions:** Because only the fixed effects are used, predicted love varies little (horizontally). The large vertical scatter around these predictions mainly reflects moment-to-moment residual variation (Residual $variance = 145.17, SD = 12.05$).
-
-<!-- -->
-
 -   **Mixed-effect predictions**: Adding dyad/person random intercepts shifts predictions across units, producing extra horizontal spread in predicted love due to between-unit baseline differences (Dyad $variance = 96.47, SD = 9.82$; Person-within-dyad $variance = 123.02, SD = 11.09$), while the remaining vertical scatter is still driven by the residual ($variance = 145.17, SD = 12.05$).
-
 -   Clear boundary effects
 
-### Robustness/Sensitivity
+### Robustness/Sensitivities
 
 There are no estimation changes when re-estimating the model with
 
@@ -579,31 +578,259 @@ There are no estimation changes when re-estimating the model with
 
 -   with `correlation = corCAR1(form = ~ time | dyad/person/day_index)`, which makes that the correlation between residuals from the last beep on a day and the first beep of the next day are explicitly set to 0.
 
-#### Adding random slopes
+#### Random slopes
 
 ```{r h11_model_random_slopes}
 
-# esm_data <- esm_data %>%
-#   mutate(dyad_person = interaction(dyad, person, drop = TRUE))
+# model in nlme
+h11_rs <- lme(
+  fixed = love ~ PA_similarity_act_w + PA_similarity_act_b,
+  random = list(
+    dyad   = ~ 1 + PA_similarity_act_w,  # dyad-specific intercept + slope
+    person = ~ 1+ PA_similarity_act_w    # person-specific intercept
+  ),
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data = esm_data,
+  method = "REML",
+  na.action = na.exclude,
+  control = lmeControl(opt = "nlminb")
+)
 # 
-# # model in nlme
-# h11_rs_dyad <- lme(
-#   fixed = love ~ PA_similarity_act_w + PA_similarity_act_b,
-#   random = list(
-#     dyad        = pdDiag(~ 1 + PA_similarity_act_w),  # dyad-specific intercept + slope
-#     dyad_person = ~ 1                                      # person-specific intercept
-#   ),
-#   correlation = corCAR1(form = ~ time | dyad_person),
-#   data = esm_data,
-#   method = "REML",
-#   na.action = na.exclude,
-#   control = lmeControl(opt = "nlminb")
-# )
-# 
-# summary(h11)
-# intervals(h11, which = "fixed")  # 95% CIs for fixed effects
-# VarCorr(h11)
+summary(h11_rs)
+fixef(h11_rs)
+# ranef(h11_rs)
+intervals(h11_rs, which = "fixed")  # 95% CIs for fixed effects
+VarCorr(h11_rs)
 ```
+
+1.  $β_0=75.94$, $p<.001$, 95% CI: $[73.48,78.40]$, which is nearly identical to the fixed slope model `h11`.
+
+    The dyad random intercept $SD = 9.87$ and person-within-dyad random intercept $SD = 11.09$ are also nearly identical to `h11`. This means that adding the random slopes did not materally change the intercept structure: there remains a substantial baseline variability in `love` between dyads and between persons within dyads.
+
+2.  **Within-person effect is significant:** $β_1=0.134$, $p<.001$, 95% CI: $[0.113,0.155]$, slightly higher than $0.113$ from the `h11` model.
+
+    When a person has higher-than-usual actual PA similarity with their partner at a given moment (relative to the typical similarity), they also report higher love at that moment.
+
+    Within persons, a 10 point increase in actual PA similarity was associated with a $+1.34$-point increase in momentary love (0–100).
+
+    The dyad-level SD for this slope is $0.082$, and the person-level SD for this slope is $0.067$, which means there is meaningful heterogeneity in how strongly momentary PA similarity relates to momentary `love`. Looking at `ranef(h11_rs)`, for some dyads/persons the momentary actual PA similarity-love associaiotn is close to zero and even negative, despite being positive on average.
+
+    Both intercept-slope correlations are negative (dyad: $-0.409$, person: $-0.752$), meaning dyads/persons with higher baseline love tend to show a weaker similarity-love association and/or those with lower baseline love show a stronger coupling between similarity and love. This is a plausible ceiling effect.
+
+3.  **Between-person/dyad effect is not significant**: $\beta_2=0.456$, $p = .06$ , 95% CI $[-0.021,0.932]$. The wide CI reflects limited power, as this is a between-dyad effect with only 102 dyads.
+
+    So there is no reliable evidence that dyads who are (on average) more similar also have (on average) higher love.
+
+4.  The residual $SD = 11.785$ is down from $12.049$ in h11 since allowing slopes to vary removes some residual variance.
+
+5.  $\phi=0.420$ drop slightly from the $0.434$ in model `h11`. This suggests that the random slopes absorb a small amount of what was previously captured by autocorrelation.
+
+Overall, the sensitivity analysis supports the fixed-slope model's `h11` conclusions but adds nuance: **the within-dyad similarity effect is real on average but varies considerably across persons and dyads**.
+
+```{r compare_h11_h11_rs}
+anova(h11, h11_rs)
+```
+
+There is no "ML" refit needed (with for example `h11_rs_ml <- update(h11_rs, method="ML")`), since `h11` and `h11_rs` only differ in random effects structure. so the REML results are comparable.
+
+Model `h11_rs` has 4 more parameters (2 random slopes + 2 intercept-slope covariances). The likelihood ratio test $314.89$ on 4 df, with $p<.0001$, shows that the random slopes model fits better than the random intercepts only model. Also AIC and BIC favor `h11_rs`.
+
+#### Time trend
+
+```{r h11_rs_time_trend}
+
+# model in nlme
+h11_time <- lme(
+   fixed = love ~ PA_similarity_act_w + PA_similarity_act_b + time,
+   random = list(
+    dyad   = ~ 1 + PA_similarity_act_w,  # dyad-specific intercept + slope
+    person = ~ 1+ PA_similarity_act_w    # person-specific intercept
+  ),                # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+summary(h11_time)
+# ranef(h11_time)
+intervals(h11_time, which = "fixed")  # 95% CIs for fixed effects
+VarCorr(h11_time)
+```
+
+Adding a time trend to the random slopes `h11_rs` model, improves this model slightly. However, as discussed earlier, this time trend does not seem material, although it is significant.
+
+#### Elevation sensitivity
+
+```{r h11_elevation}
+
+h11_elevation <- lme(
+   fixed = love ~ PA_similarity_act_w + PA_similarity_act_b + cPA_own +cPA_part_act,
+   random = ~ 1 | dyad/person,            # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+summary(h11_elevation)
+intervals(h11_elevation, which = "fixed")  # 95% CIs for fixed effects
+VarCorr(h11_elevation)
+vif(lm(love ~ PA_similarity_act_w + PA_similarity_act_b + cPA_own + cPA_part_act, 
+       data = esm_data))
+```
+
+These results are not unexpected given the design of the similarity measure, which intentionally combines elevation (how high both partners are in PA on average) and a distance penalty (how far apart they are). The theoretical interest was in shared co-experienced positive affect — being 'up' in PA together, but not too far apart. When controlling for both partners' individual PA levels, the elevation component of similarity is absorbed by these individual predictors, since elevation is algebraically their mean. What remains in the similarity measure is the distance component: whether partners are closer or further apart than expected given their individual affect levels. The negative coefficient on this residual suggests that mere pattern convergence — being close in PA independent of how positively each partner feels — does not independently contribute to momentary love, and may even slightly suppress it. An intuitive way to interpret this is that moments of assymetry (higher distance), where one partner is high in PA while the other is more moderate, may actually be fine for love, whereas 'symmetric mediocrity' (both hovering at moderate levels, creating low distance) does not boost love. The elevation of at least one partner appears to be what matters.
+
+This points to a clear conclusion: what drives the similarity-love association observed in the baseline model is the shared positive experience (both feeling good at the same moment), rather than pattern similarity or convergence per se. **The similarity measure successfully captures this theoretically meaningful combination, but the present decomposition clarifies that elevation is the active ingredient**.
+
+Note: the correlation between the coefficient estimates for the individual affect levels and the estimate for the within actual similarity is $-0.656$, indicating multicolinearity and less precise estimation. The VIF of 3.05 for `PA_similarity_act_w` means its standard error is inflated by a factor of √3.05 ≈ 1.75 compared to what it would be without collinearity. This is not severe given that the coefficient was still clearly estimated (narrow CI, significant). The collinearity is not materially undermining the model.
+
+In the preregistration we mentioned also attempting models with random slopes. The within-dyad actual similarity varies across moments, so its effect on love can plausibly differ across persons and across dyads. We therefore include random slopes for this predictor at both the person and dyad level. The between-dyad actual similarity is a dyad-level predictor: it takes a single fixed value for each dyad that does not vary across moments or persons within that dyad. A person-level random slope is therefore not estimable, as there is no within-dyad variation in this predictor for persons to differ in their response to. A dyad-level random slope is equally problematic: since each dyad contributes only one value on this predictor, a dyad-specific slope cannot be distinguished from the dyad-specific intercept — the two would be completely confounded. The slope of the between-dyad actual similarity is therefore kept fixed.
+
+#### Love ceiling sensitivities
+
+As discussed in `05_descriptives.qmd`, we will run two sensitivity analyses based on the degree to which individual participants show love ceiling-dominated response patterns. Participants with very few love-ratings at lower than 100 contribute almost no within-person variability in the outcome, providing little information for estimating the within-person associations. We therefore identify participants whose non-ceiling beep count fell at or below a threshold of 5 and 10, and exclude the corresponding dyads entirely from each sensitivity dataset. Exclusion at the dyad level is appropriate given the dyadic structure of the data: the key predictors (including within-dyad similarity) are computed from both partners' scores simultaneously, so removing one partner renders the dyadic predictors undefined for all shared moments, making dyad-level exclusion more coherent than person-level exclusion.
+
+The primary model was fitted on the full dataset. The two sensitivity models were fitted on the datasets excluding dyads with at least one partner falling below the non-ceiling threshold of 5 (in the `h11_5` model) and 10 beeps (in the `h11_10` model), respectively. Consistency of the fixed-effect estimates across `h11`, `h11_5`, and `h11_10` would indicate that the ceiling responses do not materially distort the primary conclusions.
+
+```{r h11_5_model}
+
+# identify dyads to exclude
+cutoff_no <- 5   # cutoff in number of beeps NOT at ceiling of 100  
+
+esm_data <- esm_data %>%
+  mutate(is_ceiling = love == 100)
+
+person_summary <- esm_data %>%
+  group_by(person, dyad) %>%
+  summarise(
+    n_obs          = n(),
+    n_answ         = sum(!is.na(love)),
+    n_ceiling      = sum(is_ceiling, na.rm = TRUE),
+    not_ceiling    = sum(!is.na(love)) - sum(is_ceiling, na.rm = TRUE),
+    pct_ceiling    = mean(is_ceiling, na.rm = TRUE) * 100,
+    .groups = "drop"
+  ) %>%
+  arrange(desc(pct_ceiling), desc(n_answ))
+
+print(person_summary, n = 15)
+
+# exclude dyads
+persons_to_exclude <- person_summary %>% filter(not_ceiling <= cutoff_no)
+dyads_to_exclude <- persons_to_exclude$dyad
+
+esm_data_5 <- esm_data %>%
+  filter(!dyad %in% dyads_to_exclude)
+
+# model in nlme
+h11_5 <- lme(
+   fixed = love ~ PA_similarity_act_w + PA_similarity_act_b,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data_5,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+summary(h11_5)
+# ranef(h11)
+intervals(h11_5, which = "fixed")  # 95% CIs for fixed effects
+VarCorr(h11_5)
+```
+
+```{r h11_5_diagnostics}
+#| warning: false
+
+plot_hist_numeric(esm_data_5, "love", "Ditribution of Outcome Variable 'love'", "love (0-100)",2)
+lme_diagnostics(h11_5)
+
+```
+
+```{r h11_10_model}
+
+# identify dyads to exclude
+cutoff_no <- 10   # cutoff in number of beeps NOT at ceiling of 100  
+
+# exclude dyads
+persons_to_exclude <- person_summary %>% filter(not_ceiling <= cutoff_no)
+dyads_to_exclude <- persons_to_exclude$dyad
+
+esm_data_10 <- esm_data %>%
+  filter(!dyad %in% dyads_to_exclude)
+
+# model in nlme
+h11_10 <- lme(
+   fixed = love ~ PA_similarity_act_w + PA_similarity_act_b,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data_10,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+summary(h11_10)
+# ranef(h11)
+intervals(h11_10, which = "fixed")  # 95% CIs for fixed effects
+VarCorr(h11_10)
+
+```
+
+```{r h11_10_diagnostics}
+#| warning: false
+
+plot_hist_numeric(esm_data_10, "love", "Ditribution of Outcome Variable 'love'", "love (0-100)",2)
+lme_diagnostics(h11_10)
+```
+
+```{r h11_20_model}
+
+# identify dyads to exclude
+cutoff_no <- 20 # cutoff in number of beeps NOT at ceiling of 100  
+
+# exclude dyads
+persons_to_exclude <- person_summary %>% filter(not_ceiling <= cutoff_no)
+dyads_to_exclude <- persons_to_exclude$dyad
+
+esm_data_20 <- esm_data %>%
+  filter(!dyad %in% dyads_to_exclude)
+
+# model in nlme
+h11_20 <- lme(
+   fixed = love ~ PA_similarity_act_w + PA_similarity_act_b,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data_20,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+summary(h11_20)
+# ranef(h11)
+intervals(h11_20, which = "fixed")  # 95% CIs for fixed effects
+VarCorr(h11_20)
+
+```
+
+```{r h11_20_diagnostics}
+#| warning: false
+
+plot_hist_numeric(esm_data_20, "love", "Ditribution of Outcome Variable 'love'", "love (0-100)",2)
+lme_diagnostics(h11_20)
+```
+
+The normality and heteroscedasticity concern does not seem to come from the number of beeps with love = 100, but from the boundary itself. Even after removing the most ceiling-dominated participants, the remaining participants still cannot score above 100. So whenever the model predicts a fitted value near the upper range, the residuals are necessarily truncated on the positive side. A participant with a fitted value of 85 for example can only have a residual of at most +15, whereas they can have a residual of -85. This asymmetry is structural.\
+\
+**The central limit theorem gives LMM estimates reasonable validity even under non-normality.** The point estimates and standard errors are likely more reliable than the diagnostic plots suggest. The sensitivity analyses showing consistent conclusions across different subsets is arguably more persuasive evidence of robustness than perfect residual diagnostics would be.
+
+The diagnostic plots reveal the expected consequences of a bounded outcome variable with substantial ceiling pressure; sensitivity analyses excluding ceiling-dominated dyads confirm that fixed-effect conclusions are stable, suggesting the non-normality does not materially bias inference, though results should be interpreted with appropriate caution given the distributional constraint.
+
+Note: The dyad random intercept decreases significantly, because dyads with high average love are removed, thereby also making the between-dyad similarity component more significant.
 
 ## H1.2 – Actual NA Similarity
 
@@ -647,6 +874,14 @@ VarCorr(h12)
 
 Because our similarity index reflects co-elevated negative affect (both partners high together), the negative within-dyad effect likely captures acute distress episodes during which love temporarily decreases, whereas the positive between-dyad effect may reflect stable couple differences (e.g., assortative mating, convergence, shared-stressor context and/or stronger communal coping among dyads that frequently experience and coordinate around shared distress).
 
+### Diagnostics
+
+```{r h12_diagnostics}
+#| warning: false
+
+lme_diagnostics(h12)
+```
+
 # Step 1b: Additive Model (H1.3)
 
 $$
@@ -676,6 +911,8 @@ If $𝛽_3$ and $𝛽_4$ are comparable in direction to the corresponding actual
 ## H1.3 – Adding Perceived Similarity
 
 ### H1.3 - PA
+
+#### Results
 
 ```{r h13_model_PA}
 
@@ -724,7 +961,91 @@ VarCorr(h13_PA)
 
 This is consistent with our hypothesis: $𝛽_3=0.149$ has the same direction as $β_1=0.113$ from H1.1 and $𝛽_4=0.859$ has the same direction as $\beta_2=0.214$ from H1.1 (although that wasn't significant) and the $\beta_1=0.032$ and $\beta_2=−0.355$ (not significant) here are reduced in magnitude.
 
+#### Diagnostics
+
+```{r h13_PA_diagnostics}
+#| warning: false
+
+lme_diagnostics(h13_PA)
+```
+
+#### Robustness/Sensitivities
+
+##### Random slopes
+
+```{r h13_PA_random_slopes}
+
+# model in nlme
+h13_PA_rs <- lme(
+  fixed = love ~ PA_similarity_act_w + PA_similarity_act_b + PA_similarity_perc_w + PA_similarity_perc_b,
+  random = list(
+    dyad   = ~ 1 + PA_similarity_act_w + PA_similarity_perc_w, 
+    person = ~ 1+ PA_similarity_act_w + PA_similarity_perc_w
+  ),
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data = esm_data,
+  method = "REML",
+  na.action = na.exclude,
+  control = lmeControl(opt = "nlminb", maxIter = 500, msMaxIter = 500, niterEM = 100)
+)
+# 
+summary(h13_PA_rs)
+fixef(h13_PA_rs)
+# ranef(h11_rs)
+intervals(h13_PA_rs, which = "fixed")  # 95% CIs for fixed effects
+VarCorr(h13_PA_rs)
+
+
+```
+
+1.  $\beta_0 = 75.92$, $p<.001$, 95% CI: $[73.51, 78.32]$. This is virtually identical to the base model `h13_PA`.
+
+2.  **Within-person effects**:
+
+    -   **Actual PA similarity**: statistically significant, $\beta_1 = 0.042$, 95% CI $[0.024, 0.059]$. When partners are more actually similar in PA than usual at a given moment, love is slightly higher. The effect is slightly larger than in the base model ($0.032$), with wider CIs reflecting added random slope variance. A 10-point increase in momentary actual PA similarity $\rightarrow$ $+0.42$ points in love.
+
+    -   **Perceived PA similarity**: statistically significant, $\beta_3 = 0.165$, 95% CI $[0.143, 0.188]$. When someone perceives higher-than-usual PA similarity, love is higher. Slightly larger than the base model ($0.149$). A 10-point increase in momentary perceived PA similarity $\rightarrow$ $+1.65$ points in love.
+
+3.  **Between-person/dyad effects**:
+
+    -   **Actual PA similarity**: not statistically significant, $\beta_2 = -0.191$, 95% CI $[-0.725, 0.342]$. The sign remains negative as in the base model ($-0.355$), and the estimate attenuates toward zero (unlike the NA counterpart, there is no sign flip here, which suggests better stability).
+
+    -   **Perceived PA similarity**: statistically significant, $\beta_4 = 0.913$, 95% CI $[0.502, 1.324]$. Persons who typically perceive more PA similarity report higher overall love, essentially unchanged from the base model ($0.859$). A 10-point higher typical perceived PA similarity $\rightarrow$ $+9.13$ points higher love.
+
+4.  **Random slopes**:
+
+    -   At the **dyad level**, both slope SDs are modest but non-negligible: actual PA similarity ($SD = 0.050$) and perceived PA similarity ($SD = 0.045$) vary across dyads. Both intercept-slope correlations are negative (actual: $-0.436$; perceived: $-0.273$$): dyads with higher baseline love tend to show weaker positive effects of both actual and perceived PA similarity on love, suggesting ceiling-type pattern at the dyad level. The positive slope-slope correlation ($0.460$) indicates that the two pathways reinforce each other across dyads.
+
+    -   At the **person level**, variability in the perceived PA similarity slope is more pronounced ($SD = 0.111$) than for actual PA similarity ($SD = 0.057$). The intercept-slope correlation for perceived similarity is notably negative ($-0.598$): persons with higher baseline love show a weaker perceived similarity effect on momentary love. The slope-slope correlation is mildly negative ($-0.212$), suggesting a slight substitutability between the two pathways at the person level, though this substitutability is less pronounced than in the NA model ($-0.582$).
+
+5.  **Comparison with h13_PA**
+
+    **Fixed effect conclusions are highly consistent across both models.** Both within-dyad effects and the between-dyad perceived similarity effect survive in sign, magnitude, and significance, with slightly larger point estimates in the random slopes model. The between-dyad actual similarity estimate attenuates toward zero but remains non-significant and retains its sign, unlike the NA counterpart (see further) where the sign flipped, suggesting the PA model is somewhat more stable in this respect. The residual SD drops from $11.74$ to $11.32$, and Phi decreases from $0.416$ to $0.398$, indicating the random slopes absorb some residual variance and autocorrelation. **Overall, the random slopes model confirms the robustness of the base model conclusions while revealing meaningful person- and dyad-level heterogeneity, particularly in how perceived PA similarity translates into momentary love.**
+
+##### Elevation
+
+```{r H13_PA_elevation}
+h13_PA_elevation <- lme(
+   fixed = love ~ 
+     PA_similarity_act_w + PA_similarity_act_b + 
+     PA_similarity_perc_w + PA_similarity_perc_b +
+     + cPA_own + cPA_part_act +cPA_part_perc,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+summary(h13_PA_elevation)
+intervals(h13_PA_elevation, which = "fixed")  # 95% CIs for fixed effects
+VarCorr(h13_PA_elevation)
+```
+
 ### H1.3 - NA
+
+#### Results
 
 ```{r h13_model_NA}
 
@@ -771,6 +1092,100 @@ VarCorr(h13_NA)
         Persons who typically perceive more NA similarity report higher overall love across moments.
 
         A 10-point higher typical perceived NA similarity $\rightarrow$ $+8.93$ points higher love on average.
+
+#### Diagnostics
+
+```{r h13_NA_diagnostics}
+#| warning: false
+
+lme_diagnostics(h13_NA)
+
+```
+
+#### Robustness/Sensitivities
+
+##### Random slopes
+
+```{r h13_NA_random_slopes}
+
+# model in nlme
+h13_NA_rs <- lme(
+  fixed = love ~ NA_similarity_act_w + NA_similarity_act_b + NA_similarity_perc_w + NA_similarity_perc_b,
+  random = list(
+    dyad   = ~ 1 + NA_similarity_act_w + NA_similarity_perc_w, 
+    person = ~ 1+ NA_similarity_act_w + NA_similarity_perc_w
+  ),
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data = esm_data,
+  method = "REML",
+  na.action = na.exclude,
+  control = lmeControl(opt = "nlminb", maxIter = 500, msMaxIter = 500, niterEM = 100)
+)
+# 
+summary(h13_NA_rs)
+fixef(h13_NA_rs)
+# ranef(h11_rs)
+intervals(h13_NA_rs, which = "fixed")  # 95% CIs for fixed effects
+VarCorr(h13_NA_rs)
+
+```
+
+To achieve convergence for the h13_NA_rs model, we needed to increase the maximum number of iterations for the lme optimization alogorithm (`maxIter`), the maximum number of iterations for the optimization step inside the `lme` optimization (`msMaxIter`), and the number of iterations for the EM algorithm used to refine the initial estimates of the random effects variance-covariance coefficients (`niterEM`).
+
+**Random slopes model (h13_NA_rs)**
+
+1.  $\beta_0 = 75.92$, $p<.001$, 95% CI: $[73.57, 78.26]$. This is virtually identical to the base model `h13_NA`.
+
+2.  **Within-person/dyad effects**:
+
+    -   **Actual NA similarity**: statistically significant, $\beta_1 = -0.081$, 95% CI $[-0.116, -0.046]$. When partners are more actually similar in NA than usual at a given moment, love is lower. The effect is only slightly attenuated compared to the base model ($-0.094$), with wider CIs reflecting the added random slope variance. A 10-point increase in momentary actual NA similarity $\rightarrow$ $-0.81$ points in love.
+
+    -   **Perceived NA similarity**: statistically significant, $\beta_3 = -0.119$, 95% CI $[-0.150, -0.089]$. When someone perceives higher-than-usual NA similarity, love is lower. Effect is nearly identical to the base model ($-0.127$). A 10-point increase in momentary perceived NA similarity $\rightarrow$ $-1.19$ points in love.
+
+3.  **Between-person/dyad effects**:
+
+    -   **Actual NA similarity**: not statistically significant, $\beta_2 = -0.130$, 95% CI $[-0.670, 0.410]$. Sign has flipped compared to the base model (where it was $+0.010$) but remains non-significant with very wide CIs, so this should not be over-interpreted.
+
+    -   **Perceived NA similarity**: statistically significant, $\beta_4 = 0.882$, 95% CI $[0.357, 1.406]$. Persons who typically perceive more NA similarity report higher overall love, essentially unchanged from the base model ($0.893$). A 10-point higher typical perceived NA similarity $\rightarrow$ $+8.82$ points higher love.
+
+4.  **Random slopes**:
+
+    -   At the **dyad level**, there is meaningful variability in the actual NA similarity slope across dyads ($SD = 0.128$), with a positive intercept-slope correlation ($0.422$): dyads with higher baseline love tend to show a weaker (less negative) actual NA similarity effect. So dyads that are high in baseline love, have lower negatove impact from momentary higher actual NA similarity. The perceived similarity slope varies much less across dyads ($SD = 0.024$), suggesting this effect is relatively uniform across dyads.
+
+    -   At the **person level**, there is meaningful variability in the perceived NA similarity slope across persons ($SD = 0.161$), with a negative slope-slope correlation ($-0.582$) suggesting some substitutability between the two pathways. The actual similarity slope varies less across persons ($SD = 0.083$).
+
+5.  **Comparison with `h13_NA`**
+
+    -   Worth flagging is that $\beta_2$ (between-dyad actual similarity) flips sign from $+0.010$ in `h13_NA` to $-0.130$, though it remains non-significant in both models. This instability likely reflects multicollinearity between the between-dyad actual and perceived similarity predictors (their coefficient correlation is $-0.664$ in both models) combined with the added complexity of the random slopes structure redistributing variance. It should not be interpreted substantively.
+
+    -   The fixed effect conclusions are highly consistent across both models. The two within-dyad effects and the between-dyad perceived similarity effect survive in sign, magnitude, and significance. This stability is reassuring. The key added information from the random slopes model is:
+
+        -   The negative effect of momentary actual NA similarity on love varies substantially across dyads. For some dyads, sharing negative affect may matter much more than for others.
+
+        -   The negative effect of momentary perceived NA similarity varies substantially across persons. Individual differences in how perceived similarity relates to love are considerable.
+
+        -   The residual SD drops modestly from $12.05$ to $11.67$, suggesting the random slopes absorb some within-person variance.
+
+##### Elevation
+
+```{r H13_NA_elevation}
+h13_NA_elevation <- lme(
+   fixed = love ~ 
+     NA_similarity_act_w + NA_similarity_act_b + 
+     NA_similarity_perc_w + NA_similarity_perc_b +
+     + cNA_own + cNA_part_act +cNA_part_perc,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+summary(h13_NA_elevation)
+intervals(h13_NA_elevation, which = "fixed")  # 95% CIs for fixed effects
+VarCorr(h13_NA_elevation)
+```
 
 ------------------------------------------------------------------------
 

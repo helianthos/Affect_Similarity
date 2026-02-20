@@ -474,8 +474,8 @@ Change the variables 'participant' and 'variable' in the code below to choose wh
 
 ```{r trajectory plots}
 
-participants <- c(3, 703) # change this vector to participants to be plotted
-variable <- "PA_similarity_perc"     # change this variable to the variable to be plottee
+participants <- c(154, 854) # change this vector to participants to be plotted
+variable <- "love"     # change this variable to the variable to be plottee
 plot_trajectory(esm_data, variable, participants)
  
 ```
@@ -855,6 +855,103 @@ Consequently, models that include affect levels as covariates shift the interpre
 
 Therefore, the preregistered sensitivity analyses are important for interpretability and for evaluating whether the similarity construct contributes beyond level. In these models, we will add the person-mean centered momentary affect levels (actor and partner) and the grand-mean centered average affect levels as covariates. This matches the decomposition of our primary similarity predictor (into $S^{within}$ and $S^{between}$). If the hypothesized similarity effect attenuates substantially after controlling for levels, this would suggest that the index's predictive power is largely driven by level.
 
+## Distribution analyses
+
+### love
+
+```{r love_skewness_analysis}
+
+# 1. set thresholds
+high <- 95
+cutoff_perc <- 95  # % cutoff
+cutoff_no <- 5   # cutoff in number of beeps NOT at ceiling of 100  
+
+esm_data <- esm_data %>%
+  mutate(
+    is_high = love >= high,
+    is_ceiling = love == 100
+    )
+
+# 2. distribution of love
+plot_hist_numeric(esm_data, "love", "Ditribution of 'love'", "love (0-100)",2)
+
+# 3. Summary
+cat("Total beeps:", nrow(esm_data), "\n")
+cat("Answered beeps with love >=", high, ":", sum(esm_data$is_high, na.rm = TRUE), "\n")
+cat("Percentage with love >=", high, ":", round(mean(esm_data$is_high, na.rm = TRUE) * 100, 1), "% of answered beeps\n")
+cat("Answered beeps at with love = 100:", sum(esm_data$is_ceiling, na.rm = TRUE), "\n")
+cat("Percentage with love = 100:", round(mean(esm_data$is_ceiling, na.rm = TRUE) * 100, 1), "% of answered beeps\n\n")
+
+# 4. Person-level summary
+person_summary <- esm_data %>%
+  group_by(person, dyad) %>%
+  summarise(
+    n_obs          = n(),
+    n_answ         = sum(!is.na(love)),
+    n_ceiling      = sum(is_ceiling, na.rm = TRUE),
+    not_ceiling    = sum(!is.na(love)) - sum(is_ceiling, na.rm = TRUE),
+    pct_ceiling    = mean(is_ceiling, na.rm = TRUE) * 100,
+    .groups = "drop"
+  ) %>%
+  arrange(desc(pct_ceiling), desc(n_answ))
+
+print(person_summary, n = 15)
+
+heavy_persons_perc <- person_summary %>% filter(pct_ceiling >= cutoff_perc)
+heavy_persons_no <- person_summary %>% filter(not_ceiling <= cutoff_no)
+cat(sprintf("\nPersons with >= %d%% ceiling responses: %d\n\n", cutoff_perc, nrow(heavy_persons_perc)))
+cat(sprintf("\nPersons with <= %d responses not at 100%%: %d\n\n", cutoff_no, nrow(heavy_persons_no)))
+
+# 5. Trajectory plots
+variable <- "love" 
+participants <- c(26, 726) 
+plot_trajectory(esm_data, variable, participants)
+# plot_trajectory(esm_data, "PA_own", participants)
+participants <- c(179, 879) 
+plot_trajectory(esm_data, variable, participants)
+participants <- c(154, 854) 
+plot_trajectory(esm_data, variable, participants)
+participants <- c(172, 872) 
+plot_trajectory(esm_data, variable, participants)
+participants <- c(80, 780) 
+plot_trajectory(esm_data, variable, participants)
+participants <- c(35, 735) 
+plot_trajectory(esm_data, variable, participants)
+participants <- c(151, 851) 
+plot_trajectory(esm_data, variable, participants)
+participants <- c(154, 854) 
+plot_trajectory(esm_data, variable, participants)
+participants <- c(108, 808) 
+plot_trajectory(esm_data, variable, participants)
+participants <- c(47, 747) 
+plot_trajectory(esm_data, variable, participants)
+participants <- c(143, 843) 
+plot_trajectory(esm_data, variable, participants)
+
+# 6. Create sensitivity analysis datasets
+dyads_to_exclude <- heavy_persons_no$dyad
+
+esm_data_ceiling_love <- esm_data %>%
+  filter(!dyad %in% dyads_to_exclude)
+
+cat("\nN after excluding dyads with heavy-ceiling persons:", nrow(esm_data_ceiling_love), "\n")
+
+plot_hist_numeric(esm_data_ceiling_love, "love", "Ditribution of 'love'", "love (0-100)",2)
+
+# 7. Summary
+cat("Total beeps:", nrow(esm_data_ceiling_love), "\n")
+cat("Answered beeps with love >=", high, ":", sum(esm_data_ceiling_love$is_high, na.rm = TRUE), "\n")
+cat("Percentage with love >=", high, ":", round(mean(esm_data_ceiling_love$is_high, na.rm = TRUE) * 100, 1), "% of answered beeps\n")
+cat("Answered beeps at with love = 100:", sum(esm_data_ceiling_love$is_ceiling, na.rm = TRUE), "\n")
+cat("Percentage with love = 100:", round(mean(esm_data_ceiling_love$is_ceiling, na.rm = TRUE) * 100, 1), "% of answered beeps\n\n")
+```
+
+The outcome variable `love` is measured on a 0–100 scale. Inspection of its distribution reveals a pronounced ceiling effect: approximately $17.2\%$ of answered beeps received a score of exactly 100, and an additional $4\%$ scored 95 or above. This ceiling is expected to produce non-normality and heteroscedasticity in the residuals of the linear mixed-effects models: the assumption of normally distributed residuals is violated at the upper tail, and residual variance is likely smaller for observations near the ceiling than for those in the middle of the distribution. While LMMs are reasonably robust to moderate departures from normality, particularly with large samples, the severity of the ceiling here warrants explicit examination of whether conclusions from the primary model hold when these observations are reduced or removed.
+
+To assess robustness, we will run two sensitivity analyses based on the degree to which individual participants show ceiling-dominated response patterns. Participants with very few love-ratings at lower than 100 contribute almost no within-person variability in the outcome, providing little information for estimating the within-person associations that are central to our research questions. We therefore identified participants whose non-ceiling beep count fell at or below a threshold of 5 and 10 , and excluded the corresponding dyads entirely from each sensitivity dataset. Exclusion at the dyad level is appropriate given the dyadic structure of the data: the key predictors (including within-dyad similarity) are computed from both partners' scores simultaneously, so removing one partner renders the dyadic predictors undefined for all shared moments, making dyad-level exclusion more coherent than person-level exclusion.
+
+The primary model was fitted on the full dataset. The two sensitivity models were fitted on the datasets excluding dyads with at least one partner falling below the non-ceiling threshold of 5 and 10 beeps, respectively. Consistency of the fixed-effect estimates across all three models would indicate that the ceiling responses do not materially distort the primary conclusions.
+
 ------------------------------------------------------------------------
 
 # BG
@@ -958,7 +1055,7 @@ The DCI has very high overall reliability ($\alpha = 0.85,\ \omega = 0.92$) and 
 Omega Hierarchical = 0.58, meaning that about 58% of the variance is due to "general coping", while the remaining variance is driven by the 8 factors (using cutoff for loadings of \> .2, in bold italics when \> .3):
 
 |  |  |  |  |  |
-|----|----|----|:---|----|
+|---------------|---------------|---------------|:--------------|---------------|
 | **Factor** | **Items Loading...** | ... and items missing... | **...for interpretation** | **Other items loading** |
 | **F1\*** | ***5*****, *6***, 8, ***9*** | 13 | Supportive Partner (SDCP)  | 24 |
 |  | 7, ***10*****, *11***, 15 | \- | part 1 of Negative Partner (NDCP)  |  |
@@ -1015,7 +1112,7 @@ plot_counter <- plot_counter + 1
 ```
 
 |  |  |  |  |  |
-|----|----|----|:---|----|
+|---------------|---------------|---------------|:--------------|---------------|
 | **Factor** | **Items Loading...** | ... and items missing... | **...for interpretation** | **Other items loading** |
 | **F1\*** | ***5*****, *6***, 8, ***9, 13*** | \- | Supportive Partner (SDCP)  | ***16, 19,*** 26, 28(-) |
 |  | 7, ***10*****, *11***, 15 | \- | part 1 of Negative Partner (NDCP)  |  |
@@ -1206,7 +1303,7 @@ plot_counter <- plot_counter + 1
 ```
 
 |  |  |  |  |  |
-|----|----|----|:---|----|
+|---------------|---------------|---------------|:--------------|---------------|
 | **Factor** | **Items Loading...** | ... and items missing... | **...for interpretation** | **Other items loading** |
 | **F1\*** | ***5*****, *6***, ***8***, ***9, 13*** | \- | Supportive Partner (SDCP)  | 14, ***16***, 19, 28(-) |
 | **F2\*** | ***20, 21, 24*** | 23, 29 | Part 1 of Supportive Self (SDC)  | ***1***, 30 |

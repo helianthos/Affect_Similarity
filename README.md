@@ -18,7 +18,7 @@ Open Science Framework (OSF):\
 geert.vandingenen\@student.kuleuven.be
 
 **Last updated:**\
-2026-01-31
+2026-02-20
 
 ## Project overview
 
@@ -88,9 +88,11 @@ These scripts should be run (for example using `source("scripts/xyz.R")`) in tha
 
 Descriptives and analyses can be found in the `scripts/` folder, as quarto .qmd files. Rendering these files creates html reports and saves them to `outputs/scripts/*`:
 
-1.  05_descriptives.qmd
+1.  `scripts/05_descriptives.qmd`
 
-2.  ...
+2.  `scripts/06_study_component_1.qmd`
+
+3.  `scripts/07_study_component_2.qmd`
 
 Confirmatory analyses follow the preregistered analysis plan. Any exploratory analyses are explicitly labeled as such.
 
@@ -172,8 +174,14 @@ project/
 │   ├── 04_data_construct.R
 │   │   └── Constructs scales, similarity indices
 │   │
-│   └── 05_descriptives.qmd
-│       └── Descriptive analyses (demographics, correlations,...)
+│   ├── 05_descriptives.qmd
+│   │   └── Descriptive analyses (demographics, correlations,...)
+│   │
+│   ├── 06_study_component_1.qmd
+│   │   └── Analyses for the research questions from component 1
+│   │
+│   └── 07_study_component_2.qmd
+│       └── Analyses for the research questions from component 2)
 │
 ├── data/          (folder .gitkeep but contents generated locally)
 │   ├── imported/
