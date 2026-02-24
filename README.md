@@ -18,7 +18,7 @@ Open Science Framework (OSF):\
 geert.vandingenen\@student.kuleuven.be
 
 **Last updated:**\
-2026-02-20
+2026-02-24
 
 ## Project overview
 
@@ -180,8 +180,11 @@ project/
 │   ├── 06_study_component_1.qmd
 │   │   └── Analyses for the research questions from component 1
 │   │
-│   └── 07_study_component_2.qmd
-│       └── Analyses for the research questions from component 2)
+│   ├── 07_study_component_2.qmd
+│   │   └── Analyses for the research questions from component 2)
+│   │
+│   └── _extensions/mcanouil/collapse-output
+│       └── quarto extension to collapse long output in rendedered html files
 │
 ├── data/          (folder .gitkeep but contents generated locally)
 │   ├── imported/

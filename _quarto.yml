@@ -23,6 +23,8 @@ format:
     df-print: paged       
     embed-resources: true  # contain all into one html file
 editor: visual
+filters:
+  - collapse-output
 execute:
   warning: false
   message: false

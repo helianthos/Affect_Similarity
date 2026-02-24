@@ -443,7 +443,7 @@ lme_diagnostics <- function(model, max_lag = 10) {
     )
   
   # Plot 1: Residuals vs fitted
-  p <- ggplot(diag_data, aes(x = .fitted, y = .resid_norm)) +
+  p1 <- ggplot(diag_data, aes(x = .fitted, y = .resid_norm)) +
     geom_point(alpha = 0.5) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
     geom_smooth(method = "loess", se = FALSE, color = "blue") +
@@ -452,18 +452,38 @@ lme_diagnostics <- function(model, max_lag = 10) {
          x = "Fitted Values",
          y = "Normalized Residuals") +
     theme_minimal()
-  print(p)
   
   # Plot 2: QQ-plot
-  qqnorm(diag_data$.resid_norm, main = "Normal QQ-plot (normalized residuals)")
-  qqline(diag_data$.resid_norm, lwd = 2)
+  p2 <- ggplot(diag_data, aes(sample = .resid_norm)) +
+    stat_qq(alpha = 0.5) +
+    stat_qq_line(linewidth = 1) +
+    labs(title = "Normal QQ-plot (normalized residuals)",
+         x = "Theoretical Quantiles",
+         y = "Sample Quantiles") +
+    theme_minimal()
   
   # Plot 3: ACF
-  print(
-    plot(ACF(model, resType = "normalized", maxLag = max_lag),
-       alpha = 0.05,
-       main = "ACF of Normalized Residuals")
-  )
+  acf_df <- as.data.frame(ACF(model, resType = "normalized", maxLag = max_lag))
+  ci <- qnorm(1 - 0.05 / 2) / sqrt(nrow(diag_data))
+  
+  p3 <- ggplot(acf_df, aes(x = lag, y = ACF)) +
+    geom_hline(aes(yintercept = 0)) +
+    geom_segment(aes(xend = lag, yend = 0)) +
+    geom_hline(yintercept = c(-ci, ci), linetype = "dashed", color = "blue") +
+    labs(title = "ACF of Normalized Residuals") +
+    theme_minimal()
+  
+  print(wrap_plots(p1, p2, ncol = 1))  # patchwork stacks, ommitted plot3 for now since it is not very informative
   
   invisible(diag_data)
+}
+
+model_output <- function(model) {
+  cat(paste(capture.output({ 
+    print(summary(model))
+    cat("\n---------------\n\n")
+    print(intervals(model, which = "fixed"))  # 95% CIs for fixed effects
+    cat("\n---------------\n\n")
+    print(VarCorr(model))
+  }), collapse = "\n"))
 }

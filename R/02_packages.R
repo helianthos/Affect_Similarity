@@ -24,6 +24,7 @@ library(here)
 library(naniar)
 library(psych)
 library(rmcorr)
+library(glmmTMB) # for beta regression
 library(lme4)
 library(lmerTest) # load after lme4 to avoid any conflicts in summary()
 library(performance)
@@ -33,3 +34,4 @@ library(plotly)
 library(vioplot)
 library(nlme) # for corAR1 in lme models; not in renv.lock because in R's default installed packages
 library(car)
+library(patchwork)
