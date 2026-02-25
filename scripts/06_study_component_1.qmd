@@ -322,8 +322,6 @@ with the arguments
 
     Note that lme() does not scale internally, so in case of convergence problems, data needs to be pre-scaled.
 
-------------------------------------------------------------------------
-
 # Step 1a: Main Effects of Actual Similarity (H1.1-H1.2)
 
 Primary multilevel model:
@@ -884,17 +882,13 @@ print(wrap_plots(p, p_5, p_10, p_20, ncol = 2, nrow = 2))
 
 ##### Conclusion
 
-The normality and heteroscedasticity concern does not seem to come from the number of beeps with love = 100, but from the boundary itself. Even after removing the most ceiling-dominated participants, the remaining participants still cannot score above 100. So whenever the model predicts a fitted value near the upper range, the residuals are necessarily truncated on the positive side. A participant with a fitted value of 85 for example can only have a residual of at most +15, whereas they can have a residual of -85. This asymmetry is structural.\
+The normality and heteroscedasticity concern does not come from the higher concentrartion of beeps with love = 100, but from the boundary itself. Even after removing the dyads with the most ceiling-dominated participants, the remaining participants still cannot score above 100. So whenever the model predicts a fitted value near the upper range, the residuals are necessarily truncated on the positive side. A participant with a fitted value of 85 for example can only have a residual of at most +15, whereas they can have a residual of -85. This asymmetry is structural.\
 \
 **The central limit theorem gives LMM estimates reasonable validity even under non-normality.** The point estimates and standard errors are likely more reliable than the diagnostic plots suggest. The sensitivity analyses showing consistent conclusions across different subsets is arguably more persuasive evidence of robustness than perfect residual diagnostics would be.
 
-The diagnostic plots reveal the expected consequences of a bounded outcome variable with substantial ceiling pressure; sensitivity analyses excluding ceiling-dominated dyads confirm that fixed-effect conclusions are stable, suggesting the non-normality does not materially bias inference, though results should be interpreted with appropriate caution given the distributional constraint.
-
-Note: The dyad random intercept decreases significantly, because dyads with high average love are removed, thereby also making the between-dyad similarity component more significant.
+*Note:* The dyad random intercept decreases significantly, because dyads with high average love are removed, thereby also making the between-dyad similarity component more significant.
 
 ##### Beta regression
-
-A beta regression after using the squeeze transformation to scale the outcome variable in the open interval (0,1) (@smithsonBetterLemonSqueezer2006 @verkuilenMixedMixtureRegression2012) yielded consistent conclusions: within-person PA similarity was again positively associated with love ($b = 0.007$ on the logit scale, backtransformed to ≈ 0.13 on the 0–100 scale), while the between-person effect remained non-significant (p = .817). The intercept backtransforms to about $80.6$. Beta regression is designed exactly for this situation: bounded continuous outcomes where variance is a function of the mean.
 
 ```{r h11_beta}
 #| output-fold: true
@@ -933,6 +927,8 @@ cat(paste(capture.output({
 }), collapse = "\n"))
 ```
 
+A beta regression after using the squeeze transformation to scale the outcome variable in the open interval (0,1) (@smithsonBetterLemonSqueezer2006 @verkuilenMixedMixtureRegression2012) yielded consistent conclusions: within-person PA similarity was again positively associated with love ($b = 0.007$ on the logit scale, backtransformed to ≈ 0.13 on the 0–100 scale), while the between-person effect remained non-significant (p = .817). The intercept backtransforms to about $80.6$. Beta regression is designed exactly for this situation: bounded continuous outcomes where variance is a function of the mean (@geller1BetaWay).
+
 ## H1.2 – Actual NA Similarity
 
 ### Results
@@ -954,8 +950,6 @@ h12 <- lme(
 model_output(h12)
 
 ```
-
-------------------------------------------------------------------------
 
 1.  $β_0=75.91$, $p<.001$, 95% CI: $[73.54,78.27]$ is the reported love when all predictors are zero, thus for the average dyad at an average moment (given the centering).
 
@@ -1321,8 +1315,6 @@ h13_NA_elevation <- lme(
 model_output(h13_NA_elevation)
 ```
 
-------------------------------------------------------------------------
-
 # Step 1c: Actual × Perceived Interaction
 
 ## Exploratory analysis
@@ -1429,8 +1421,6 @@ model_output(im_NA)
 
 ```
 
-------------------------------------------------------------------------
-
 # Step 2: Multilevel mediation (H2.1-H2.2)
 
 We test whether perceived similarity mediates the association between actual similarity and love.
@@ -1478,8 +1468,6 @@ Indirect effects:
 
 ```
 
-------------------------------------------------------------------------
-
 # Step 3a: Moderation by responsiveness (H3.1-H3.2)
 
 General model structure:
@@ -1504,8 +1492,6 @@ Interpretation: - Responsiveness as amplifier (PA) - Responsiveness as buffer (N
 ```{r}
 
 ```
-
-------------------------------------------------------------------------
 
 # Step 3b: Moderation by Event Valence (H3.3-H3.4)
 
