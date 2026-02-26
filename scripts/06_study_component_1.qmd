@@ -667,7 +667,7 @@ Adding a time trend to the random slopes `h11_rs` model, improves this model sli
 #| output-summary: "Model results"
 
 h11_elevation <- lme(
-   fixed = love ~ PA_similarity_act_w + PA_similarity_act_b + cPA_own +cPA_part_act,
+   fixed = love ~ PA_similarity_act_w + PA_similarity_act_b + cPA_own + cPA_part_act,
    random = ~ 1 | dyad/person,            # v0,d and u0,pd
    correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
    data = esm_data,
@@ -677,34 +677,60 @@ h11_elevation <- lme(
 )
 
 model_output(h11_elevation)
+```
+
+When controlling for both partners' individual PA levels, the elevation component of similarity is largely absorbed by these individual predictors, since elevation is algebraically their mean. What remains in the similarity measure is primarily the component tied to the actor–partner difference, because the elevation component is already captured by the individual PA predictors. This is not unexpected given the design of the similarity measure, which intentionally combines elevation (how high both partners are in PA on average) and a distance penalty (how far apart they are). The theoretical interest was in shared co-experienced positive affect, being 'up' in PA together, but not too far apart. The slightly negative coefficient on this residual ($β_1=-0.053$, $p<.0001$) was surprising and suggests at first sight that being close in PA above and beyond how positively each partner feels does not contribute to momentary love, and may even slightly suppress it.
+
+To better understand this negative coefficient, we estimated an exploratory model predicting momentary love from **(a)** the dyadic PA mean (`PA_elevation_act`) and **(b)** the signed actor–partner PA difference (`PA_diff_act`). This model showed that, at the same dyadic mean PA, actor-reported love was higher when the actor’s PA exceeded the partner’s PA, and lower when the partner’s PA exceeded the actor’s PA. In other words, the association between PA and love appears to be asymmetric: who feels more positive matters. Concretely, love increases by $0.075$ when actor PA (\>partner PA) increases by one, while partner PA remains the same.
+
+```{r h11_decomposed_level_direction}
+#| output-fold: true
+#| output-summary: "Directional analysis"
+
+esm_data <- esm_data %>%
+    mutate(PA_diff_act = cPA_own - cPA_part_act)
+
+h11_decomposed <- lme(love ~ PA_diff_act + PA_elevation_act,
+                      data = esm_data,
+                      random = ~ 1 | dyad/person,
+                      correlation = corCAR1(form = ~time | dyad/person),
+                      na.action = na.exclude,
+                      method = "REML")
+model_output(h11_decomposed)
+
+```
+
+Our similarity index combines mean elevation and the absolute actor–partner difference. When both individual PA levels (or the dyadic mean) are statistically controlled, the elevation component is removed, and the remaining similarity term becomes mathematically tied to the absolute difference between partners. However, the absolute difference removes the directional information that proved to be important in the exploratory model. Because increases in the actor–partner difference are associated with higher love when the actor is more positive, but with lower love when the partner is more positive, a symmetric absolute-difference term (which removes information about who is higher) cannot adequately represent this asymmetric pattern. The resulting negative coefficient for the residualized similarity term therefore reflects this directional asymmetry rather than evidence that positive affect mismatch is indiscriminately beneficial for love. More flexible modeling approaches that allow actor and partner affect to relate to love in a non-symmetric manner may capture such directional patterns more directly.
+
+Ceiling effects in the love measure appear to contribute modestly to the pattern. Analyses excluding the upper range of love ratings (\>85) attenuated the negative coefficient (from $-0.053$ to $-0.03$) but did not eliminate it, indicating that ceiling compression alone does not account for the effect.
+
+```{r h11_elevation_love_level_restricted}
+#| output-fold: true
+#| output-summary: "Ceiling effect"
+
+# Keep only moments where love is below 85 (can be changed)
+esm_low_love <- esm_data[esm_data$love < 85, ]
+
+h11_elevation_low <- lme(love ~ PA_similarity_act_w + PA_similarity_act_b
+                              + cPA_own + cPA_part_act,
+                         data = esm_low_love,
+                         random = ~ 1 | dyad/person,
+                         correlation = corCAR1(form = ~time | dyad/person),
+                         na.action = na.exclude,
+                         method = "REML")
+model_output(h11_elevation_low)
+```
+
+To be fully complete, in the `h11` model, the correlation between the coefficient estimates for the individual PA levels and the within-person similarity estimate was $−0.656$, indicating moderate multicollinearity. The corresponding VIF for `PA_similarity_act_w` was 3.05, implying that its standard error is inflated by a factor of $√3.05 ≈ 1.75$. Although this reflects non-trivial overlap among predictors (as expected given the algebraic relation between similarity and its components), the coefficient remained precisely estimated with a narrow confidence interval. Thus, collinearity does not materially undermine the model, but it further reinforces that the residualized similarity term should be interpreted cautiously.
+
+```{r h11_elevation_vif}
+#| output-fold: true
+#| output-summary: "VIF"
 vif(lm(love ~ PA_similarity_act_w + PA_similarity_act_b + cPA_own + cPA_part_act, 
        data = esm_data))
 ```
 
-These results are not unexpected given the design of the similarity measure, which intentionally combines elevation (how high both partners are in PA on average) and a distance penalty (how far apart they are). The theoretical interest was in shared co-experienced positive affect — being 'up' in PA together, but not too far apart. When controlling for both partners' individual PA levels, the elevation component of similarity is absorbed by these individual predictors, since elevation is algebraically their mean. What remains in the similarity measure is the distance component: whether partners are closer or further apart than expected given their individual affect levels. The negative coefficient on this residual suggests that mere pattern convergence — being close in PA independent of how positively each partner feels — does not independently contribute to momentary love, and may even slightly suppress it. An intuitive way to interpret this is that moments of assymetry (higher distance), where one partner is high in PA while the other is more moderate, may actually be fine for love, whereas 'symmetric mediocrity' (both hovering at moderate levels, creating low distance) does not boost love. The elevation of at least one partner appears to be what matters.
-
-This points to a clear conclusion: what drives the similarity-love association observed in the baseline model is the shared positive experience (both feeling good at the same moment), rather than pattern similarity or convergence per se. **The similarity measure successfully captures this theoretically meaningful combination, but the present decomposition clarifies that elevation is the active ingredient**.
-
-Note: the correlation between the coefficient estimates for the individual affect levels and the estimate for the within actual similarity is $-0.656$, indicating multicolinearity and less precise estimation. The VIF of 3.05 for `PA_similarity_act_w` means its standard error is inflated by a factor of √3.05 ≈ 1.75 compared to what it would be without collinearity. This is not severe given that the coefficient was still clearly estimated (narrow CI, significant). The collinearity is not materially undermining the model.
-
 In the preregistration we mentioned also attempting models with random slopes. The within-dyad actual similarity varies across moments, so its effect on love can plausibly differ across persons and across dyads. We therefore include random slopes for this predictor at both the person and dyad level. The between-dyad actual similarity is a dyad-level predictor: it takes a single fixed value for each dyad that does not vary across moments or persons within that dyad. A person-level random slope is therefore not estimable, as there is no within-dyad variation in this predictor for persons to differ in their response to. A dyad-level random slope is equally problematic: since each dyad contributes only one value on this predictor, a dyad-specific slope cannot be distinguished from the dyad-specific intercept — the two would be completely confounded. The slope of the between-dyad actual similarity is therefore kept fixed.
-
-```{r h11_elevation_2}
-#| eval: false
-#| include: false
-
-h11_elevation_2 <- lme(
-   fixed = love ~ PA_elevation_act + PA_distance_act,
-   random = ~ 1 | dyad/person,            # v0,d and u0,pd
-   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
-   data = esm_data,
-   method = "REML",   # the default but specified for transparancy
-   na.action = na.exclude,
-   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
-)
-
-model_output(h11_elevation_2)
-```
 
 ```{r h11_elevation_rs}
 #| eval: false
@@ -1004,6 +1030,45 @@ h12_rs <- lme(
 )
 
 model_output(h12_rs) 
+```
+
+#### Elevation sensitivity
+
+```{r h12_elevation}
+#| output-fold: true
+#| output-summary: "Model results"
+
+h12_elevation <- lme(
+   fixed = love ~ NA_similarity_act_w + NA_similarity_act_b + cNA_own + cNA_part_act,
+   random = ~ 1 | dyad/person,            # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h12_elevation)
+
+```
+
+In contrast to PA, the NA elevation analysis did not produce a sign reversal. When decomposing NA into the dyadic mean and the signed actor–partner difference, both components were negatively associated with love. At the same dyadic mean NA, actor-reported love was lower when the actor’s NA exceeded the partner’s NA. Thus, the directional effect for NA operates in the same direction as a general mismatch penalty rather than opposing it. Because the absolute difference term in the similarity index removes direction but does not contradict the underlying association in this case, controlling for individual NA levels does not induce a coefficient reversal. The absence of a sign flip therefore reflects the fact that, for NA, elevation and directional difference act coherently in undermining love.
+
+```{r h12_decomposed_level_direction}
+#| output-fold: true
+#| output-summary: "Directional analysis"
+
+esm_data <- esm_data %>%
+    mutate(NA_diff_act = cNA_own - cNA_part_act)
+
+h12_decomposed <- lme(love ~ NA_diff_act + NA_elevation_act,
+                      data = esm_data,
+                      random = ~ 1 | dyad/person,
+                      correlation = corCAR1(form = ~time | dyad/person),
+                      na.action = na.exclude,
+                      method = "REML")
+model_output(h12_decomposed)
+
 ```
 
 # Step 1b: Additive Model (H1.3)
@@ -1425,6 +1490,55 @@ model_output(im_NA)
 
 We test whether perceived similarity mediates the association between actual similarity and love.
 
+```{r mediation_diagram}
+
+# Define nodes
+nodes <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual\nSimilarity", "Perceived\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+# Define layout: X top-left, M top-right, Y bottom-center
+layout <- get_layout(
+  "X", "M",
+  NA,  "Y",
+  rows = 2
+)
+
+# Define edges
+edges <- data.frame(
+  from     = c("X", "M", "X",  "X"),
+  to       = c("M", "Y", "Y",  "Y"),
+  label    = c("Path a (θ)\nMediation Model",
+               "Path b (φ)\nOutcome Model",
+               "Path c' (φ)\nOutcome Model",
+               "Path c (β)\nBase Model"),
+  linetype = c(1, 1, 1, 2),
+  colour   = c("black", "black", "black", "black"),
+  curvature = c(NA,   NA,   NA,  -30),
+  label_hjust  = c("center", "center", "center", "center")
+)
+
+# Build and customize
+p <- prepare_graph(
+  nodes  = nodes,
+  edges  = edges,
+  layout = layout,
+  spacing_x = 3,
+  spacing_y = 2,
+  rect_width  = 0.8,   # default is 1.2, reduce to taste
+  rect_height = 0.5    # default is 0.8, reduce to taste
+)
+
+# Style edges
+edges(p)$linetype <- edges$linetype
+edges(p)$colour   <- edges$colour
+edges(p)$label_hjust <- "center"
+
+plot(p) + ggtitle("General Mediation Diagram")
+```
+
 **Mediator Model**
 
 $$
@@ -1454,13 +1568,347 @@ Indirect effects:
 
 ## H2.1 - PA mediation
 
-```{r h21_mediator_model}
+### c-path
 
+The c-paths (total effect) are estimated by the base model h11: actual similarity $\rightarrow$ love, **:** $β_1=0.113$, $p<.001$, 95% CI: $[0.104,0.122]$ for within and the non-significant $\beta_2=0.214$, $p = .43$ , 95% CI $[−0.314,0.742]$ for between effects.
+
+### a-path
+
+The mediator model estimates the a-path of the mediation: actual similarity $\rightarrow$ mediator.
+
+```{r h21_mediator_model}
+#| output-fold: true
+#| output-summary: "Model results"
+
+h21_mediator <- lme(
+   fixed = PA_similarity_perc ~ PA_similarity_act_w + PA_similarity_act_b,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h21_mediator)
 ```
+
+**Within-component** ($\theta_1 = 0.565$, 95% CI $[0.553, 0.578]$, $p < .001$) For every one-unit increase in momentary actual PA similarity above a dyad's typical level, perceived PA similarity increases by 0.57 units. In moments when partners are more similarly positive than usual, the actor also *feels* more similar to their partner. This is a necessary condition for mediation, the mediator is actually responsive to the predictor.
+
+**Between-component** ($\theta_2 = 0.708$, 95% CI $[0.603, 0.814]$, $p < .001$) Dyads that are on average higher in actual PA similarity also perceive themselves as more similar on average.
+
+**The fixed intercept** ($\theta_0 = −12.19$ , 95% CI $[-12.670, -11.700]$, $p < .001$) The intercept represents the expected perceived PA similarity when actual PA similarity (within and between) equals zero. This is the case when the actor and partner or both at their typical level and the dyad is an average/typical dyad. The value of the intercept closely matches the observed sample mean of perceived PA similarity ($M = −12.3$), confirming that the model's reference point (actual similarities at zero) aligns with the centre of the outcome distribution and that the intercept reflects a scale origin rather than a substantive effect.
+
+```{r}
+#| output-fold: false
+#| output-summary: "Sample mean of perceived similarity"
+mean(esm_data$PA_similarity_perc, na.rm = TRUE)
+```
+
+It should be noted that actual and perceived PA similarity share a common ingredient: the actor's own PA enters the construction of both variables, creating a structural overlap that partially guarantees their correlation. The mediation a-path coefficient should therefore be interpreted as an upper bound.
+
+To examine whether the coefficients $\theta$ in the mediator model reflected genuine associations rather than the mechanical overlap from the actor's own PA entering both constructs, a supplemental model regressed the actor's person-centered perception of partner PA (`cPA_part_perc`) directly onto actual partner PA (`cPA_part_act`). Results indicated a significant positive association ($0.282$, 95% CI $[0.268, 0.297]$, $p < .001$ ), confirming that actors' perceptions of their partner's PA tracked actual partner PA above and beyond any shared-variance artefact.
+
+```{r h21_mediator_supplemental}
+#| output-fold: true
+#| output-summary: "Supplemental analysis"
+
+h21_mediator_sup <- lme(
+   fixed = cPA_part_perc ~ cPA_part_act,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h21_mediator_sup)
+```
+
+### b- and c'-paths
+
+The outcome model estimates the b- and c'-paths:
+
+-   The coefficients $\phi_1/\phi_2$ on `PA_similarity_perc_w/b` are the **b-paths**: effect of the mediator on love, controlling for actual similarity
+
+-   The coefficients $ϕ_3/ϕ_2$ on `PA_similarity_act_w/b` are the **c'-paths**: the direct effect of actual similarity on love after the mediator is controlled
 
 ```{r h21_outcome_model}
+#| output-fold: true
+#| output-summary: "Code results"
+
+h21_outcome <- lme(
+   fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b + PA_similarity_act_w + PA_similarity_act_b,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1) 
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h21_outcome)
+```
+
+**b-paths (mediator perceived similarity → love, controlling for actual similarity)**
+
+-   **Within:** $\phi_1 = 0.149$**,** 95% CI$[0.137, 0.161]$**,** $p < .001$ When a person perceives more PA similarity than usual at a given moment (above and beyond how actually similar they are) they report more love. A one-unit increase in perceived PA similarity predicts 0.15 more love units. Perceived similarity has its own effect on love that is not reducible to actual similarity.
+
+-   **Between:** $\phi_2 = 0.859$**,** 95% CI$[0.370, 1.349]$**,** $p < .001$ Dyads where the actor on average perceives more similarity than other dyads report more love, again controlling for actual similarity. This between-level b-path is notably larger than the within-level one.
+
+**c'-paths (direct effects of actual similarity after controlling for perceived similarity)**
+
+-   **Within:** $\phi_3 = 0.032$**,** 95% CI$[0.020, 0.043]$**,** $p < .001$ This is a reduction from the original c-path of β = 0.113 in the base model (`h11`). Actual PA similarity still has a small but significant direct effect on love even after perceived similarity is controlled, meaning mediation is **partial**, not complete.
+
+-   **Between:** $\phi_4 = −0.355$**,** 95% CI$[−0.962, 0.252]$**,** $p = .249$ Non-significant. The between-level direct effect of actual similarity remains non significant when controlling for perceived similarity.. This suggests **full mediation at the between level**: whatever effect average actual PA similarity has on average love is entirely carried through perceived similarity. Though note the wide CI — the between-level estimates are less stable given only 102 dyads at that level.
+
+Putting the a-paths and b-paths together, the pattern is:
+
+**Within-person level**
+
+-   a-path: $\theta_1 = 0.565$, 95% CI $[0.553, 0.578]$, $p < .001$ ) (actual similarity → perceived similarity)
+
+-   b-path: $\phi_1 = 0.149$, 95% CI $[0.137, 0.161]$, $p < .001$ (perceived similarity → love, controlling actual)
+
+-   c-path: $β_1=0.113$, 95% CI: $[0.104,0.122]$, $p<.001$ (actual similarity → love, total)
+
+-   c'-path: $\phi_3 = 0.032$ , 95% CI $[0.020, 0.043]$, $p < .001$ (actual similarity → love, direct)
+
+-   **Indirect effect** = a × b = $\theta_1 \phi_1 = 0.565 × 0.149 ≈ 0.084$
+
+-   **Proportion mediated** ≈ $0.084 / 0.113 ≈ 74\%$
+
+```{r within_PA_mediation}
+
+# Define edges
+edges <- data.frame(
+  from     = c("X", "M", "X",  "X"),
+  to       = c("M", "Y", "Y",  "Y"),
+  label    = c("0.565*** [0.553, 0.578]",
+               "0.149*** [0.137, 0.161]",
+               "0.032*** [0.020, 0.043]",
+               "0.113*** [0.104, 0.122]"),
+  linetype = c(1, 1, 1, 2),
+  colour   = c("black", "black", "black", "black"),
+  curvature = c(NA,   NA,   NA,  -30),
+  label_hjust  = c("center", "center", "center", "center"),
+  connect   = c(NA, NA, NA, NA)  # loops attach at top
+)
+
+# Build and customize
+p <- prepare_graph(
+  nodes  = nodes,
+  edges  = edges,
+  layout = layout,
+  spacing_x = 3,
+  spacing_y = 2,
+  rect_width  = 0.8,   
+  rect_height = 0.5,
+  variance_diameter = 0.3   # default is 0.8
+)
+
+# Style edges
+edges(p)$linetype <- edges$linetype
+edges(p)$colour   <- edges$colour
+edges(p)$label_hjust <- "center"
+
+plot(p) + ggtitle("Within Person Mediation Diagram")
 
 ```
+
+About three quarters of the momentary effect of actual PA similarity on love is transmitted through perceived similarity. The remaining direct effect (c' = 0.032) suggests a small residual pathway, perhaps actual similarity influences love through mechanisms other than conscious perception (e.g., behavioural synchrony, physiological co-regulation).
+
+**Between-person level**
+
+-   a-path: $\theta_2 = 0.708$ ($p < .001$) (actual similarity → perceived similarity)
+
+-   b-path: $ϕ_2=0.859$ $(p<.001)$ (perceived similarity → love, controlling actual)
+
+-   c-path: $\beta_2=0.214$, $p = .43$ , 95% CI $[−0.314,0.742]$, ns. (actual similarity → love, total)
+
+-   c'-path: $\phi_4 = −0.355$ $p = .249$ , ns, (actual similarity → love, direct)
+
+-   **Indirect effect** = $θ_2ϕ_2= 0.708 × 0.859 ≈ 0.608$
+
+-   Mediation appears **complete** at the between level, there is no direct path
+
+Dyads higher in actual PA similarity love each other more, and this effect is entirely accounted for by their tendency to perceive each other as more similar.
+
+```{r between_PA_mediation}
+
+# Define edges
+edges <- data.frame(
+  from     = c("X", "M", "X",  "X"),
+  to       = c("M", "Y", "Y",  "Y"),
+  label    = c("0.708***",
+               "0.859***",
+               "-0.355 (ns)",
+               "0.214 (ns)"),
+  linetype = c(1, 1, 1, 2),
+  colour   = c("black", "black", "black", "black"),
+  curvature = c(NA,   NA,   NA,  -30),
+  label_hjust  = c("center", "center", "center", "center"),
+  connect   = c(NA, NA, NA, NA)  # loops attach at top
+)
+
+# Build and customize
+p <- prepare_graph(
+  nodes  = nodes,
+  edges  = edges,
+  layout = layout,
+  spacing_x = 3,
+  spacing_y = 2,
+  rect_width  = 0.8,   
+  rect_height = 0.5,
+  variance_diameter = 0.3   # default is 0.8
+)
+
+# Style edges
+edges(p)$linetype <- edges$linetype
+edges(p)$colour   <- edges$colour
+edges(p)$label_hjust <- "center"
+
+plot(p) + ggtitle("Between Person Mediation Diagram")
+
+
+```
+
+### Confidence intervals for the indirect effects
+
+These indirect effects (0.084 within, 0.608 between) need **formal significance testing,** the a × b product does not have a known normal distribution, so cannot be tested with a simple z-test. In the preregistration we specified that "For the indirect effects, we will obtain confidence intervals using the Monte Carlo simulation method for multilevel mediation (e.g., (@bauerConceptualizingTestingRandom2006 @preacherGeneralMultilevelSEM2010), as bootstrapping can be too computationally heavy in complex multilevel models."
+
+```{r PA_Monte_Carlo_CI}
+
+# MONTE CARLO CONFIDENCE INTERVALS FOR MULTILEVEL MEDIATION
+# PA Similarity -> Perceived PA Similarity -> Love
+# Based on Bauer et al. (2006) & Preacher et al. (2010)
+
+set.seed(42)   # for reproducibility
+
+n_sim <- 200  # number of Monte Carlo draws (20k is standard; use 50k for publication)
+
+# Extract a, b, and c'-paths and their SEs from the mediator and outcome  models
+a_w   <- fixef(h21_mediator)["PA_similarity_act_w"]   # within a-path
+a_b   <- fixef(h21_mediator)["PA_similarity_act_b"]   # between a-path
+se_a_w <- sqrt(vcov(h21_mediator)["PA_similarity_act_w", "PA_similarity_act_w"])
+se_a_b <- sqrt(vcov(h21_mediator)["PA_similarity_act_b", "PA_similarity_act_b"])
+b_w   <- fixef(h21_outcome)["PA_similarity_perc_w"]   # within b-path
+b_b   <- fixef(h21_outcome)["PA_similarity_perc_b"]   # between b-path
+se_b_w <- sqrt(vcov(h21_outcome)["PA_similarity_perc_w", "PA_similarity_perc_w"])
+se_b_b <- sqrt(vcov(h21_outcome)["PA_similarity_perc_b", "PA_similarity_perc_b"])
+cprime_w   <- fixef(h21_outcome)["PA_similarity_act_w"]
+cprime_b   <- fixef(h21_outcome)["PA_similarity_act_b"]
+se_cprime_w <- sqrt(vcov(h21_outcome)["PA_similarity_act_w", "PA_similarity_act_w"])
+se_cprime_b <- sqrt(vcov(h21_outcome)["PA_similarity_act_b", "PA_similarity_act_b"])
+
+# Extract c-paths (total effects) from base model h11
+c_w   <- fixef(h11)["PA_similarity_act_w"]
+c_b   <- fixef(h11)["PA_similarity_act_b"]
+se_c_w <- sqrt(vcov(h11)["PA_similarity_act_w", "PA_similarity_act_w"])
+se_c_b <- sqrt(vcov(h11)["PA_similarity_act_b", "PA_similarity_act_b"])
+
+# Monte Carlo simulation
+# For each path, draw n_sim values from a normal distribution defined by
+# the point estimate and its standard error.
+# This assumes approximate normality of the sampling distributions,
+# which is reasonable for fixed effects in large samples.
+
+# Within-level draws
+a_w_sim <- rnorm(n_sim, mean = a_w, sd = se_a_w)
+b_w_sim <- rnorm(n_sim, mean = b_w, sd = se_b_w)
+
+# Between-level draws
+a_b_sim <- rnorm(n_sim, mean = a_b, sd = se_a_b)
+b_b_sim <- rnorm(n_sim, mean = b_b, sd = se_b_b)
+
+# Compute indirect effect distributions
+indirect_w_sim <- a_w_sim * b_w_sim   # within indirect: a_w * b_w
+indirect_b_sim <- a_b_sim * b_b_sim   # between indirect: a_b * b_b
+
+# Point estimates and 95% Monte Carlo CIs
+# Point estimate = product of observed coefficients
+# 95% CI = 2.5th and 97.5th percentiles of simulated distribution
+
+result_w <- mc_ci(indirect_w_sim, a_w, b_w, "Within-level")
+result_b <- mc_ci(indirect_b_sim, a_b, b_b, "Between-level")
+
+# Direct and total effects with CIs
+# These come directly from the models (no simulation needed — single params)
+
+cat("\n============================================================")
+cat("\nDIRECT EFFECTS (c'-paths from outcome model)\n")
+summarise_path(cprime_w, se_cprime_w, "Within direct effect (c'_w)")
+summarise_path(cprime_b, se_cprime_b, "Between direct effect (c'_b)")
+
+cat("\n============================================================")
+cat("\nTOTAL EFFECTS (c-paths from base model)\n")
+summarise_path(c_w, se_c_w, "Within total effect (c_w)")
+summarise_path(c_b, se_c_b, "Between total effect (c_b)")
+
+# ── STEP 9: Proportion mediated ────────────────────────────────────────────
+# Indirect / Total; only meaningful when total effect is significant
+# Monte Carlo distribution for proportion mediated
+
+prop_w_sim <- indirect_w_sim / (indirect_w_sim + rnorm(n_sim, cprime_w, se_cprime_w))
+prop_b_sim <- indirect_b_sim / (indirect_b_sim + rnorm(n_sim, cprime_b, se_cprime_b))
+
+cat("\n============================================================")
+cat("\nPROPORTION MEDIATED\n")
+cat(sprintf(
+  "\nWithin-level: %.1f%% (95%% MC CI: [%.1f%%, %.1f%%])\n",
+  result_w$point / c_w * 100,
+  quantile(prop_w_sim, 0.025) * 100,
+  quantile(prop_w_sim, 0.975) * 100
+))
+cat(sprintf(
+  "Between-level: %.1f%% (95%% MC CI: [%.1f%%, %.1f%%])\n",
+  result_b$point / c_b * 100,
+  quantile(prop_b_sim, 0.025) * 100,
+  quantile(prop_b_sim, 0.975) * 100
+))
+
+# Visualise the MC distributions
+par(mfrow = c(1, 2))
+
+hist(indirect_w_sim,
+     breaks = 100, col = "steelblue", border = "white",
+     main = "Within-level indirect effect\n(Monte Carlo distribution)",
+     xlab = "a_w × b_w", ylab = "Frequency")
+abline(v = result_w$point,  col = "white",  lwd = 2)
+abline(v = result_w$ci_low, col = "orange", lwd = 2, lty = 2)
+abline(v = result_w$ci_hi,  col = "orange", lwd = 2, lty = 2)
+
+hist(indirect_b_sim,
+     breaks = 100, col = "darkorange", border = "white",
+     main = "Between-level indirect effect\n(Monte Carlo distribution)",
+     xlab = "a_b × b_b", ylab = "Frequency")
+abline(v = result_b$point,  col = "white",  lwd = 2)
+abline(v = result_b$ci_low, col = "steelblue", lwd = 2, lty = 2)
+abline(v = result_b$ci_hi,  col = "steelblue", lwd = 2, lty = 2)
+
+par(mfrow = c(1, 1))
+
+# QUICK REFERENCE TABLE
+cat("\n============================================================")
+cat("\nSUMMARY TABLE\n")
+cat(sprintf("%-35s %8s %20s\n", "Path", "Estimate", "95% CI"))
+cat(strrep("-", 65), "\n")
+cat(sprintf("%-35s %8.4f %20s\n", "a_w (act_w -> perc_w)",    a_w,      sprintf("[%.4f, %.4f]", a_w - 1.96*se_a_w, a_w + 1.96*se_a_w)))
+cat(sprintf("%-35s %8.4f %20s\n", "a_b (act_b -> perc_b)",    a_b,      sprintf("[%.4f, %.4f]", a_b - 1.96*se_a_b, a_b + 1.96*se_a_b)))
+cat(sprintf("%-35s %8.4f %20s\n", "b_w (perc_w -> love)",     b_w,      sprintf("[%.4f, %.4f]", b_w - 1.96*se_b_w, b_w + 1.96*se_b_w)))
+cat(sprintf("%-35s %8.4f %20s\n", "b_b (perc_b -> love)",     b_b,      sprintf("[%.4f, %.4f]", b_b - 1.96*se_b_b, b_b + 1.96*se_b_b)))
+cat(sprintf("%-35s %8.4f %20s\n", "c_w  (total within)",      c_w,      sprintf("[%.4f, %.4f]", c_w - 1.96*se_c_w, c_w + 1.96*se_c_w)))
+cat(sprintf("%-35s %8.4f %20s\n", "c_b  (total between)",     c_b,      sprintf("[%.4f, %.4f]", c_b - 1.96*se_c_b, c_b + 1.96*se_c_b)))
+cat(sprintf("%-35s %8.4f %20s\n", "c'_w (direct within)",     cprime_w, sprintf("[%.4f, %.4f]", cprime_w - 1.96*se_cprime_w, cprime_w + 1.96*se_cprime_w)))
+cat(sprintf("%-35s %8.4f %20s\n", "c'_b (direct between)",    cprime_b, sprintf("[%.4f, %.4f]", cprime_b - 1.96*se_cprime_b, cprime_b + 1.96*se_cprime_b)))
+cat(sprintf("%-35s %8.4f %20s\n", "Indirect_w (MC)",          result_w$point, sprintf("[%.4f, %.4f]", result_w$ci_low, result_w$ci_hi)))
+cat(sprintf("%-35s %8.4f %20s\n", "Indirect_b (MC)",          result_b$point, sprintf("[%.4f, %.4f]", result_b$ci_low, result_b$ci_hi)))
+```
+
+At the **within-person level**, the indirect effect of actual PA similarity on love via perceived PA similarity was significant and substantial (indirect effect = 0.084, 95% MC CI \[0.078, 0.092\]). This corresponded to 74.5% (95% MC CI \[65.4%, 81.3%\]) of the total within-level effect (c_w = 0.113, CI \[0.104, 0.122\]), with a small but significant direct effect remaining (c'\_w = 0.032, CI \[0.020, 0.043\]). These results indicate **partial mediation** at the within-person level: in moments when partners are more similarly positive than usual, the actor perceives greater similarity with their partner, and this heightened perceived similarity in turn predicts greater momentary love. A small residual direct effect suggests an additional pathway from actual to perceived similarity that operates outside conscious perceptual awareness.
+
+At the **between-dyad level**, the indirect effect was also significant (indirect effect = 0.609, 95% MC CI \[0.234, 0.875\]), indicating that dyads higher in average actual PA similarity perceived themselves as more similar, which in turn predicted higher average love. However, the between-level total effect was not significant (c_b = 0.214, CI \[−0.308, 0.736\]), and the direct effect was negative though also non-significant (c'\_b = −0.355, CI \[−0.955, 0.245\]). This pattern of a significant positive indirect effect alongside a near-zero total effect reflects an **inconsistent mediation** structure (MacKinnon et al., 2000): the positive mediated pathway is partially offset by a negative direct pathway, the two approximately cancelling at the total-effect level. Given this, the proportion mediated is not interpretable at the between level. The significant indirect effect nonetheless supports the conclusion that perceived similarity is a meaningful carrier of between-dyad differences in actual similarity's association with love, while the suppression pattern at the direct path level likely reflects the same directional asymmetry identified in the elevation sensitivity analysis — namely that actual PA similarity conflates elevation and directionality effects that relate differently to love once the perceptual pathway is controlled.
 
 ## H2.2 - NA mediation
 

@@ -487,3 +487,24 @@ model_output <- function(model) {
     print(VarCorr(model))
   }), collapse = "\n"))
 }
+
+mc_ci <- function(sim_vector, a_est, b_est, label) {
+  point  <- a_est * b_est
+  ci_low <- quantile(sim_vector, 0.025)
+  ci_hi  <- quantile(sim_vector, 0.975)
+  p_val  <- 2 * min(mean(sim_vector > 0), mean(sim_vector < 0))  # two-tailed MC p
+  cat(sprintf(
+    "\n%s indirect effect:\n  Point estimate = %.4f\n  95%% MC CI = [%.4f, %.4f]\n  MC p = %.4f\n",
+    label, point, ci_low, ci_hi, p_val
+  ))
+  invisible(list(point = point, ci_low = ci_low, ci_hi = ci_hi, p = p_val, sim = sim_vector))
+}
+
+summarise_path <- function(est, se, label) {
+  ci_low <- est - 1.96 * se
+  ci_hi  <- est + 1.96 * se
+  cat(sprintf(
+    "\n%s:\n  Estimate = %.4f\n  95%% CI = [%.4f, %.4f]\n",
+    label, est, ci_low, ci_hi
+  ))
+}

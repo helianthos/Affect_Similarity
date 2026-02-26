@@ -19,6 +19,8 @@
 #   - On a new machine, run renv::restore() before sourcing this file.
 # ============================================================
 
+library(MASS) # for mvrnorm
+library(tidySEM) # for mediation plots
 library(tidyverse)
 library(here)
 library(naniar)
@@ -35,3 +37,4 @@ library(vioplot)
 library(nlme) # for corAR1 in lme models; not in renv.lock because in R's default installed packages
 library(car)
 library(patchwork)
+library(MASS)

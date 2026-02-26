@@ -936,9 +936,9 @@ esm_data_ceiling_love <- esm_data %>%
 
 cat("\nN after excluding dyads with heavy-ceiling persons:", nrow(esm_data_ceiling_love), "\n")
 
-plot_hist_numeric(esm_data_ceiling_love, "love", "Ditribution of 'love'", "love (0-100)",2)
+plot_hist_numeric(esm_data_ceiling_love, "PA_similarity_act", "Ditribution of 'love'", "love (0-100)",2)
 
-# 7. Summary
+±# 7. Summary
 cat("Total beeps:", nrow(esm_data_ceiling_love), "\n")
 cat("Answered beeps with love >=", high, ":", sum(esm_data_ceiling_love$is_high, na.rm = TRUE), "\n")
 cat("Percentage with love >=", high, ":", round(mean(esm_data_ceiling_love$is_high, na.rm = TRUE) * 100, 1), "% of answered beeps\n")
@@ -1055,7 +1055,7 @@ The DCI has very high overall reliability ($\alpha = 0.85,\ \omega = 0.92$) and 
 Omega Hierarchical = 0.58, meaning that about 58% of the variance is due to "general coping", while the remaining variance is driven by the 8 factors (using cutoff for loadings of \> .2, in bold italics when \> .3):
 
 |  |  |  |  |  |
-|----|----|----|:---|----|
+|---------------|---------------|---------------|:--------------|---------------|
 | **Factor** | **Items Loading...** | ... and items missing... | **...for interpretation** | **Other items loading** |
 | **F1\*** | ***5*****, *6***, 8, ***9*** | 13 | Supportive Partner (SDCP)  | 24 |
 |  | 7, ***10*****, *11***, 15 | \- | part 1 of Negative Partner (NDCP)  |  |
@@ -1112,7 +1112,7 @@ plot_counter <- plot_counter + 1
 ```
 
 |  |  |  |  |  |
-|----|----|----|:---|----|
+|---------------|---------------|---------------|:--------------|---------------|
 | **Factor** | **Items Loading...** | ... and items missing... | **...for interpretation** | **Other items loading** |
 | **F1\*** | ***5*****, *6***, 8, ***9, 13*** | \- | Supportive Partner (SDCP)  | ***16, 19,*** 26, 28(-) |
 |  | 7, ***10*****, *11***, 15 | \- | part 1 of Negative Partner (NDCP)  |  |
@@ -1303,7 +1303,7 @@ plot_counter <- plot_counter + 1
 ```
 
 |  |  |  |  |  |
-|----|----|----|:---|----|
+|---------------|---------------|---------------|:--------------|---------------|
 | **Factor** | **Items Loading...** | ... and items missing... | **...for interpretation** | **Other items loading** |
 | **F1\*** | ***5*****, *6***, ***8***, ***9, 13*** | \- | Supportive Partner (SDCP)  | 14, ***16***, 19, 28(-) |
 | **F2\*** | ***20, 21, 24*** | 23, 29 | Part 1 of Supportive Self (SDC)  | ***1***, 30 |
