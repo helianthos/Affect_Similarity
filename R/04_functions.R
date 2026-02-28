@@ -493,18 +493,21 @@ mc_ci <- function(sim_vector, a_est, b_est, label) {
   ci_low <- quantile(sim_vector, 0.025)
   ci_hi  <- quantile(sim_vector, 0.975)
   p_val  <- 2 * min(mean(sim_vector > 0), mean(sim_vector < 0))  # two-tailed MC p
-  cat(sprintf(
-    "\n%s indirect effect:\n  Point estimate = %.4f\n  95%% MC CI = [%.4f, %.4f]\n  MC p = %.4f\n",
-    label, point, ci_low, ci_hi, p_val
-  ))
   invisible(list(point = point, ci_low = ci_low, ci_hi = ci_hi, p = p_val, sim = sim_vector))
 }
 
-summarise_path <- function(est, se, label) {
-  ci_low <- est - 1.96 * se
-  ci_hi  <- est + 1.96 * se
-  cat(sprintf(
-    "\n%s:\n  Estimate = %.4f\n  95%% CI = [%.4f, %.4f]\n",
-    label, est, ci_low, ci_hi
-  ))
+# Combine into single table with a grouping column
+make_rows <- function(df, trend_col, predictor_label) {
+  data.frame(
+    `Predictor`            = predictor_label,
+    `Responsiveness level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+    `Responsiveness value` = sprintf("%.2f", df$cperc_resp),
+    `Simple slope`         = sprintf("%.4f", df[[trend_col]]),
+    `SE`                   = sprintf("%.4f", df$SE),
+    `95% CI`               = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
+    `t`                    = sprintf("%.3f", df$t.ratio),
+    `p`                    = ifelse(df$p.value < .001, "< .001",
+                                    sprintf("%.3f", df$p.value)),
+    check.names = FALSE
+  )
 }

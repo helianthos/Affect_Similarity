@@ -37,4 +37,7 @@ library(vioplot)
 library(nlme) # for corAR1 in lme models; not in renv.lock because in R's default installed packages
 library(car)
 library(patchwork)
-library(MASS)
+library(emmeans)
+library(kableExtra)
+
+# consider ggpubr for publication ready plots 
