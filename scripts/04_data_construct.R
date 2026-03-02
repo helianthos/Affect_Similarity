@@ -146,7 +146,18 @@ esm_data <- esm_data %>%
     NA_similarity_act_b = NA_similarity_act_b - mean(NA_similarity_act_b, na.rm = TRUE)
   )
 
-# 8. Create a day_index column, restarting per person ----
+# 8. Create event valence C
+esm_data <- esm_data %>%
+  mutate(
+    C = pos_gen - neg_gen
+  )
+esm_data <- esm_data %>%
+  mutate(
+    cC = C - mean(C, na.rm = TRUE)
+  )
+
+
+# 9. Create a day_index column, restarting per person ----
 esm_data <- esm_data %>%
   mutate(
     date_only = as.Date(ts_start) # extract date part 
@@ -159,7 +170,7 @@ esm_data <- esm_data %>%
   ungroup() %>%
   select(-date_only)
 
-# 9. Timestamp to time in minutes for CAR(1) residual structure in multilevel models ----
+# 10. Timestamp to time in minutes for CAR(1) residual structure in multilevel models ----
 esm_data <- esm_data %>%
   mutate(
     ts_mid   = ts_start + (ts_stop - ts_start)/2
@@ -172,7 +183,7 @@ esm_data <- esm_data %>%
   ungroup() %>%
   select(-ts_mid, -ts_start, -ts_stop)
 
-# 10. Save ----
+# 11. Save ----
 saveRDS(esm_data, file.path(dir_data_ana, "esm_ana.rds"))
 cat(sprintf("ESM data extended with centralized affect measures and similarity measures saved to %s\n", 
             file.path(dir_data_red, "esm_ana.rds")))

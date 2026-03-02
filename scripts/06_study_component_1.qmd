@@ -384,7 +384,7 @@ model_output(h11)
 
     Within persons, a 10 point increase in actual PA similarity was associated with a 1.13-point (CI \[1.04, 1.22\])increase in momentary love (0–100).
 
-3.  **Between-person/dyad effect is not significant**: $\beta_2=0.214$, $p = .43$ , 95% CI $[−0.314,0.742]$.\
+3.  **Between-person/dyad effect is not significant**: $\beta_2=0.214$, $p = .423$ , 95% CI $[−0.314,0.742]$.\
     only 102 dyads informing between estimate.
 
     So there is no reliable evidence that dyads who are (on average) more similar also have (on average) higher love.
@@ -605,7 +605,7 @@ ranef(h11_rs)
 
 1.  $β_0=75.94$, $p<.001$, 95% CI: $[73.48,78.40]$, which is nearly identical to the fixed slope model `h11`.
 
-    The dyad random intercept $SD = 9.87$ and person-within-dyad random intercept $SD = 11.09$ are also nearly identical to `h11`. This means that adding the random slopes did not materally change the intercept structure: there remains a substantial baseline variability in `love` between dyads and between persons within dyads.
+    The dyad random intercept $SD = 9.87$ and person-within-dyad random intercept $SD = 11.09$ are also nearly identical to `h11`. This means that adding the random slopes did not materially change the intercept structure: there remains a substantial baseline variability in `love` between dyads and between persons within dyads.
 
 2.  **Within-person effect is significant:** $β_1=0.134$, $p<.001$, 95% CI: $[0.113,0.155]$, slightly higher than $0.113$ from the `h11` model.
 
@@ -613,15 +613,15 @@ ranef(h11_rs)
 
     Within persons, a 10 point increase in actual PA similarity was associated with a $+1.34$-point increase in momentary love (0–100).
 
-    The dyad-level SD for this slope is $0.082$, and the person-level SD for this slope is $0.067$, which means there is meaningful heterogeneity in how strongly momentary PA similarity relates to momentary `love`. Looking at `ranef(h11_rs)`, for some dyads/persons the momentary actual PA similarity-love associaiotn is close to zero and even negative, despite being positive on average.
+    The dyad-level SD for this slope is $0.082$, and the person-level SD for this slope is $0.067$, which means there is meaningful heterogeneity in how strongly momentary PA similarity relates to momentary `love`. Looking at `ranef(h11_rs)`, for some dyads/persons the momentary actual PA similarity-love association is close to zero and even negative, despite being positive on average.
 
     Both intercept-slope correlations are negative (dyad: $-0.409$, person: $-0.752$), meaning dyads/persons with higher baseline love tend to show a weaker similarity-love association and/or those with lower baseline love show a stronger coupling between similarity and love. This is a plausible ceiling effect.
 
-3.  **Between-person/dyad effect is not significant**: $\beta_2=0.456$, $p = .06$ , 95% CI $[-0.021,0.932]$. The wide CI reflects limited power, as this is a between-dyad effect with only 102 dyads.
+3.  **Between-person/dyad effect is not significant**: $\beta_2=0.456$, $p = .061$ , 95% CI $[-0.021,0.932]$. The wide CI reflects limited power, as this is a between-dyad effect with only 102 dyads.
 
     So there is no reliable evidence that dyads who are (on average) more similar also have (on average) higher love.
 
-4.  The residual $SD = 11.785$ is down from $12.049$ in h11 since allowing slopes to vary removes some residual variance.
+4.  The residual $SD = 11.785$ is down from $12.049$ in `h11` since allowing slopes to vary removes some residual variance.
 
 5.  $\phi=0.420$ drop slightly from the $0.434$ in model `h11`. This suggests that the random slopes absorb a small amount of what was previously captured by autocorrelation.
 
@@ -696,11 +696,11 @@ h11_decomposed <- lme(love ~ PA_diff_act + PA_elevation_act,
                       correlation = corCAR1(form = ~time | dyad/person),
                       na.action = na.exclude,
                       method = "REML")
-model_output(h11_decomposed)
 
+model_output(h11_decomposed)
 ```
 
-Our similarity index combines mean elevation and the absolute actor–partner difference. When both individual PA levels (or the dyadic mean) are statistically controlled, the elevation component is removed, and the remaining similarity term becomes mathematically tied to the absolute difference between partners. However, the absolute difference removes the directional information that proved to be important in the exploratory model. Because increases in the actor–partner difference are associated with higher love when the actor is more positive, but with lower love when the partner is more positive, a symmetric absolute-difference term (which removes information about who is higher) cannot adequately represent this asymmetric pattern. The resulting negative coefficient for the residualized similarity term therefore reflects this directional asymmetry rather than evidence that positive affect mismatch is indiscriminately beneficial for love. More flexible modeling approaches that allow actor and partner affect to relate to love in a non-symmetric manner may capture such directional patterns more directly.
+The absolute difference in our similarity index removes the directional information that proved to be important in the exploratory model. Because increases in the actor–partner difference are associated with higher love when the actor is more positive, but with lower love when the partner is more positive, a symmetric absolute-difference term (which removes information about who is higher) cannot adequately represent this asymmetric pattern. The resulting negative coefficient for the residualized similarity term therefore reflects this directional asymmetry rather than evidence that positive affect mismatch is indiscriminately beneficial for love. More flexible modeling approaches that allow actor and partner affect to relate to love in a non-symmetric manner (e.g., response surface analysis) may capture such directional patterns more directly.
 
 Ceiling effects in the love measure appear to contribute modestly to the pattern. Analyses excluding the upper range of love ratings (\>85) attenuated the negative coefficient (from $-0.053$ to $-0.03$) but did not eliminate it, indicating that ceiling compression alone does not account for the effect.
 
@@ -730,7 +730,7 @@ vif(lm(love ~ PA_similarity_act_w + PA_similarity_act_b + cPA_own + cPA_part_act
        data = esm_data))
 ```
 
-In the preregistration we mentioned also attempting models with random slopes. The within-dyad actual similarity varies across moments, so its effect on love can plausibly differ across persons and across dyads. We therefore include random slopes for this predictor at both the person and dyad level. The between-dyad actual similarity is a dyad-level predictor: it takes a single fixed value for each dyad that does not vary across moments or persons within that dyad. A person-level random slope is therefore not estimable, as there is no within-dyad variation in this predictor for persons to differ in their response to. A dyad-level random slope is equally problematic: since each dyad contributes only one value on this predictor, a dyad-specific slope cannot be distinguished from the dyad-specific intercept — the two would be completely confounded. The slope of the between-dyad actual similarity is therefore kept fixed.
+In the preregistration we mentioned also attempting models with random slopes. We therefore include random slopes for this predictor at both the person and dyad level. The between-dyad actual similarity is a dyad-level predictor: it takes a single fixed value for each dyad that does not vary across moments or persons within that dyad. A person-level random slope is therefore not estimable, as there is no within-dyad variation in this predictor for persons to differ in their response to. A dyad-level random slope is equally problematic: since each dyad contributes only one value on this predictor, a dyad-specific slope cannot be distinguished from the dyad-specific intercept (the two would be completely confounded). The slope of the between-dyad actual similarity is therefore kept fixed.
 
 ```{r h11_elevation_rs}
 #| eval: false
@@ -908,7 +908,7 @@ print(wrap_plots(p, p_5, p_10, p_20, ncol = 2, nrow = 2))
 
 ##### Conclusion
 
-The normality and heteroscedasticity concern does not come from the higher concentrartion of beeps with love = 100, but from the boundary itself. Even after removing the dyads with the most ceiling-dominated participants, the remaining participants still cannot score above 100. So whenever the model predicts a fitted value near the upper range, the residuals are necessarily truncated on the positive side. A participant with a fitted value of 85 for example can only have a residual of at most +15, whereas they can have a residual of -85. This asymmetry is structural.\
+The normality and heteroscedasticity concern does not come from the higher concentration of beeps with love = 100, but from the boundary itself. Even after removing the dyads with the most ceiling-dominated participants, the remaining participants still cannot score above 100. So whenever the model predicts a fitted value near the upper range, the residuals are necessarily truncated on the positive side. A participant with a fitted value of 85 for example can only have a residual of at most +15, whereas they can have a residual of -85. This asymmetry is structural.\
 \
 **The central limit theorem gives LMM estimates reasonable validity even under non-normality.** The point estimates and standard errors are likely more reliable than the diagnostic plots suggest. The sensitivity analyses showing consistent conclusions across different subsets is arguably more persuasive evidence of robustness than perfect residual diagnostics would be.
 
@@ -924,7 +924,7 @@ df <- esm_data %>%
   mutate(
     love_01     = love / 100,
     n_obs       = n(),
-    love_beta   = (love_01 * (n_obs - 1) + 0.5) / n_obs
+    love_beta   = (love_01 * (n_obs - 1) + 0.5) / n_obs # squeeze transformation
   )
 
 h11_beta <- glmmTMB(
@@ -934,7 +934,7 @@ h11_beta <- glmmTMB(
     (1 | dyad / person),
   data   = df,
   family = beta_family(link = "logit"),
-  REML   = TRUE                               # use ML for model comparison if needed
+  REML   = TRUE                       # use ML for model comparison if needed
 )
 
 mu <- mean(df$love_beta, na.rm = TRUE)
@@ -974,7 +974,6 @@ h12 <- lme(
 )
 
 model_output(h12)
-
 ```
 
 1.  $β_0=75.91$, $p<.001$, 95% CI: $[73.54,78.27]$ is the reported love when all predictors are zero, thus for the average dyad at an average moment (given the centering).
@@ -1067,8 +1066,8 @@ h12_decomposed <- lme(love ~ NA_diff_act + NA_elevation_act,
                       correlation = corCAR1(form = ~time | dyad/person),
                       na.action = na.exclude,
                       method = "REML")
-model_output(h12_decomposed)
 
+model_output(h12_decomposed)
 ```
 
 # Step 1b: Additive Model (H1.3)
@@ -1321,7 +1320,7 @@ h13_NA_rs <- lme(
 model_output(h13_NA_rs)
 ```
 
-To achieve convergence for the h13_NA_rs model, we needed to increase the maximum number of iterations for the lme optimization alogorithm (`maxIter`), the maximum number of iterations for the optimization step inside the `lme` optimization (`msMaxIter`), and the number of iterations for the EM algorithm used to refine the initial estimates of the random effects variance-covariance coefficients (`niterEM`).
+To achieve convergence for the `h13_NA_rs` model, we needed to increase the maximum number of iterations for the lme optimization alogorithm (`maxIter`), the maximum number of iterations for the optimization step inside the `lme` optimization (`msMaxIter`), and the number of iterations for the EM algorithm used to refine the initial estimates of the random effects variance-covariance coefficients (`niterEM`).
 
 **Random slopes model (h13_NA_rs)**
 
@@ -1426,41 +1425,41 @@ $\beta_0 = 74.19$
 
 Within-person effects (momentary deviations from one’s/one dyad’s typical level)
 
-Actual PA similarity: statistically significant, \$\\beta_1 = 0.045\$, 95% CI \$\[0.033, 0.057\]\$.
+Actual PA similarity: statistically significant, $\beta_1 = 0.045$, 95% CI $[0.033, 0.057]$.
 
 When partners are more actually similar in PA than usual at a given moment, love is higher at that moment (net of perceived similarity and their within-person interaction).
 
-A 10-point increase in momentary actual PA similarity \$\\rightarrow\$ \$+0.45\$ points in love (0–100), evaluated at the typical (i.e., zero-deviation) level of perceived PA similarity.
+A 10-point increase in momentary actual PA similarity $\rightarrow$ $+0.45$ points in love (0–100), evaluated at the typical (i.e., zero-deviation) level of perceived PA similarity.
 
-Perceived PA similarity: statistically significant, \$\\beta_3 = 0.173\$, 95% CI \$\[0.160, 0.186\]\$.
+Perceived PA similarity: statistically significant, $\beta_3 = 0.173$, 95% CI \$\[0.160, 0.186\]\$.
 
 When someone perceives higher-than-usual PA similarity with the partner, love is higher at that moment (net of actual similarity and their within-person interaction).
 
-A 10-point increase in momentary perceived PA similarity \$\\rightarrow\$ \$+1.73\$ points in love, evaluated at the typical (i.e., zero-deviation) level of actual PA similarity.
+A 10-point increase in momentary perceived PA similarity $\rightarrow$ $+1.73$ points in love, evaluated at the typical (i.e., zero-deviation) level of actual PA similarity.
 
-Within-person interaction (actual \$\\times\$ perceived PA similarity): statistically significant, \$\\beta_5 = 0.00146\$, 95% CI \$\[0.00121, 0.00171\]\$.
+Within-person interaction (actual $\times$ perceived PA similarity): statistically significant, $\beta_5 = 0.00146$, 95% CI $[0.00121, 0.00171]$.
 
 The positive association between actual PA similarity and love is stronger at moments when perceived PA similarity is also higher than usual (and vice versa). Equivalently, the effect of perceived PA similarity on love becomes more positive when actual PA similarity is higher than usual.
 
-Because the interaction is small in raw units, an intuitive scaling is: a 10-point higher-than-usual perceived PA similarity increases the momentary effect of actual PA similarity by \$10 \\times 0.00146 = 0.0146\$ love-points per 1-point of actual similarity (i.e., by \$0.146\$ love-points per 10-point change in actual similarity).
+Because the interaction is small in raw units, an intuitive scaling is: a 10-point higher-than-usual perceived PA similarity increases the momentary effect of actual PA similarity by $10 \times 0.00146 = 0.0146$ love-points per 1-point of actual similarity (i.e., by $0.146$ love-points per 10-point change in actual similarity).
 
 Between-person/dyad effects (stable differences in typical levels across the study period)
 
-Actual PA similarity: not statistically significant, \$\\beta_2 = -0.310\$, 95% CI \$\[-0.899, 0.278\]\$.
+Actual PA similarity: not statistically significant, $\beta_2 = -0.310$, 95% CI $[-0.899, 0.278]$.
 
 People in dyads who are typically higher in actual PA similarity do not show reliably different overall love once perceived similarity and the between-person interaction are included.
 
-Perceived PA similarity: statistically significant, \$\\beta_4 = 1.209\$, 95% CI \$\[0.670, 1.748\]\$.
+Perceived PA similarity: statistically significant, $\beta_4 = 1.209$, 95% CI $[0.670, 1.748]$$
 
 Persons who typically perceive more PA similarity report higher overall love across moments.
 
-A 10-point higher typical perceived PA similarity \$\\rightarrow\$ \$+12.09\$ points higher love on average, evaluated at the typical (centered) level of typical actual PA similarity.
+A 10-point higher typical perceived PA similarity $\rightarrow$ $+12.09$ points higher love on average, evaluated at the typical (centered) level of typical actual PA similarity.
 
-Between-person interaction (actual \$\\times\$ perceived PA similarity): statistically significant, \$\\beta_6 = 0.0929\$, 95% CI \$\[0.0239, 0.1619\]\$.
+Between-person interaction (actual \$\\times\$ perceived PA similarity): statistically significant, $\beta_6 = 0.0929$, 95% CI $[0.0239, 0.1619]$.
 
 The between-person association between perceived PA similarity and average love is stronger in dyads/persons who are typically higher in actual PA similarity (and vice versa). That is, when couples are on average higher in actual PA similarity, the link between typically perceived PA similarity and overall love is more positive.
 
-A 10-point higher typical perceived PA similarity increases the between-person effect of typical actual PA similarity by \$10 \\times 0.0929 = 0.929\$ love-points per 1-point of actual similarity (or \$9.29\$ love-points per 10-point change in actual similarity).
+A 10-point higher typical perceived PA similarity increases the between-person effect of typical actual PA similarity by $10 \times 0.0929 = 0.929$ love-points per 1-point of actual similarity (or $9.29$ love-points per 10-point change in actual similarity).
 
 ### NA
 
@@ -1483,7 +1482,6 @@ im_NA <- lme(
 )
 
 model_output(im_NA)
-
 ```
 
 # Step 2: Multilevel mediation (H2.1-H2.2)
@@ -1681,6 +1679,13 @@ Putting the a-paths and b-paths together, the pattern is:
 
 ```{r within_PA_mediation}
 
+# Define nodes
+nodes <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual PA\nSimilarity", "Perceived PA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
 # Define edges
 edges <- data.frame(
   from     = c("X", "M", "X",  "X"),
@@ -1713,7 +1718,7 @@ edges(p)$linetype <- edges$linetype
 edges(p)$colour   <- edges$colour
 edges(p)$label_hjust <- "center"
 
-plot(p) + ggtitle("Within Person Mediation Diagram")
+plot(p) + ggtitle("Within Person Mediation Diagram: PA")
 
 ```
 
@@ -1729,13 +1734,20 @@ About three quarters of the momentary effect of actual PA similarity on love is 
 
 -   c'-path: $\phi_4 = −0.355$, 95% CI $[−0.962, 0.252]$**,** $p = .249$ , ns, (actual similarity → love, direct)
 
--   **Indirect effect** = $θ_2ϕ_2= 0.708 × 0.859 ≈ 0.608$
+-   **Indirect effect** = $θ_2ϕ_2= 0.708× 0.859 ≈ 0.609$
 
 -   Mediation appears **complete** at the between level, there is no direct path
 
 Dyads higher in actual PA similarity love each other more, and this effect is entirely accounted for by their tendency to perceive each other as more similar.
 
 ```{r between_PA_mediation}
+
+# Define nodes
+nodes <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual PA\nSimilarity", "Perceived PA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
 
 # Define edges
 edges <- data.frame(
@@ -1769,14 +1781,14 @@ edges(p)$linetype <- edges$linetype
 edges(p)$colour   <- edges$colour
 edges(p)$label_hjust <- "center"
 
-plot(p) + ggtitle("Between Person Mediation Diagram")
+plot(p) + ggtitle("Between Person Mediation Diagram: PA")
 
 
 ```
 
 ### Confidence intervals for the indirect effects
 
-These indirect effects (0.084 within, 0.608 between) need **formal significance testing,** the a × b product does not have a known normal distribution, so cannot be tested with a simple z-test. In the preregistration we specified that "For the indirect effects, we will obtain confidence intervals using the Monte Carlo simulation method for multilevel mediation (e.g., (@bauerConceptualizingTestingRandom2006 @preacherGeneralMultilevelSEM2010), as bootstrapping can be too computationally heavy in complex multilevel models."
+These indirect effects ($0.084$ within, $0.609$ between) need **formal significance testing,** the a × b product does not have a known normal distribution, so cannot be tested with a simple z-test. In the preregistration we specified that "*For the indirect effects, we will obtain confidence intervals using the Monte Carlo simulation method for multilevel mediation (e.g., (@bauerConceptualizingTestingRandom2006@preacherGeneralMultilevelSEM2010), as bootstrapping can be too computationally heavy in complex multilevel models.*"
 
 ```{r PA_Monte_Carlo_CI}
 #| output-fold: true
@@ -1917,7 +1929,7 @@ par(mfrow = c(1, 1), oma = c(0, 0, 0, 0))
 
 At the within-person level, the indirect effect of actual PA similarity on love via perceived PA similarity was significant and substantial (indirect effect $= 0.084$, 95% MC CI $[0.078, 0.092]$). This corresponded to $74.5\%$ (95% MC CI $[65.4\%, 81.3\%]$) of the total within-level effect ($\beta_1 = 0.113$, CI $[0.104, 0.122]$), with a small but significant direct effect remaining ($\phi_3 = 0.032$, CI $[0.020, 0.043]$). These results indicate partial mediation at the within-person level: in moments when partners are more similarly positive than usual, the actor perceives greater similarity with their partner, and this heightened perceived similarity in turn predicts greater momentary love. A small residual direct effect suggests additional pathways from actual to love that operate beyond the perceptual channel captured here.
 
-At the between-dyad level, the indirect effect was also significant (indirect effect $= 0.609$, 95% MC CI $[0.234, 0.875]$), indicating that dyads higher in average actual PA similarity perceived themselves as more similar, which in turn predicted higher average love. However, the between-level total effect was not significant ($\beta_2 = 0.214$, CI $[-0.308, 0.736]$), and the direct effect was negative though also non-significant ($\phi_4 = -0.355$, CI $[-0.955, 0.245]$). This pattern of a significant positive indirect effect alongside a near-zero total effect reflects an inconsistent mediation structure (@mackinnonEquivalenceMediationConfounding2000): the positive mediated pathway is partially offset by a negative direct pathway, the two approximately cancelling at the total-effect level. Given this, the proportion mediated is not interpretable at the between level. The significant indirect effect nonetheless supports the conclusion that perceived similarity is a meaningful carrier of between-dyad differences in actual similarity's association with love, while the suppression pattern at the direct path level likely reflects the same directional asymmetry identified in the elevation sensitivity analysis — namely that actual PA similarity conflates elevation and directionality effects that relate differently to love once the perceptual pathway is controlled.
+At the between-dyad level, the indirect effect through perceived similarity was significant (indirect effect = $0.609$, 95% MC CI $[0.234, 0.875]$), suggesting that dyads higher in actual PA similarity perceived themselves as more similar, which in turn predicted higher love. The total effect ($β_2 = 0.214$, CI $[−0.308, 0.736]$) and direct effect ($\phi_4 = −0.355$, CI $[−0.955, 0.245]$) were both non-significant, consistent with perceived similarity fully mediating the relationship between actual similarity and love at the between-dyad level.
 
 ## H2.2 - NA mediation
 
@@ -2034,6 +2046,13 @@ Putting the a-paths and b-paths together, the pattern is:
 
 ```{r within_NA_mediation}
 
+# Define nodes
+nodes <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual NA\nSimilarity", "Perceived NA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
 # Define edges
 edges <- data.frame(
   from     = c("X", "M", "X",  "X"),
@@ -2066,7 +2085,7 @@ edges(p)$linetype <- edges$linetype
 edges(p)$colour   <- edges$colour
 edges(p)$label_hjust <- "center"
 
-plot(p) + ggtitle("Within Person Mediation Diagram")
+plot(p) + ggtitle("Within Person Mediation Diagram: NA")
 
 ```
 
@@ -2089,6 +2108,13 @@ About two fifths of the momentary negative effect of actual NA similarity on lov
 Dyads higher in average actual NA similarity love each other more on average, and this effect is entirely accounted for by their tendency to perceive each other as more similar. The between-level pattern for NA thus mirrors that of PA: full mediation through perceived similarity. The positive between-level b-path ($\phi_2 = 0.893$) means that dyads who perceive themselves as more similar — even in negativity — report more love, perhaps reflecting a sense of being understood or validated by one's partner.
 
 ```{r between_NA_mediation}
+
+# Define nodes
+nodes <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual NA\nSimilarity", "Perceived NA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
 
 # Define edges
 edges <- data.frame(
@@ -2122,7 +2148,7 @@ edges(p)$linetype <- edges$linetype
 edges(p)$colour   <- edges$colour
 edges(p)$label_hjust <- "center"
 
-plot(p) + ggtitle("Between Person Mediation Diagram")
+plot(p) + ggtitle("Between Person Mediation Diagram: NA")
 
 ```
 
@@ -2278,6 +2304,16 @@ At the between-dyad level, the indirect effect was significant and positive (ind
 
 # Step 3a: Moderation by responsiveness (H3.1-H3.2)
 
+## H3.1 – PA Similarity × Responsiveness
+
+We hypothesized:
+
+"*Higher momentary perceived responsiveness is expected to **amplify** the positive association between actual/perceived PA similarity and love.*"
+
+To have responsiveness as an amplifier, we expect $\beta_4 >0$.
+
+### Actual PA similarity
+
 General model structure:
 
 $$
@@ -2290,7 +2326,7 @@ b_{0,pd} +
 \varepsilon_{mpd}
 $$
 
-with $R_{mpd}$ the momentary perceived partner responsiveness (person-mean centered). We focus on within-person moderation by person-mean centering 𝑅𝑚𝑝𝑑; we do not model between-person differences in typical responsiveness as a moderator.
+with $R_{mpd}$ the momentary perceived partner responsiveness (person-mean centered). We focus on within-person moderation by person-mean centering $𝑅_{𝑚𝑝𝑑}$; we do not model between-person differences in typical responsiveness as a moderator.
 
 Random intercept structure:
 
@@ -2311,19 +2347,11 @@ $$
 
 Accordingly, $𝛽_1$ represents the momentary similarity–love association when $𝑅_{𝑚𝑝𝑑}=0$ (i.e., at the person’s typical level of perceived partner responsiveness), whereas $𝛽_4$ captures how much the similarity–love slope changes for a one-unit increase in momentary perceived responsiveness relative to that person’s typical level.
 
-## H3.1 – PA Similarity × Responsiveness
-
-We hypothesized:
-
-"*Higher momentary perceived responsiveness is expected to **amplify** the positive association between actual PA similarity and love.*"
-
-To have responsiveness as a buffer, we expect $\beta_4 >0$
-
-```{r PA_responsiveness_moderation}
+```{r h31a_responsiveness_moderation}
 #| output-fold: true
-#| output-summary: "Model results"
+#| output-summary: "Model results h31a"
 
-h31 <- lme(
+h31a <- lme(
    fixed = love ~ PA_similarity_act_w + PA_similarity_act_b + 
                   cperc_resp + PA_similarity_act_w:cperc_resp,
    random = ~ 1 | dyad/person,                 # v0,d and u0,pd
@@ -2334,14 +2362,14 @@ h31 <- lme(
    control = lmeControl(opt = "nlminb")   # default but specified for transparancy
 )
 
-model_output(h31)
+model_output(h31a)
 ```
 
-The moderation model `h31` reveals a significant negative interaction between within-person actual PA similarity and perceived responsiveness ($\phi_7 = -0.002$, 95% CI $[-0.003, -0.002]$, $p < .001$), indicating that the positive association between momentary actual PA similarity and love is **attenuated instead of amplified** at higher levels of perceived responsiveness. Contrary to our hypothesis, the pattern suggests that responsiveness and actual PA similarity function as substitutes: the momentary signal provided by actual PA similarity becomes less necessary for love when the partner is already perceived as highly responsive.
+The moderation model `h31a` reveals a significant negative interaction between within-person actual PA similarity and perceived responsiveness ($\phi_7 = -0.002$, 95% CI $[-0.003, -0.002]$, $p < .001$), indicating that the positive association between momentary actual PA similarity and love is **attenuated instead of amplified** at higher levels of perceived responsiveness. Contrary to our hypothesis, the pattern suggests that responsiveness and actual PA similarity function as substitutes: the momentary signal provided by actual PA similarity becomes less necessary for love when the partner is already perceived as highly responsive.
 
-```{r h31_probing}
+```{r h31a_probing}
 #| output-fold: true
-#| output-summary: "Simple slopes — h31"
+#| output-summary: "Simple slopes — h31a"
 
 # Define low, average, high as -1SD, 0, +1SD of cperc_resp
 resp_sd <- sd(esm_data$cperc_resp, na.rm = TRUE)
@@ -2349,27 +2377,27 @@ resp_sd <- sd(esm_data$cperc_resp, na.rm = TRUE)
 resp_levels <- list(cperc_resp = c(-resp_sd, 0, resp_sd))
 
 # Simple slopes of PA_similarity_act_w at each level of cperc_resp
-slopes_h31 <- emtrends(h31,
+slopes_h31a <- emtrends(h31a,
                        specs   = ~ cperc_resp,
                        var     = "PA_similarity_act_w",
                        at      = resp_levels)
 
-slopes_h31_df <- as.data.frame(summary(slopes_h31, infer = TRUE))
+slopes_h31a_df <- as.data.frame(summary(slopes_h31a, infer = TRUE))
 
 # Format into table
-tbl_h31 <- data.frame(
+tbl_h31a <- data.frame(
   `Responsiveness level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
-  `Responsiveness value` = sprintf("%.2f", slopes_h31_df$cperc_resp),
-  `Simple slope`         = sprintf("%.4f", slopes_h31_df$PA_similarity_act_w.trend),
-  `SE`                   = sprintf("%.4f", slopes_h31_df$SE),
-  `95% CI`               = sprintf("[%.4f, %.4f]", slopes_h31_df$lower.CL, slopes_h31_df$upper.CL),
-  `t`                    = sprintf("%.3f", slopes_h31_df$t.ratio),
-  `p`                    = ifelse(slopes_h31_df$p.value < .001, "< .001",
-                             sprintf("%.3f", slopes_h31_df$p.value)),
+  `Responsiveness value` = sprintf("%.2f", slopes_h31a_df$cperc_resp),
+  `Simple slope`         = sprintf("%.4f", slopes_h31a_df$PA_similarity_act_w.trend),
+  `SE`                   = sprintf("%.4f", slopes_h31a_df$SE),
+  `95% CI`               = sprintf("[%.4f, %.4f]", slopes_h31a_df$lower.CL, slopes_h31a_df$upper.CL),
+  `t`                    = sprintf("%.3f", slopes_h31a_df$t.ratio),
+  `p`                    = ifelse(slopes_h31a_df$p.value < .001, "< .001",
+                             sprintf("%.3f", slopes_h31a_df$p.value)),
   check.names = FALSE
 )
 
-kable(tbl_h31,
+kable(tbl_h31a,
   align    = c("l", "c", "c", "c", "c", "c", "c"),
   booktabs = TRUE,
   caption  = "Simple slopes of actual PA similarity on love at low, average, and high perceived responsiveness (h31)"
@@ -2387,17 +2415,88 @@ kable(tbl_h31,
 
 ```
 
+### Perceived PA similarity
+
+Using perceived similarity instead of actual similarity in the model in the previous section, we obtain the following results:
+
+```{r h31p_responsiveness_moderation}
+#| output-fold: true
+#| output-summary: "Model results h31p"
+
+h31p <- lme(
+   fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b + 
+                  cperc_resp + PA_similarity_perc_w:cperc_resp,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1)
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h31p)
+```
+
+```{r h31p_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — h31p"
+
+# Define low, average, high as -1SD, 0, +1SD of cperc_resp
+resp_sd <- sd(esm_data$cperc_resp, na.rm = TRUE)
+
+resp_levels <- list(cperc_resp = c(-resp_sd, 0, resp_sd))
+
+# Simple slopes of PA_similarity_act_w at each level of cperc_resp
+slopes_h31p <- emtrends(h31p,
+                       specs   = ~ cperc_resp,
+                       var     = "PA_similarity_perc_w",
+                       at      = resp_levels)
+
+slopes_h31p_df <- as.data.frame(summary(slopes_h31p, infer = TRUE))
+
+# Format into table
+tbl_h31p <- data.frame(
+  `Responsiveness level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `Responsiveness value` = sprintf("%.2f", slopes_h31p_df$cperc_resp),
+  `Simple slope`     = sprintf("%.4f", slopes_h31p_df$PA_similarity_perc_w.trend),
+  `SE`               = sprintf("%.4f", slopes_h31p_df$SE),
+  `95% CI`           = sprintf("[%.4f, %.4f]", slopes_h31p_df$lower.CL, slopes_h31p_df$upper.CL),
+  `t`                = sprintf("%.3f", slopes_h31p_df$t.ratio),
+  `p`                = ifelse(slopes_h31p_df$p.value < .001, "< .001",
+                      sprintf("%.3f", slopes_h31p_df$p.value)), check.names = FALSE
+)
+
+kable(tbl_h31p,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on love at low, average, and high perceived responsiveness (h31p)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+
+```
+
+### Impact on mediation
+
 To examine whether this moderation operated through the perceptual pathway identified in H2.1 (does responsiveness substitute for perceived similarity specifically), we also run
 
 $$
-L_{mpd}​=b_{0,pd}​+ϕ_1​S_{mpd}^{perc,within}​+ϕ_2\bar{​S}_d^{perc,between}​+ϕ_3​S_{mpd}^{act,within}​+ϕ_4\bar{​S}_d^{act,between}​+ϕ_5​_{Rmpd}​+\newlineϕ_6​(S_{mpd}^{perc,within}​×R_{mpd}​)+ϕ_7​(S_{mpd}^{act,within}​×R_{mpd}​)+ε_{mpd}
+L_{mpd}​=f_{0,pd}​+ϕ_1​S_{mpd}^{perc,within}​+ϕ_2\bar{​S}_d^{perc,between}​+ϕ_3​S_{mpd}^{act,within}​+ϕ_4\bar{​S}_d^{act,between}​+ϕ_5​R_{mpd}​+\newlineϕ_6​(S_{mpd}^{perc,within}​×R_{mpd}​)+ϕ_7​(S_{mpd}^{act,within}​×R_{mpd}​)+ε_{mpd}
 $$
 
-```{r h31_including_perceived similarity}
+```{r h31_moderated_outcome}
 #| output-fold: true
-#| output-summary: "Model results"
+#| output-summary: "Model results h31_outcome_mod"
 
-h31_extended <- lme(
+h31_outcome_mod <- lme(
    fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b +
                   PA_similarity_act_w  + PA_similarity_act_b  +
                   cperc_resp +
@@ -2411,24 +2510,24 @@ h31_extended <- lme(
    control = lmeControl(opt = "nlminb")   # default but specified for transparancy
 )
 
-model_output(h31_extended)
+model_output(h31_outcome_mod)
 ```
 
-Results reveal a clear dissociation: the perceived similarity x responsiveness interaction was negligible and non-significant ($\phi_6 = -0.0001$, 95% CI $[-0.001, 0.000]$, $p = .619$), while the actual similarity x responsiveness interaction remained significant and of comparable magnitude to the main moderation model ($\phi_7 = -0.002$, 95% CI $[-0.003, -0.001]$, $p < .001$). This indicates that perceived responsiveness does not moderate the effect of perceived PA similarity on love. The perceptual pathway operates independently of how responsive the partner is felt to be. Responsiveness specifically attenuates the residual direct effect of actual PA similarity on love: the pathway from actual similarity to love that operates outside conscious perception (estimated at $\phi_3 = 0.032$ in the mediation model) is the one moderated by responsiveness. A possible interpretation is that actual PA similarity provides a non-perceptual signal (perhaps through behavioural synchrony or physiological co-regulation) that becomes redundant when the partner's responsiveness already provides a clear and direct signal of being understood and cared for.
+Results reveal a clear dissociation: the perceived similarity x responsiveness interaction was negligible and non-significant ($\phi_6 = -0.0001$, 95% CI $[-0.001, 0.000]$, $p = .619$), while the actual similarity x responsiveness interaction remained significant and of comparable magnitude to the main moderation model ($\phi_7 = -0.002$, 95% CI $[-0.003, -0.001]$, $p < .001$). This indicates that perceived responsiveness does not moderate the effect of perceived PA similarity on love. The perceptual pathway b operates independently of how responsive the partner is felt to be. Responsiveness specifically attenuates the residual direct effect of actual PA similarity on love: the pathway c' from actual similarity to love that operates outside conscious perception (estimated at $0.032$ in the unmoderated mediation model) is the one moderated by responsiveness. A possible interpretation is that actual PA similarity provides a non-perceptual signal (perhaps through behavioural synchrony or physiological co-regulation) that becomes redundant when the partner's responsiveness already provides a clear and direct signal of being understood and cared for.
 
-```{r}
+```{r h31_moderated_outcome_simple_slopes}
 #| output-fold: true
-#| output-summary: "Simple slopes — h31_extended"
+#| output-summary: "Simple slopes — h31_outcome_mod"
 
 # Simple slopes for both actual and perceived PA similarity
 # at each level of cperc_resp, from the extended model
 
-slopes_act <- emtrends(h31_extended,
+slopes_act <- emtrends(h31_outcome_mod,
                        specs   = ~ cperc_resp,
                        var     = "PA_similarity_act_w",
                        at      = resp_levels)
 
-slopes_perc <- emtrends(h31_extended,
+slopes_perc <- emtrends(h31_outcome_mod,
                         specs   = ~ cperc_resp,
                         var     = "PA_similarity_perc_w",
                         at      = resp_levels)
@@ -2444,7 +2543,7 @@ tbl_extended <- rbind(
 kable(tbl_extended,
   align    = c("l", "c", "c", "c", "c", "c", "c"),
   booktabs = TRUE,
-  caption  = "Simple slopes of actual and perceived PA similarity on love at low, average, and high perceived responsiveness (h31_extended)"
+  caption  = "Simple slopes of actual and perceived PA similarity on love at low, average, and high perceived responsiveness (h31_outcome_mod)"
 ) %>%
   kable_styling(
     bootstrap_options = c("striped", "hover"),
@@ -2460,19 +2559,209 @@ kable(tbl_extended,
   )
 ```
 
+Finally we also run the moderated mediation model to test whether responsiveness moderates the a-path, i.e. whether the strength of the actual $\rightarrow$ perceived PA similarity association depends on how responsive the partner is felt to be?
+
+$$
+S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​R_{mpd}​+θ_4​(S_{mpd}^{act,within}​×R_{mpd}​)+ε_{mpd}
+$$
+
+```{r h31_moderated_mediator}
+#| output-fold: true
+#| output-summary: "Model results h31_mediator_mod"
+
+h31_mediator_mod <- lme(
+   fixed = PA_similarity_perc ~ PA_similarity_act_w + PA_similarity_act_b +
+                                cperc_resp +
+                                PA_similarity_act_w:cperc_resp,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1)
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h31_mediator_mod)
+```
+
+The moderated mediator model (`h31_mediator_mod`) revealed a statistically significant but negligible interaction between within-person actual PA similarity and perceived responsiveness on perceived PA similarity ($\theta_4 = -0.001$, 95% CI $[-0.002, -0.001]$, $p < .001$). At first sight this would suggest that at higher levels of perceived responsiveness, actual PA similarity translates less strongly into perceived PA similarity. Simple slope analysis reveals that the a-path varied only marginally across responsiveness levels: from $0.551$ at low responsiveness to $0.509$ at high responsiveness, a difference of $0.042$ representing less than $8\%$ variation around the mean slope of $0.530$. This effect is too small to be of theoretical or practical significance, and we do not interpret it further.
+
+```{r h31_moderated_mediator_simple_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — h31_mediator_mod"
+
+# Simple slopes of PA_similarity_act_w on PA_similarity_perc
+# at low, average, and high perceived responsiveness
+
+slopes_mediator_mod <- emtrends(h31_mediator_mod,
+                                specs   = ~ cperc_resp,
+                                var     = "PA_similarity_act_w",
+                                at      = resp_levels)
+
+slopes_mediator_mod_df <- as.data.frame(summary(slopes_mediator_mod, infer = TRUE))
+
+tbl_mediator_mod <- data.frame(
+  `Responsiveness level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `Responsiveness value` = sprintf("%.2f", slopes_mediator_mod_df$cperc_resp),
+  `Simple slope`         = sprintf("%.4f", slopes_mediator_mod_df$PA_similarity_act_w.trend),
+  `SE`                   = sprintf("%.4f", slopes_mediator_mod_df$SE),
+  `95% CI`               = sprintf("[%.4f, %.4f]",
+                             slopes_mediator_mod_df$lower.CL,
+                             slopes_mediator_mod_df$upper.CL),
+  `t`                    = sprintf("%.3f", slopes_mediator_mod_df$t.ratio),
+  `p`                    = ifelse(slopes_mediator_mod_df$p.value < .001, "< .001",
+                             sprintf("%.3f", slopes_mediator_mod_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_mediator_mod,
+  align    = c("l", "r", "r", "r", "r", "r", "r"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on perceived PA similarity at low, average, and high perceived responsiveness (h31_mediator_mod)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+By contrast, the moderation of the direct path identified in `h31_outcome_mod` is substantially larger in magnitude, with the simple slope of actual PA similarity on love declining from $0.048$ at low responsiveness to statistically $0$ at high responsiveness which is a reduction of approximately $66\%$ across the same range of responsiveness. Combined with the finding that the perceived similarity $\rightarrow$ love path was entirely unmoderated ($\phi_6 = -0.0001$, $p = .619$), the evidence points to a specific and practically meaningful substitution effect: perceived responsiveness attenuates the residual direct pathway from actual PA similarity to love, while the perceptual translation of actual into perceived similarity and the effect of perceived similarity on love remain essentially invariant across responsiveness levels.
+
+```{r h31_mediation_diagram}
+#| output-fold: true
+#| output-summary: "PA Mediation moderated by responsiveness"
+
+# three substantive nodes
+nodes_mod <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual PA\nSimilarity", "Perceived PA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+layout_mod <- get_layout(
+  "X", NA,  "M",
+  NA,  NA,  "Y",
+  rows = 2
+)
+
+edges_mod <- data.frame(
+  from        = c("X",  "M",  "X"),
+  to          = c("M",  "Y",  "Y"),
+  label       = c("a: 0.530***", "b: 0.086***", "c\u2019: 0.019***"),
+  linetype    = c(1, 1, 1),
+  colour      = c("black", "black", "black"),
+  curvature   = c(NA, NA, NA),
+  label_hjust = rep("center", 3)
+)
+
+p_mod <- prepare_graph(
+  nodes       = nodes_mod,
+  edges       = edges_mod,
+  layout      = layout_mod,
+  spacing_x   = 2,
+  spacing_y   = 3,
+  rect_width  = 0.8,
+  rect_height = 0.5
+)
+
+edges(p_mod)$linetype    <- edges_mod$linetype
+edges(p_mod)$colour      <- edges_mod$colour
+edges(p_mod)$label_hjust <- "center"
+
+# Extract node coordinates
+nd <- nodes(p_mod)
+get_node <- function(name) nd[nd$name == name, c("x", "y")]
+
+x_X <- get_node("X")
+x_M <- get_node("M")
+x_Y <- get_node("Y")
+
+# Midpoint of X->M edge (a-path)
+mid_a_x <- (x_X$x + x_M$x) / 2
+mid_a_y <- (x_X$y + x_M$y) / 2
+
+# Midpoint of X->Y edge (c'-path)
+mid_c_x <- (x_X$x + x_Y$x) / 2
+mid_c_y <- (x_X$y + x_Y$y) / 2
+
+# How far above/below midpoint the arrow starts
+arrow_length <- 1.2
+
+# Arrow starts (W label positions)
+w1_x <- mid_a_x          # directly above midpoint of a-path
+w1_y <- mid_a_y + arrow_length
+
+w2_x <- mid_c_x          # directly below midpoint of c'-path
+w2_y <- mid_c_y - arrow_length
+
+plot(p_mod) +
+  # Moderator arrow 1: from above down to midpoint of a-path
+  geom_segment(
+    data = data.frame(x = w1_x , y = w1_y - 0.05,
+                      xend = mid_a_x, yend = mid_a_y + 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed",
+    colour   = "grey60"  ) +
+  # Moderator arrow 2: from below up to midpoint of c'-path
+  geom_segment(
+    data = data.frame(x = w2_x, y = w2_y + 0.05,
+                      xend = mid_c_x, yend = mid_c_y - 0.1),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed",
+    colour   = "black"
+  ) +
+  # "Perceived Responsiveness" label at top arrow start
+  annotate("text",
+    x = w1_x, y = w1_y + 0.15,
+    label = "Perceived\nResponsiveness",
+    hjust = 0.5, fontface = "plain", colour = "grey60"
+  ) +
+  # "Perceived Responsiveness" label at bottom arrow start
+  annotate("text",
+    x = w2_x, y = w2_y - 0.15,
+    label = "Perceived\nResponsiveness",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Coefficient labels on moderator arrows
+  annotate("text",
+    x = w1_x - 0.7, y = (w1_y + mid_a_y) / 2,
+    label = "\u03b84 = -0.001***\n(practically\nmeaningless)",
+    hjust = 0, colour = "grey60"
+  ) +
+  annotate("text",
+    x = w2_x - 0.7, y = (w2_y + mid_c_y) / 2,
+    label = "\u03c67 = -0.002***",
+    hjust = 0
+  ) +
+  ggtitle("Within person mediation moderated by responsiveness \u2014 PA Similarity") +
+  labs(caption = "Dashed arrows indicate moderation of the intersected path (Hayes, 2013 convention)")
+```
+
+The relationship is not "waiting" for shared positive affect to feel connected; it is already connected through behavior.
+
 ## H3.2 – NA Similarity × Responsiveness
 
 We hypothesized:
 
-"*Higher momentary perceived partner responsiveness is expected to **attenuate** the negative association between actual NA similarity and love.*"
+"*Higher momentary perceived partner responsiveness is expected to **attenuate** the negative association between actual/perceived NA similarity and love.*"
 
-To have responsiveness as an amplifier, we expect $\beta_4 >0$, making the NA similarity-love slope ($β_1=-0.152$, $p<.001$, 95% CI: $[-0.167, -0.136]$ from model `h12`) less negative at higher perceived partner responsiveness.
+To have responsiveness as a buffer, we expect $\beta_4 >0$, making the NA similarity-love slope (for example for PA actual similarity: $β_1=-0.152$, $p<.001$, 95% CI $[-0.167, -0.136]$ from model `h12`) less negative at higher perceived partner responsiveness.
 
-```{r NA_responsiveness_moderation}
+### Actual NA similarity
+
+```{r h32a_responsiveness_moderation}
 #| output-fold: true
-#| output-summary: "Model results"
+#| output-summary: "Model results h32a"
 
-h32 <- lme(
+h32a <- lme(
    fixed = love ~ NA_similarity_act_w + NA_similarity_act_b + 
                   cperc_resp + NA_similarity_act_w:cperc_resp,
    random = ~ 1 | dyad/person,                 # v0,d and u0,pd
@@ -2483,28 +2772,409 @@ h32 <- lme(
    control = lmeControl(opt = "nlminb")   # default but specified for transparancy
 )
 
-model_output(h32)
+model_output(h32a)
 ```
+
+```{r h32a_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — h32a"
+
+# Define low, average, high as -1SD, 0, +1SD of cperc_resp
+resp_sd <- sd(esm_data$cperc_resp, na.rm = TRUE)
+
+resp_levels <- list(cperc_resp = c(-resp_sd, 0, resp_sd))
+
+# Simple slopes of PA_similarity_act_w at each level of cperc_resp
+slopes_h32a <- emtrends(h32a,
+                       specs   = ~ cperc_resp,
+                       var     = "NA_similarity_act_w",
+                       at      = resp_levels)
+
+slopes_h32a_df <- as.data.frame(summary(slopes_h32a, infer = TRUE))
+
+# Format into table
+tbl_h31a <- data.frame(
+  `Responsiveness level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `Responsiveness value` = sprintf("%.2f", slopes_h32a_df$cperc_resp),
+  `Simple slope`     = sprintf("%.4f", slopes_h32a_df$NA_similarity_act_w.trend),
+  `SE`               = sprintf("%.4f", slopes_h32a_df$SE),
+  `95% CI`= sprintf("[%.4f, %.4f]",slopes_h32a_df$lower.CL,slopes_h32a_df$upper.CL),
+  `t`     = sprintf("%.3f", slopes_h32a_df$t.ratio),
+  `p`     = ifelse(slopes_h32a_df$p.value < .001, "< .001",
+             sprintf("%.3f", slopes_h32a_df$p.value)), check.names = FALSE
+)
+
+kable(tbl_h31a,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on love at low, average, and high perceived responsiveness (h31)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+
+
+```
+
+### Perceived NA similarity
+
+```{r h32p_responsiveness_moderation}
+#| output-fold: true
+#| output-summary: "Model results h32p"
+
+h32p <- lme(
+   fixed = love ~ NA_similarity_perc_w + NA_similarity_perc_b + 
+                  cperc_resp + NA_similarity_perc_w:cperc_resp,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1)
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h32p)
+```
+
+```{r h32p_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — h32p"
+
+# Define low, average, high as -1SD, 0, +1SD of cperc_resp
+resp_sd <- sd(esm_data$cperc_resp, na.rm = TRUE)
+
+resp_levels <- list(cperc_resp = c(-resp_sd, 0, resp_sd))
+
+# Simple slopes of NA_similarity_perc_w at each level of cperc_resp
+slopes_h32p <- emtrends(h32p,
+                       specs   = ~ cperc_resp,
+                       var     = "NA_similarity_perc_w",
+                       at      = resp_levels)
+
+slopes_h32p_df <- as.data.frame(summary(slopes_h32p, infer = TRUE))
+
+# Format into table
+tbl_h32p <- data.frame(
+  `Responsiveness level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `Responsiveness value` = sprintf("%.2f", slopes_h32p_df$cperc_resp),
+  `Simple slope`     = sprintf("%.4f", slopes_h32p_df$NA_similarity_perc_w.trend),
+  `SE`    = sprintf("%.4f", slopes_h32p_df$SE),
+  `95% CI`= sprintf("[%.4f, %.4f]",slopes_h32p_df$lower.CL,slopes_h32p_df$upper.CL),
+  `t`     = sprintf("%.3f", slopes_h32p_df$t.ratio),
+  `p`     = ifelse(slopes_h32p_df$p.value < .001, "< .001",
+            sprintf("%.3f", slopes_h32p_df$p.value)), check.names = FALSE
+)
+
+kable(tbl_h32p,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived NA similarity on love at low, average, and high perceived responsiveness (h32p)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+
+```
+
+### Impact on mediation
+
+```{r h32_moderated_outcome}
+#| output-fold: true
+#| output-summary: "Model results h32_outcome_mod"
+
+h32_outcome_mod <- lme(
+   fixed = love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                  NA_similarity_act_w  + NA_similarity_act_b  +
+                  cperc_resp +
+                  NA_similarity_perc_w:cperc_resp +
+                  NA_similarity_act_w:cperc_resp,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1)
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h32_outcome_mod)
+```
+
+```{r h32_moderated_outcome_simple_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — h32_outcome_mod"
+
+# Simple slopes for both actual and perceived NA similarity
+# at each level of cperc_resp, from the extended model
+
+slopes_act <- emtrends(h32_outcome_mod,
+                       specs   = ~ cperc_resp,
+                       var     = "NA_similarity_act_w",
+                       at      = resp_levels)
+
+slopes_perc <- emtrends(h32_outcome_mod,
+                        specs   = ~ cperc_resp,
+                        var     = "NA_similarity_perc_w",
+                        at      = resp_levels)
+
+slopes_act_df  <- as.data.frame(summary(slopes_act,  infer = TRUE))
+slopes_perc_df <- as.data.frame(summary(slopes_perc, infer = TRUE))
+
+tbl_extended <- rbind(
+  make_rows(slopes_act_df,  "NA_similarity_act_w.trend",  "Actual NA similarity"),
+  make_rows(slopes_perc_df, "NA_similarity_perc_w.trend", "Perceived NA similarity")
+)
+
+kable(tbl_extended,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual and perceived NA similarity on love at low, average, and high perceived responsiveness (h32_outcome_mod)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  pack_rows("Actual NA similarity",    1, 3) %>%
+  pack_rows("Perceived NA similarity", 4, 6) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+```{r h32_moderated_mediator}
+#| output-fold: true
+#| output-summary: "Model results h32_mediator_mod"
+
+h32_mediator_mod <- lme(
+   fixed = NA_similarity_perc ~ NA_similarity_act_w + NA_similarity_act_b +
+                                cperc_resp +
+                                NA_similarity_act_w:cperc_resp,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1)
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h32_mediator_mod)
+```
+
+```{r h32_moderated_mediator_simple_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — h32_mediator_mod"
+
+# Simple slopes of NA_similarity_act_w on NA_similarity_perc
+# at low, average, and high perceived responsiveness
+
+slopes_mediator_mod <- emtrends(h32_mediator_mod,
+                                specs   = ~ cperc_resp,
+                                var     = "NA_similarity_act_w",
+                                at      = resp_levels)
+
+slopes_mediator_mod_df <- as.data.frame(summary(slopes_mediator_mod, infer = TRUE))
+
+tbl_mediator_mod <- data.frame(
+  `Responsiveness level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `Responsiveness value` = sprintf("%.2f", slopes_mediator_mod_df$cperc_resp),
+  `Simple slope`= sprintf("%.4f", slopes_mediator_mod_df$NA_similarity_act_w.trend),
+  `SE`       = sprintf("%.4f", slopes_mediator_mod_df$SE),
+  `95% CI`   = sprintf("[%.4f, %.4f]", slopes_mediator_mod_df$lower.CL,
+                      slopes_mediator_mod_df$upper.CL),
+  `t` = sprintf("%.3f", slopes_mediator_mod_df$t.ratio),
+  `p` = ifelse(slopes_mediator_mod_df$p.value < .001, "< .001",
+        sprintf("%.3f", slopes_mediator_mod_df$p.value)), check.names = FALSE
+)
+
+kable(tbl_mediator_mod,
+  align    = c("l", "r", "r", "r", "r", "r", "r"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on perceived NA similarity at low, average, and high perceived responsiveness (h32_mediator_mod)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+```{r h32_mediation_diagram}
+#| output-fold: true
+#| output-summary: "NA Mediation moderated by responsiveness"
+
+# three substantive nodes
+nodes_mod <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual NA\nSimilarity", "Perceived NA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+layout_mod <- get_layout(
+  "X", NA,  "M",
+  NA,  NA,  "Y",
+  rows = 2
+)
+
+edges_mod <- data.frame(
+  from        = c("X",  "M",  "X"),
+  to          = c("M",  "Y",  "Y"),
+  label       = c("a: 0.445***", "b: -0.059***", "c\u2019: -0.047***"),
+  linetype    = c(1, 1, 1),
+  colour      = c("black", "black", "black"),
+  curvature   = c(NA, NA, NA),
+  label_hjust = rep("center", 3)
+)
+
+p_mod <- prepare_graph(
+  nodes       = nodes_mod,
+  edges       = edges_mod,
+  layout      = layout_mod,
+  spacing_x   = 2,
+  spacing_y   = 3,
+  rect_width  = 0.8,
+  rect_height = 0.5
+)
+
+edges(p_mod)$linetype    <- edges_mod$linetype
+edges(p_mod)$colour      <- edges_mod$colour
+edges(p_mod)$label_hjust <- "center"
+
+# Extract node coordinates
+nd <- nodes(p_mod)
+get_node <- function(name) nd[nd$name == name, c("x", "y")]
+
+x_X <- get_node("X")
+x_M <- get_node("M")
+x_Y <- get_node("Y")
+
+# Midpoint of X->M edge (a-path)
+mid_b_x <- (x_M$x + x_Y$x) / 2
+mid_b_y <- (x_M$y + x_Y$y) / 2
+
+# Midpoint of X->Y edge (c'-path)
+mid_c_x <- (x_X$x + x_Y$x) / 2
+mid_c_y <- (x_X$y + x_Y$y) / 2
+
+# How far above/below midpoint the arrow starts
+arrow_length <- 1.2
+
+# Arrow starts (W label positions)
+w1_x <- mid_b_x + arrow_length    # directly right of midpoint of b-path
+w1_y <- mid_b_y 
+
+w2_x <- mid_c_x          # directly below midpoint of c'-path
+w2_y <- mid_c_y - arrow_length
+
+plot(p_mod) +
+  # Moderator arrow 1: from right to midpoint of b-path
+  geom_segment(
+    data = data.frame(x = w1_x - 0.05, y = w1_y ,
+                      xend = mid_b_x + 0.35, yend = mid_b_y),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed") +
+  # Moderator arrow 2: from below up to midpoint of c'-path
+  geom_segment(
+    data = data.frame(x = w2_x, y = w2_y + 0.05,
+                      xend = mid_c_x, yend = mid_c_y - 0.1),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed"
+  ) +
+  # "Perceived Responsiveness" label at right arrow start
+  annotate("text",
+    x = w1_x + 0.25, y = w1_y,
+    label = "Perceived\nResponsiveness    ",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # "Perceived Responsiveness" label at bottom arrow start
+  annotate("text",
+    x = w2_x, y = w2_y - 0.15,
+    label = "Perceived\nResponsiveness",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Coefficient labels on moderator arrows
+  annotate("text",
+    x = (w1_x + mid_b_x)/2 - 0.1, y = w1_y + 0.2,
+    label = "\u03c66 = 0.002***",
+    hjust = 0,
+  ) +
+  annotate("text",
+    x = w2_x - 0.7, y = (w2_y + mid_c_y) / 2,
+    label = "\u03c67 = 0.001*",
+    hjust = 0
+  ) +
+  ggtitle("Within person mediation moderated by responsiveness \u2014 NA Similarity") +
+  labs(caption = "Dashed arrows indicate moderation of the intersected path (Hayes, 2013 convention)") +
+  theme(plot.margin = unit(c(0.2, 0.5, 0.2, 0.2),"cm")
+        )
+```
+
+1.  **a-path**: Perception of similarity is unaffected by responsiveness
+    This suggests that the perceptual process linking actual to perceived NA similarity is not dependent on feeling understood by the partner.
+
+2.  **b-path**: Responsiveness buffers the impact of perceived NA similarity on love
+
+    At low responsiveness, perceived NA similarity is considerably more damaging to love (slope = $−0.083$) than at high responsiveness (slope = $−0.035$).
+
+    When the partner is perceived as responsive, shared NA may be reframed: being understood in negativity could transform it from a relational cost into an experience of felt understanding. Shared suffering, when met with responsiveness, buffers the negative effects on love.
+
+3.  **c'-path**: Responsiveness also buffers the direct path from actual NA similarity to love
+
+    Even beyond the perceptual pathway, the direct negative impact of actual NA similarity on love is attenuated at higher responsiveness. This residual direct effect may capture aspects of co-experienced negative affect that bypass conscious perception (the emotional "drag" of being around someone who feels as bad as you do). Responsiveness plausibly provides an affective regulatory resource that offsets this cost.
 
 # Step 3b: Moderation by Event Valence (H3.3-H3.4)
 
-Event valence derived from:
+At each beep, participants report whether something positive and something negative happened since the previous beep (1 = no, 2 = yes, a little, 3 = yes, a lot). For each person 𝑝 in dyad 𝑑 at moment 𝑚, we will recode these items to a 0–2 scale (0 = no, 1 = a little, 2 = a lot). We will then construct a momentary context index
 
--   Positive event
--   Negative event
+$$
+𝐶_{𝑚𝑝𝑑} = 𝑃𝑜𝑠𝑖𝑡𝑖𝑣𝑒 𝐸𝑣𝑒𝑛𝑡_{𝑚𝑝𝑑}− 𝑁𝑒𝑔𝑎𝑡𝑖𝑣𝑒 𝐸𝑣𝑒𝑛𝑡_{𝑚𝑝𝑑}
+$$
 
-Mismatch hypotheses:
+so that higher values indicate relatively more positive (vs negative) contexts and lower values indicate relatively more negative contexts. Consistent with our general centering strategy, we will person-mean center $𝐶_{𝑚𝑝𝑑}$ so that 0 reflects a person’s typical event context, $𝐶_{𝑚𝑝𝑑} > 0$ in moments more positive than typical, and $𝐶_{𝑚𝑝𝑑} < 0$ in moments more negative than typical.
 
--   PA similarity strongest in negative moments
--   NA similarity most harmful in positive moments
+Important note: the items "Did something negative happen since the last beep?" and "Did something positive happen since the last beep?" where only included in the beep if previous items ("Are you with your partner at the moment?" and "Did you have contact with your partner since the last beep?") where answered with "no", so only if partner isn't present and there was no contact with partner since previous beep. This constitutionality means that data will be very limited for these research questions. Only for $1,579$ beeps out of the $18,380$, there is data for $PositiveEvent_{mpd}$ and $NegativeEvent_{mpd}$.
 
 ## H3.3 – PA Similarity × Event Valence
+
+We hypothesized:
+
+"***We predict a mismatch effect**: **PA similarity will be most beneficial in negative moments**. The positive association between PA similarity (both actual and perceived) and love will be stronger when the event/context is more negative than when it is more positive. Sharing PA in a negative or stressful context may be particularly salient and interpreted as joint resilience (‘we can still enjoy this together’), thereby boosting momentary feelings of love more than shared positivity in already positive contexts.*"
+
+### Actual PA similarity
 
 ```{r}
 
 ```
 
+### Perceived PA similarity
+
 ## H3.4 – NA Similarity × Event Valence
+
+We hypothesized:
+
+"***We predict a mismatch effect:NA similarity will be most detrimental in positive moments.** The negative association between NA similarity (both actual and perceived) and momentary love will be stronger when the event/context is more positive than when it is more negative. When both partners feel similarly bad in an otherwise positive situation, this shared negativity may be especially discordant and thus more strongly associated with reduced feelings of love, compared to moments that are already negative.*"
 
 ```{r}
 
