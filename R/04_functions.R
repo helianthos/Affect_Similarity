@@ -511,3 +511,17 @@ make_rows <- function(df, trend_col, predictor_label) {
     check.names = FALSE
   )
 }
+
+make_rows_2 <- function(df, trend_col, predictor_label) {
+  data.frame(
+    `Predictor`           = predictor_label,
+    `Event valence (cC)`  = sprintf("%.2f", df$cC),
+    `Simple slope`        = sprintf("%.4f", df[[trend_col]]),
+    `SE`                  = sprintf("%.4f", df$SE),
+    `95% CI`              = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
+    `t`                   = sprintf("%.3f", df$t.ratio),
+    `p`                   = ifelse(df$p.value < .001, "< .001",
+                                   sprintf("%.3f", df$p.value)),
+    check.names = FALSE
+  )
+}

@@ -1512,7 +1512,7 @@ edges <- data.frame(
                "Path b (φ)\nOutcome Model",
                "Path c' (φ)\nOutcome Model",
                "Path c (β)\nBase Model"),
-  linetype = c(1, 1, 1, 2),
+  linetype = c(1, 1, 1, 1),
   colour   = c("black", "black", "black", "black"),
   curvature = c(NA,   NA,   NA,  -30),
   label_hjust  = c("center", "center", "center", "center")
@@ -1694,7 +1694,7 @@ edges <- data.frame(
                "0.149*** [0.137, 0.161]",
                "0.032*** [0.020, 0.043]",
                "0.113*** [0.104, 0.122]"),
-  linetype = c(1, 1, 1, 2),
+  linetype = c(1, 1, 1, 1[]),
   colour   = c("black", "black", "black", "black"),
   curvature = c(NA,   NA,   NA,  -30),
   label_hjust  = c("center", "center", "center", "center"),
@@ -1757,8 +1757,8 @@ edges <- data.frame(
                "0.859*** [0.370, 1.349]",
                "-0.355 (ns) [−0.962, 0.252]",
                "0.214 (ns) [−0.314,0.742]"),
-  linetype = c(1, 1, 1, 2),
-  colour   = c("black", "black", "black", "black"),
+  linetype = c(1, 1, 1, 1),
+  colour   = c("black", "black", "gray70", "grey70"),
   curvature = c(NA,   NA,   NA,  -30),
   label_hjust  = c("center", "center", "center", "center"),
   connect   = c(NA, NA, NA, NA)  # loops attach at top
@@ -1779,6 +1779,7 @@ p <- prepare_graph(
 # Style edges
 edges(p)$linetype <- edges$linetype
 edges(p)$colour   <- edges$colour
+edges(p)$label_colour <- edges$colour
 edges(p)$label_hjust <- "center"
 
 plot(p) + ggtitle("Between Person Mediation Diagram: PA")
@@ -2061,7 +2062,7 @@ edges <- data.frame(
                "-0.127*** [-0.144, -0.110]",
                "-0.094*** [-0.112, -0.077]",
                "-0.152*** [-0.167, -0.136]"),
-  linetype = c(1, 1, 1, 2),
+  linetype = c(1, 1, 1, 1),
   colour   = c("black", "black", "black", "black"),
   curvature = c(NA,   NA,   NA,  -30),
   label_hjust  = c("center", "center", "center", "center"),
@@ -2093,13 +2094,13 @@ About two fifths of the momentary negative effect of actual NA similarity on lov
 
 **Between-person level**
 
--   a-path: $\theta_2 = 0.676$ ($p < .001$) (actual similarity → perceived similarity)
+-   a-path: $\theta_2 = 0.676$, $p < .001$, 95% CI $[0.594,0.758]$ (actual similarity → perceived similarity)
 
--   b-path: $ϕ_2=0.893$ $(p=.001)$ (perceived similarity → love, controlling actual)
+-   b-path: $ϕ_2=0.893$, $p=.001$, 95% CI $[0.358,1.428]$ (perceived similarity → love, controlling actual)
 
 -   c-path: $\beta_2=0.621$, $p = .005$ , 95% CI $[0.197, 1.045]$ (actual similarity → love, total)
 
--   c'-path: $\phi_4 = 0.010$ $p = .972$ , ns (actual similarity → love, direct)
+-   c'-path: $\phi_4 = 0.010$ $p = .972$, 95% CI $[-0.547,0.567]$, ns (actual similarity → love, direct)
 
 -   **Indirect effect** = $θ_2ϕ_2= 0.676 × 0.893 ≈ 0.604$
 
@@ -2120,12 +2121,12 @@ nodes <- data.frame(
 edges <- data.frame(
   from     = c("X", "M", "X",  "X"),
   to       = c("M", "Y", "Y",  "Y"),
-  label    = c("0.676***",
-               "0.893***",
-               "0.010 (ns)",
-               "0.621**"),
-  linetype = c(1, 1, 1, 2),
-  colour   = c("black", "black", "black", "black"),
+  label    = c("0.676*** [0.594,0.758]",
+               "0.893*** [0.358,1.428]",
+               "0.010 (ns) [-0.547,0.567]",
+               "0.621** [0.197, 1.045]"),
+  linetype = c(1, 1, 1, 1),
+  colour   = c("black", "black", "grey70", "black"),
   curvature = c(NA,   NA,   NA,  -30),
   label_hjust  = c("center", "center", "center", "center"),
   connect   = c(NA, NA, NA, NA)  # loops attach at top
@@ -2146,6 +2147,7 @@ p <- prepare_graph(
 # Style edges
 edges(p)$linetype <- edges$linetype
 edges(p)$colour   <- edges$colour
+edges(p)$label_colour <- edges$colour
 edges(p)$label_hjust <- "center"
 
 plot(p) + ggtitle("Between Person Mediation Diagram: NA")
@@ -2708,7 +2710,7 @@ plot(p_mod) +
     aes(x = x, y = y, xend = xend, yend = yend),
     arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
     linetype = "dashed",
-    colour   = "grey60"  ) +
+    colour   = "grey70"  ) +
   # Moderator arrow 2: from below up to midpoint of c'-path
   geom_segment(
     data = data.frame(x = w2_x, y = w2_y + 0.05,
@@ -2722,7 +2724,7 @@ plot(p_mod) +
   annotate("text",
     x = w1_x, y = w1_y + 0.15,
     label = "Perceived\nResponsiveness",
-    hjust = 0.5, fontface = "plain", colour = "grey60"
+    hjust = 0.5, fontface = "plain", colour = "grey70"
   ) +
   # "Perceived Responsiveness" label at bottom arrow start
   annotate("text",
@@ -2734,7 +2736,7 @@ plot(p_mod) +
   annotate("text",
     x = w1_x - 0.7, y = (w1_y + mid_a_y) / 2,
     label = "\u03b84 = -0.001***\n(practically\nmeaningless)",
-    hjust = 0, colour = "grey60"
+    hjust = 0, colour = "grey70"
   ) +
   annotate("text",
     x = w2_x - 0.7, y = (w2_y + mid_c_y) / 2,
@@ -3154,7 +3156,30 @@ $$
 
 so that higher values indicate relatively more positive (vs negative) contexts and lower values indicate relatively more negative contexts. Consistent with our general centering strategy, we will person-mean center $𝐶_{𝑚𝑝𝑑}$ so that 0 reflects a person’s typical event context, $𝐶_{𝑚𝑝𝑑} > 0$ in moments more positive than typical, and $𝐶_{𝑚𝑝𝑑} < 0$ in moments more negative than typical.
 
-Important note: the items "Did something negative happen since the last beep?" and "Did something positive happen since the last beep?" where only included in the beep if previous items ("Are you with your partner at the moment?" and "Did you have contact with your partner since the last beep?") where answered with "no", so only if partner isn't present and there was no contact with partner since previous beep. This constitutionality means that data will be very limited for these research questions. Only for $1,579$ beeps out of the $18,380$, there is data for $PositiveEvent_{mpd}$ and $NegativeEvent_{mpd}$.
+Given that $PositiveEvent_{mpd}$ and $NegativeEvent_{mpd}$ can take values 0, 1, or 2, $C_{mpd}$ can take values -2, -1, 0, 1, or 2 (before centering) and values between -4 and 4 after centering.
+
+**Important note:** the items "Did something negative happen since the last beep?" and "Did something positive happen since the last beep?" where only included in the beep if previous items ("Are you with your partner at the moment?" and "Did you have contact with your partner since the last beep?") where answered with "no", so only if partner isn't present and there was no contact with partner since previous beep. This constitutionality means that data will be very limited for these research questions. Only for $1,579$ beeps out of the $18,380$, there is data for $PositiveEvent_{mpd}$ and $NegativeEvent_{mpd}$. This means that the centered $C_{mpd}$ can only take values in $\{−2−S/1579​,−1−S/1579​,0−S/1579​,1−S/1579​,2−S/1579​\}$
+
+```{r unique_centered_C}
+#| output-fold: true
+#| output-summary: "Unique centered C_mpd"
+unique(esm_data$cC)
+```
+
+```{r bar_plot_centered_C}
+#| output-fold: true
+#| output-summary: "Bar plot of unique centered C_mpd"
+cC_vec <- esm_data %>%
+  transmute(cC = as.factor(cC)) %>%   # or factor(cC)
+  drop_na(cC) %>%                    # remove NA rows
+  pull(cC)
+
+plot_bar_categorical(
+  cC_vec,
+  title = "Distribution of cC",
+  xlab  = "cC"
+)
+```
 
 ## H3.3 – PA Similarity × Event Valence
 
@@ -3164,11 +3189,414 @@ We hypothesized:
 
 ### Actual PA similarity
 
-```{r}
+We fit the model
+
+$$
+𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{𝑎𝑐𝑡,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{𝑎𝑐𝑡,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{act,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}
+$$
+
+```{r h33a_valence_moderation}
+#| output-fold: true
+#| output-summary: "Model results h33a"
+
+h33a <- lme(
+   fixed = love ~ PA_similarity_act_w + PA_similarity_act_b + 
+                  cC + PA_similarity_act_w:cC,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1)
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h33a)
+```
+
+**Main effects**
+
+-   $\beta_1 = 0.058$, $p = .001$, 95% CI $[0.024, 0.093]$
+    On moments when PA similarity is higher than a person's own average, more love is reported
+
+-   $\beta_2 = 0.013$, $p = .965$, 95% CI $[−0.597, 0.624]$
+    People in dyads that are generally more similar in PA do not systematically report more love than others.
+
+-   $\beta_3 = 2.62$, $p < .001$, 95% CI $[1.351, 3.895]$
+    On moments when more positive (or less negative) events occurred, people report substantially more love. Event valence has a meaningful independent effect on felt love, above and beyond actual PA similarity.
+
+**Moderation**
+
+-   $\beta_4 = 0.006$, $p = .820$, 95% CI $[−0.045, 0.057]$
+
+    The interaction is negligible and non-significant. The within-person actual PA similarity - love association does **not** depend on whether the recent event was positive or negative.
+
+```{r h33a_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — h33a"
+
+resp_levels <- list(cC = c(-2.3141229, -1.3141229, -0.3141229, 0.6858771, 1.6858771))
+
+slopes_h33a <- emtrends(h33a,
+                        specs = ~ cC,
+                        var   = "PA_similarity_act_w",
+                        at    = resp_levels)
+
+slopes_h33a_df <- as.data.frame(summary(slopes_h33a, infer = TRUE))
+
+tbl_h33a <- data.frame(
+  `Event valence (cC)` = sprintf("%.2f", slopes_h33a_df$cC),
+  `Simple slope`       = sprintf("%.4f", slopes_h33a_df$PA_similarity_act_w.trend),
+  `SE`                 = sprintf("%.4f", slopes_h33a_df$SE),
+  `95% CI`             = sprintf("[%.4f, %.4f]", slopes_h33a_df$lower.CL, slopes_h33a_df$upper.CL),
+  `t`                  = sprintf("%.3f", slopes_h33a_df$t.ratio),
+  `p`                  = ifelse(slopes_h33a_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h33a_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h33a,
+  align    = c("c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on love at all observed levels of event valence (h33a)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at all five observed levels of event valence (centered C: −2.31, −1.31, −0.31, +0.69, +1.69), corresponding to net scores from −2 to +2. Degrees of freedom estimated via Satterthwaite approximation.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
 
 ```
 
+We hypothesized a mismatch effect whereby the positive association between actual PA similarity and love would be stronger in more negative moments, reflecting the heightened salience of affect similarity during adversity. The results do not support our prediction.
+
 ### Perceived PA similarity
+
+We fit the model
+
+$$
+𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{perc,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{perc,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{perc,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}
+$$
+
+```{r h33p_valence_moderation}
+#| output-fold: true
+#| output-summary: "Model results h33a"
+
+h33p <- lme(
+   fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b + 
+                  cC + PA_similarity_perc_w:cC,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1)
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h33p)
+```
+
+**Main effects**
+
+-   $\beta_1 = 0.054$, $p < .001$, 95% CI $[0.026, 0.082]$
+    On moments when perceived PA similarity is higher than a person's own average, more love is reported
+
+-   $\beta_2 = 0.703$, $p = .001$, 95% CI $[0.166, 1.239]$
+    People who are generally higher in perceived PA similarity report more love than others
+
+-   $\beta_3 = 2.154$, $p < .001$, 95% CI $[1.102, 3.206]$
+    On moments when more positive (or less negative) events occurred, people report more love. Event valence has a meaningful independent effect on felt love, above and beyond perceived PA similarity.
+
+**Moderation**
+
+-   $\beta_4 = -0.045$, $p = .037$, 95% CI $[−0.088, -0.003]$
+
+    The interaction is statistically significant. The within-person perceived PA similarity - love association decreases when recent events where more net positive.
+
+```{r h33p_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — h33p"
+
+resp_levels <- list(cC = c(-2.3141229, -1.3141229, -0.3141229, 0.6858771, 1.6858771))
+
+slopes_h33p <- emtrends(h33p,
+                        specs = ~ cC,
+                        var   = "PA_similarity_perc_w",
+                        at    = resp_levels)
+
+slopes_h33p_df <- as.data.frame(summary(slopes_h33p, infer = TRUE))
+
+tbl_h33p <- data.frame(
+  `Event valence (cC)` = sprintf("%.2f", slopes_h33p_df$cC),
+  `Simple slope`       = sprintf("%.4f", slopes_h33p_df$PA_similarity_perc_w.trend),
+  `SE`                 = sprintf("%.4f", slopes_h33p_df$SE),
+  `95% CI`             = sprintf("[%.4f, %.4f]", slopes_h33p_df$lower.CL, slopes_h33p_df$upper.CL),
+  `t`                  = sprintf("%.3f", slopes_h33p_df$t.ratio),
+  `p`                  = ifelse(slopes_h33p_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h33p_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h33p,
+  align    = c("c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on love at all observed levels of event valence (h33p)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at all five observed levels of event valence (centered C: −2.31, −1.31, −0.31, +0.69, +1.69), corresponding to net scores from −2 to +2. Degrees of freedom estimated via Satterthwaite approximation.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+
+```
+
+We hypothesized a mismatch effect whereby the positive association between perceived PA similarity and love would be stronger in more negative moments, reflecting the heightened salience of affect similarity during adversity. The results support our prediction.
+
+### Impact on mediation
+
+To examine whether the impact of variation in event valence on the mediation of the actual PA similarity - love association through perceived PA similarity, we run the moderated outcome model `h33_outcome_mod`
+
+$$
+L_{mpd}​=f_{0,pd}​+ϕ_1​S_{mpd}^{perc,within}​+ϕ_2\bar{​S}_d^{perc,between}​+ϕ_3​S_{mpd}^{act,within}​+ϕ_4\bar{​S}_d^{act,between}​+ϕ_5​C_{mpd}​+\newlineϕ_6​(S_{mpd}^{perc,within}​×C_{mpd}​)+ϕ_7​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}
+$$
+
+```{r h33_moderated_outcome}
+#| output-fold: true
+#| output-summary: "Model results h31_outcome_mod"
+
+h33_outcome_mod <- lme(
+   fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                  PA_similarity_act_w  + PA_similarity_act_b  +
+                  cC +
+                  PA_similarity_perc_w:cC +
+                  PA_similarity_act_w:cC,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1)
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h33_outcome_mod)
+```
+
+```{r h33_moderated_outcome_simple_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — h33_outcome_mod"
+
+resp_levels <- list(cC = c(-2.3141229, -1.3141229, -0.3141229, 0.6858771, 1.6858771))
+
+slopes_act <- emtrends(h33_outcome_mod,
+                       specs   = ~ cC,
+                       var     = "PA_similarity_act_w",
+                       at      = resp_levels)
+slopes_perc <- emtrends(h33_outcome_mod,
+                        specs   = ~ cC,
+                        var     = "PA_similarity_perc_w",
+                        at      = resp_levels)
+slopes_act_df  <- as.data.frame(summary(slopes_act,  infer = TRUE))
+slopes_perc_df <- as.data.frame(summary(slopes_perc, infer = TRUE))
+
+tbl_extended <- rbind(
+  make_rows_2(slopes_act_df,"PA_similarity_act_w.trend","Actual PA similarity"),
+  make_rows_2(slopes_perc_df,"PA_similarity_perc_w.trend","Perceived PA similarity")
+)
+
+kable(tbl_extended,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual and perceived PA similarity on love at all observed levels of event valence (h33_outcome_mod)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  pack_rows("Actual PA similarity",    1, 5) %>%
+  pack_rows("Perceived PA similarity", 6, 10) %>%
+  footnote(
+    general = "Simple slopes estimated at all five observed levels of event valence (centered C: −2.31, −1.31, −0.31, +0.69, +1.69), corresponding to net scores from −2 to +2. Degrees of freedom estimated via Satterthwaite approximation.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+We also run the moderated mediation model to test whether event valence moderates the a-path, i.e. whether the strength of the actual $\rightarrow$ perceived PA similarity association depends on the event valence?
+
+$$
+S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​C_{mpd}​+θ_4​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}
+$$
+
+```{r h33_moderated_mediator}
+#| output-fold: true
+#| output-summary: "Model results h33_mediator_mod"
+
+h33_mediator_mod <- lme(
+   fixed = PA_similarity_perc ~ PA_similarity_act_w + PA_similarity_act_b +
+                                cC +
+                                PA_similarity_act_w:cC,
+   random = ~ 1 | dyad/person,                 # v0,d and u0,pd
+   correlation = corCAR1(form = ~ time | dyad/person),  # continuous AR(1)
+   data = esm_data,
+   method = "REML",   # the default but specified for transparancy
+   na.action = na.exclude,
+   control = lmeControl(opt = "nlminb")   # default but specified for transparancy
+)
+
+model_output(h33_mediator_mod)
+```
+
+```{r h33_moderated_mediator_simple_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — h33_mediator_mod"
+
+slopes_h33_mediator_mod <- emtrends(h33_mediator_mod,
+                                    specs = ~ cC,
+                                    var   = "PA_similarity_act_w",
+                                    at    = resp_levels)
+
+slopes_h33_mediator_mod_df <- as.data.frame(summary(slopes_h33_mediator_mod, infer = TRUE))
+
+tbl_h33_mediator_mod <- data.frame(
+  `Event valence (cC)` = sprintf("%.2f", slopes_h33_mediator_mod_df$cC),
+  `Simple slope`       = sprintf("%.4f", slopes_h33_mediator_mod_df$PA_similarity_act_w.trend),
+  `SE`                 = sprintf("%.4f", slopes_h33_mediator_mod_df$SE),
+  `95% CI`             = sprintf("[%.4f, %.4f]",
+                           slopes_h33_mediator_mod_df$lower.CL,
+                           slopes_h33_mediator_mod_df$upper.CL),
+  `t`                  = sprintf("%.3f", slopes_h33_mediator_mod_df$t.ratio),
+  `p`                  = ifelse(slopes_h33_mediator_mod_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h33_mediator_mod_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h33_mediator_mod,
+  align    = c("c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on perceived PA similarity at all observed levels of event valence (h33_mediator_mod)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at all five observed levels of event valence (centered C: −2.31, −1.31, −0.31, +0.69, +1.69), corresponding to net scores from −2 to +2. Degrees of freedom estimated via Satterthwaite approximation.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+```{r h33_mediation_diagram}
+#| output-fold: true
+#| output-summary: "PA Mediation moderated by event valence (cC)"
+
+nodes_mod <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual PA\nSimilarity", "Perceived PA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+layout_mod <- get_layout(
+  "X", NA,  "M",
+  NA,  NA,  "Y",
+  rows = 2
+)
+
+edges_mod <- data.frame(
+  from        = c("X",  "M",  "X", "X"),
+  to          = c("M",  "Y",  "Y", "Y"),
+  label       = c(
+    "a: 0.517***",
+    "b: 0.069***",
+    "c\u2019: 0.021 (ns)",
+    "c: 0.058***[0.024, 0.093] "
+    ),
+  linetype    = c(1, 1, 3, 1),
+  colour      = c("black", "black", "grey60", "black"),
+  curvature   = c(NA, NA, NA, -30),
+  label_hjust = rep("center", 4)
+)
+
+p_mod <- prepare_graph(
+  nodes       = nodes_mod,
+  edges       = edges_mod,
+  layout      = layout_mod,
+  spacing_x   = 2,
+  spacing_y   = 3,
+  rect_width  = 0.8,
+  rect_height = 0.5
+)
+
+edges(p_mod)$linetype    <- edges_mod$linetype
+edges(p_mod)$colour      <- edges_mod$colour
+edges(p_mod)$label_colour <- edges_mod$colour
+edges(p_mod)$label_hjust <- "center"
+
+nd <- nodes(p_mod)
+get_node <- function(name) nd[nd$name == name, c("x", "y")]
+x_X <- get_node("X")
+x_M <- get_node("M")
+x_Y <- get_node("Y")
+
+# Midpoint of X->M edge (a-path) — the only moderated path
+mid_a_x <- (x_X$x + x_M$x) / 2
+mid_a_y <- (x_X$y + x_M$y) / 2
+
+arrow_length <- 1.2
+
+w1_x <- mid_a_x
+w1_y <- mid_a_y + arrow_length
+
+plot(p_mod) +
+  # Moderator arrow: down to midpoint of a-path only
+  geom_segment(
+    data = data.frame(
+      x    = w1_x,
+      y    = w1_y - 0.05,
+      xend = mid_a_x,
+      yend = mid_a_y + 0.15
+    ),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed",
+    colour   = "black"
+  ) +
+  # "Event Valence" label above arrow
+  annotate("text",
+    x     = w1_x,
+    y     = w1_y + 0.2,
+    label = "Event\nValence (cC)",
+    hjust = 0.5,
+    fontface = "plain"
+  ) +
+  # Interaction coefficient on a-path
+  annotate("text",
+    x     = w1_x + 0.15,
+    y     = (w1_y + mid_a_y) / 2,
+    label = "\u03B84 = -0.183***",
+    hjust = 0,
+    colour = "black"
+  ) +
+  ggtitle("Within-person mediation moderated by event valence \u2014 PA Similarity") +
+  labs(caption = "Dashed arrow indicates moderation of the a-path (Hayes, 2013 convention). c\u2019-path non-significant; b-path moderation non-significant.")
+```
+
+First, considering the unmoderated mediation, actual PA similarity was positively associated with perceived PA similarity (a = 0.565, 95% CI \[0.553, 0.578\]), which in turn predicted greater love (b = 0.149, 95% CI \[0.137, 0.161\]). The direct effect of actual PA similarity on love was also significant (c' = 0.032, 95% CI \[0.020, 0.043\]), indicating partial mediation via perceived similarity.
+
+When event valence (cC) was introduced as a moderator, it significantly moderated the a-path (β = −0.183, 95% CI \[−0.262, −0.104\], p \< .001), but neither the b-path (β = −0.025, p = .385) nor the direct c'-path (β = 0.029, p = .319). The negative interaction on the a-path indicates that actual PA similarity translated into greater perceived PA similarity when events were more negative, and this link weakened as events became more positive. The simple slopes confirm this pattern: at the most negative event valence (cC = −2.31), the a-path slope was 0.940 (p \< .001), declining monotonically to 0.208 at the most positive level (cC = +1.69, p = .006), though all five slopes remained significant.
+
+This pattern is consistent with the proposed mismatch mechanism at the level of perception — negative moments appear to make people more attuned to whether their partner shares their affective state — but this moderation did not propagate through to love, as the b-path was not moderated. Event valence did independently predict love (β = 2.45, p \< .001), suggesting that positive events boost feelings of love in their own right, but not specifically through amplifying the similarity–love pathway. In sum, the hypothesis receives qualified support: shared PA is perceived more strongly as similarity in negative moments, but whether this perceptual amplification translates into greater love does not differ by event valence.
 
 ## H3.4 – NA Similarity × Event Valence
 
