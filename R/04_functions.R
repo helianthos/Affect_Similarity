@@ -497,31 +497,27 @@ mc_ci <- function(sim_vector, a_est, b_est, label) {
 }
 
 # Combine into single table with a grouping column
-make_rows <- function(df, trend_col, predictor_label) {
+make_rows <- function(df, trend_col, predictor_label, moderator = "responsiveness") {
+  if (moderator == "responsiveness") {
+    level_col <- "Responsiveness level"
+    value_col <- "Responsiveness value"
+    value_var <- "cperc_resp"
+  } else if (moderator == "event_valence") {
+    level_col <- "Event valence level"
+    value_col <- "Event valence (cC)"
+    value_var <- "cC"
+  }
   data.frame(
     `Predictor`            = predictor_label,
-    `Responsiveness level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
-    `Responsiveness value` = sprintf("%.2f", df$cperc_resp),
+    ` `                    = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+    `  `                   = sprintf("%.2f", df[[value_var]]),
     `Simple slope`         = sprintf("%.4f", df[[trend_col]]),
     `SE`                   = sprintf("%.4f", df$SE),
     `95% CI`               = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
     `t`                    = sprintf("%.3f", df$t.ratio),
     `p`                    = ifelse(df$p.value < .001, "< .001",
-                                    sprintf("%.3f", df$p.value)),
-    check.names = FALSE
-  )
-}
-
-make_rows_2 <- function(df, trend_col, predictor_label) {
-  data.frame(
-    `Predictor`           = predictor_label,
-    `Event valence (cC)`  = sprintf("%.2f", df$cC),
-    `Simple slope`        = sprintf("%.4f", df[[trend_col]]),
-    `SE`                  = sprintf("%.4f", df$SE),
-    `95% CI`              = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
-    `t`                   = sprintf("%.3f", df$t.ratio),
-    `p`                   = ifelse(df$p.value < .001, "< .001",
                                    sprintf("%.3f", df$p.value)),
     check.names = FALSE
-  )
+  ) %>%
+    rename(!!level_col := ` `, !!value_col := `  `)
 }

@@ -146,16 +146,17 @@ esm_data <- esm_data %>%
     NA_similarity_act_b = NA_similarity_act_b - mean(NA_similarity_act_b, na.rm = TRUE)
   )
 
-# 8. Create event valence C
+# 8. Create event valence C ----
 esm_data <- esm_data %>%
   mutate(
     C = pos_gen - neg_gen
   )
 esm_data <- esm_data %>%
+  group_by(person) %>%
   mutate(
     cC = C - mean(C, na.rm = TRUE)
-  )
-
+  ) %>%
+  ungroup()
 
 # 9. Create a day_index column, restarting per person ----
 esm_data <- esm_data %>%
