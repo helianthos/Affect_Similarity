@@ -3097,7 +3097,10 @@ kable(tbl_h31p,
 To examine whether this moderation operated through the perceptual pathway identified in H2.1 (does responsiveness substitute for perceived similarity specifically), we also run
 
 $$
-L_{mpd}​=f_{0,pd}​+ϕ_1​S_{mpd}^{perc,within}​+ϕ_2\bar{​S}_d^{perc,between}​+ϕ_3​S_{mpd}^{act,within}​+ϕ_4\bar{​S}_d^{act,between}​+ϕ_5​R_{mpd}​+\newlineϕ_6​(S_{mpd}^{perc,within}​×R_{mpd}​)+ϕ_7​(S_{mpd}^{act,within}​×R_{mpd}​)+ε_{mpd}
+\begin{aligned}
+L_{mpd} &= f_{0,pd} + \phi_1 S_{mpd}^{\text{perc,within}} + \phi_2 \bar{S}_d^{\text{perc,between}} + \phi_3 S_{mpd}^{\text{act,within}} + \phi_4 \bar{S}_d^{\text{act,between}} + \phi_5 R_{mpd} \\
+&\quad + \phi_6 \left(S_{mpd}^{\text{perc,within}} \times R_{mpd}\right) + \phi_7 \left(S_{mpd}^{\text{act,within}} \times R_{mpd}\right) + \varepsilon_{mpd}
+\end{aligned}
 $$
 
 ```{r h31_moderated_outcome}
@@ -3971,7 +3974,9 @@ We hypothesized a mismatch effect whereby the positive association between perce
 To examine whether the impact of variation in event valence on the mediation of the actual PA similarity - love association through perceived PA similarity, we run the moderated outcome model `h33_outcome_mod`
 
 $$
-L_{mpd}​=f_{0,pd}​+ϕ_1​S_{mpd}^{perc,within}​+ϕ_2\bar{​S}_d^{perc,between}​+ϕ_3​S_{mpd}^{act,within}​+ϕ_4\bar{​S}_d^{act,between}​+ϕ_5​C_{mpd}​+\newlineϕ_6​(S_{mpd}^{perc,within}​×C_{mpd}​)+ϕ_7​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}
+\begin{aligned}
+L_{mpd}​=&\ f_{0,pd}​+\phi_1​S_{mpd}^{perc,within}​+\phi_2\bar{​S}_d^{perc,between}​+\phi_3​S_{mpd}^{act,within}​+\phi_4\bar{​S}_d^{act,between}​+\phi_5​C_{mpd}​+ \\& \quad \phi_6​(S_{mpd}^{perc,within}​×C_{mpd}​)+\phi_7​(S_{mpd}^{act,within}​×C_{mpd}​)+\varepsilon_{mpd}
+\end{aligned}
 $$
 
 ```{r h33_moderated_outcome}
@@ -4391,7 +4396,9 @@ We hypothesized a mismatch effect whereby the negative association between perce
 To examine whether variation in event valence moderates the mediation of the actual NA similarity – love association through perceived NA similarity, we run the moderated outcome model `h34_outcome_mod`
 
 $$
-L_{mpd}​=f_{0,pd}​+ϕ_1​S_{mpd}^{perc,within}​+ϕ_2\bar{​S}_d^{perc,between}​+ϕ_3​S_{mpd}^{act,within}​+ϕ_4\bar{​S}_d^{act,between}​+ϕ_5​C_{mpd}​+\newlineϕ_6​(S_{mpd}^{perc,within}​×C_{mpd}​)+ϕ_7​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}
+\begin{aligned}
+L_{mpd}​=& f_{0,pd}​+ϕ_1​S_{mpd}^{perc,within}​+ϕ_2\bar{​S}_d^{perc,between}​+ϕ_3​S_{mpd}^{act,within}​+ϕ_4\bar{​S}_d^{act,between}​+ϕ_5​C_{mpd}​+\\ & \quad ϕ_6​(S_{mpd}^{perc,within}​×C_{mpd}​)+ϕ_7​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}
+\end{aligned}
 $$
 
 ```{r h34_moderated_outcome}
