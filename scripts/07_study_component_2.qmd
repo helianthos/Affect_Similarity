@@ -1,0 +1,1694 @@
+---
+title: "Study Component 2: Affect Similarity in Laboratory Interactions (VMR)"
+---
+
+```{r setup}
+#| include: false
+
+# 1. Load packages, paths and data configurations
+source(here::here("R", "00_setup.R"))
+
+# 2. Set a global theme for plots
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+```
+
+```{r SC2_setup}
+#| include: false
+# load analysis datasets
+vmr_data  <- readRDS(file.path(dir_data_ana, "vmr_ana.rds"))
+post_data <- readRDS(file.path(dir_data_ana, "post_ana.rds"))
+bg_data   <- readRDS(file.path(dir_data_ana, "bg_ana.rds"))
+
+# plot initialisation
+plot_counter <- 1
+prefix <- "SC2"
+```
+
+# Introduction
+
+See also [OSF preregistration](https://doi.org/10.17605/OSF.IO/V7T9F){.uri}.
+
+## Overview
+
+Study Component 2 examines how **interaction-averaged affect similarity** during structured positive and negative laboratory interactions relates to **post-interaction love and closeness**, using video-mediated recall (VMR) data from romantic couples.
+
+As in Study Component 1, we distinguish:
+
+-   **Positive Affect (PA)** and **Negative Affect (NA)** (analyzed separately)
+-   **Actual similarity** (self-reported affect compared to partner's self-reported affect)
+-   **Perceived similarity** (self-reported affect compared to actor's perception of partner's affect)
+
+Similarity is again conceptualized as **shared, co-experienced elevated affect**, operationalized as dyadic elevation (mean level) penalized by mismatch (absolute difference). For Study Component 2, we average the segment-level similarity indices across the interaction.
+
+The main research questions are:
+
+1.  Does interaction-averaged affect similarity predict post-interaction love and closeness? (H1)
+2.  Is this association mediated by perceived similarity? (H2)
+3.  Are these associations moderated by trait we-ness and interaction context? (H3)
+
+All analyses use multilevel models with persons ($p$) nested within dyads ($d$), estimated separately for the positive and negative interaction contexts ($c$). For context moderation (H3.3–H3.4), a pooled model includes both contexts.
+
+There are two post-interaction outcomes: love and closeness. Models are estimated for both outcomes.
+
+## Conceptualization and Operationalization
+
+### Notation and Multilevel Structure
+
+Let:
+
+-   $O_{pdc}$ = post-interaction outcome (love or closeness) for person $p$ in dyad $d$ after interaction $c$
+-   $A_{mpdc}$ = actor affect at VMR segment $m$
+-   $P^{act}_{mpdc}$ = partner's actual affect
+-   $P^{perc}_{mpdc}$ = partner affect as perceived by actor
+
+Interaction context: $c = 0$ (negative interaction), $c = 1$ (positive interaction).
+
+### Person-Mean Centering
+
+Affect variables are person-mean centered across all VMR segments and across both interactions for each person $p$ in dyad $d$, as implemented in `04_data_construct.R`:
+
+$$
+X_{mpdc} = A_{mpdc} - \frac{1}{N_{pd}} \sum_{m,c} A_{mpdc}
+$$
+
+and analogously for $Y^{act}_{mpdc}$ and $Y^{perc}_{mpdc}$.
+
+### Similarity Indices
+
+For each VMR segment $m$ in interaction $c$ within dyad $d$:
+
+$$
+S^{act}_{mpdc} = \frac{X_{mpdc} + Y^{act}_{mpdc}}{2} - |X_{mpdc} - Y^{act}_{mpdc}|
+$$
+
+$$
+S^{perc}_{mpdc} = \frac{X_{mpdc} + Y^{perc}_{mpdc}}{2} - |X_{mpdc} - Y^{perc}_{mpdc}|
+$$
+
+These are computed at the segment level in `04_data_construct.R`. For the interaction-level analyses, we average across segments within each interaction $c$:
+
+$$
+\bar{S}^{act}_{pdc} = \frac{1}{N_{pdc}} \sum_m S^{act}_{mpdc}, \quad \bar{S}^{perc}_{pdc} = \frac{1}{N_{pdc}} \sum_m S^{perc}_{mpdc}
+$$
+
+### Random Intercepts and Estimation
+
+For models estimated separately within each interaction context (Steps 1a–1c, 2, 3a), there is one observation per person, so only a **dyad-level random intercept** is included.
+
+For the context moderation model (Step 3b), data from both interactions are pooled (two observations per person), and random intercepts for both **dyads** and **persons nested within dyads** are included.
+
+Unlike Study Component 1, we do **not** specify AR(1) residual structures because the outcomes are at the interaction level.
+
+### Trait We-ness
+
+Trait we-ness ($W^T_{pd}$) is constructed from the Dyadic Coping Inventory (DCI) as the mean of selected items reflecting positive shared dyadic coping (see `04_data_construct.R`). It is grand-mean centered so that $0$ reflects the average level of trait we-ness in the sample.
+
+## Hypotheses Summary
+
+-   **H1.1** (PA): Higher average actual PA similarity → higher post-interaction love/closeness ($\beta_1 > 0$).
+-   **H1.2** (NA): Higher average actual NA similarity → lower post-interaction love/closeness ($\beta_1 < 0$).
+-   **H1.3**: Perceived similarity added alongside actual similarity shows comparable direction; actual similarity coefficients attenuate.
+-   **H2.1** (PA mediation): Actual PA similarity → perceived PA similarity → higher love/closeness (positive indirect effect).
+-   **H2.2** (NA mediation): Actual NA similarity → perceived NA similarity → lower love/closeness (negative indirect effect).
+-   **H3.1** (PA × we-ness): Higher trait we-ness amplifies the positive PA similarity–evaluation association ($\beta_3 > 0$).
+-   **H3.2** (NA × we-ness): Higher trait we-ness attenuates the negative NA similarity–evaluation association ($\beta_3 > 0$).
+-   **H3.3** (PA × context): PA similarity more beneficial in the negative than positive interaction ($\beta_3 < 0$).
+-   **H3.4** (NA × context): NA similarity more detrimental in the positive than negative interaction ($\beta_3 < 0$).
+
+# Data Preparation
+
+## Aggregate VMR Similarity to Interaction Level
+
+```{r aggregate_vmr}
+
+# Average similarity indices across VMR segments within each interaction (topic)
+vmr_agg <- vmr_data %>%
+  group_by(dyad, person, topic) %>%
+  summarise(
+    PA_sim_act  = mean(PA_similarity_act,  na.rm = TRUE),
+    PA_sim_perc = mean(PA_similarity_perc, na.rm = TRUE),
+    NA_sim_act  = mean(NA_similarity_act,  na.rm = TRUE),
+    NA_sim_perc = mean(NA_similarity_perc, na.rm = TRUE),
+    n_segments  = n(),
+    .groups = "drop"
+  )
+
+cat(sprintf("VMR aggregated: %d rows (persons × interactions)\n", nrow(vmr_agg)))
+cat(sprintf("Unique persons: %d\n", n_distinct(vmr_agg$person)))
+cat(sprintf("Unique dyads:   %d\n", n_distinct(vmr_agg$dyad)))
+```
+
+## Reshape Post-Interaction Outcomes to Long Format
+
+```{r reshape_post}
+
+# Reshape post-interaction data to long format with context indicator
+post_long <- post_data %>%
+  pivot_longer(
+    cols = c(love_neg, close_neg, love_pos, close_pos),
+    names_to = c(".value", "topic"),
+    names_pattern = "(love|close)_(neg|pos)"
+  ) %>%
+  mutate(topic = ifelse(topic == "neg", "negative", "positive"))
+
+cat(sprintf("POST reshaped: %d rows\n", nrow(post_long)))
+```
+
+## Merge Datasets
+
+```{r merge_sc2}
+
+# Merge VMR aggregates with post-interaction outcomes
+sc2 <- vmr_agg %>%
+  inner_join(post_long, by = c("dyad", "person", "topic"))
+
+# Merge with trait we-ness from background questionnaire
+sc2 <- sc2 %>%
+  left_join(bg_data %>% select(person, we_ness), by = "person")
+
+# Create context dummy (0 = negative, 1 = positive)
+sc2 <- sc2 %>%
+  mutate(context = ifelse(topic == "positive", 1, 0))
+
+# Grand-mean center trait we-ness
+sc2 <- sc2 %>%
+  mutate(cwe_ness = we_ness - mean(we_ness, na.rm = TRUE))
+
+cat(sprintf("SC2 merged dataset: %d rows, %d persons, %d dyads\n",
+            nrow(sc2), n_distinct(sc2$person), n_distinct(sc2$dyad)))
+
+# Grand-mean centered similarity indices for Step 1c interaction models
+# Centering is done within each context as specified in the preregistration
+sc2 <- sc2 %>%
+  group_by(topic) %>%
+  mutate(
+    PA_sim_act_gmc  = PA_sim_act  - mean(PA_sim_act,  na.rm = TRUE),
+    PA_sim_perc_gmc = PA_sim_perc - mean(PA_sim_perc, na.rm = TRUE),
+    NA_sim_act_gmc  = NA_sim_act  - mean(NA_sim_act,  na.rm = TRUE),
+    NA_sim_perc_gmc = NA_sim_perc - mean(NA_sim_perc, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Split by context for separate analyses
+sc2_neg <- sc2 %>% filter(topic == "negative")
+sc2_pos <- sc2 %>% filter(topic == "positive")
+
+cat(sprintf("Negative context: %d obs\n", nrow(sc2_neg)))
+cat(sprintf("Positive context: %d obs\n", nrow(sc2_pos)))
+```
+
+## Descriptive Overview
+
+```{r sc2_descriptives}
+
+# Descriptive statistics per context
+sc2 %>%
+  group_by(topic) %>%
+  summarise(
+    n = n(),
+    across(c(love, close, PA_sim_act, PA_sim_perc, NA_sim_act, NA_sim_perc, we_ness),
+           list(M = ~mean(.x, na.rm = TRUE), SD = ~sd(.x, na.rm = TRUE)),
+           .names = "{.col}_{.fn}")
+  ) %>%
+  pivot_longer(-topic) %>%
+  pivot_wider(names_from = topic, values_from = value)
+
+# Number of VMR segments per person-interaction
+summary(vmr_agg$n_segments)
+```
+
+## Model Specification in R
+
+For models estimated within a single context (Steps 1a–1c, 2, 3a), one observation per person per interaction, only a dyad-level random intercept is estimable:
+
+> `lme(fixed = outcome ~ predictor(s), random = ~ 1 | dyad, data = ..., method = "REML", na.action = na.exclude)`
+
+For the pooled context moderation model (Step 3b), two observations per person allow a nested random intercept structure:
+
+> `lme(fixed = outcome ~ predictor(s), random = ~ 1 | dyad/person, data = ..., method = "REML", na.action = na.exclude)`
+
+# Step 1a: Main Effects of Actual Similarity (H1.1–H1.2)
+
+Primary model, estimated separately within each interaction context $c$:
+
+$$
+O_{pdc} = b_{0,d} + \beta_1 \bar{S}^{act}_{pdc} + \varepsilon_{pdc}
+$$
+
+Random intercept structure:
+
+$$
+b_{0,d} = \beta_0 + v_{0,d}
+$$
+
+-   $v_{0,d} \sim N(0, \tau_d^2)$: dyad-level random intercept
+
+Interpretation:
+
+-   $\beta_1$: association between interaction-averaged actual similarity and the post-interaction outcome. For PA (H1.1), expected $\beta_1 > 0$; for NA (H1.2), expected $\beta_1 < 0$.
+
+## H1.1 – Actual PA Similarity
+
+### Love
+
+```{r h11_PA_love_neg}
+#| output-fold: true
+#| output-summary: "H1.1 PA → Love (negative interaction)"
+
+h11_PA_love_neg <- lme(
+  fixed = love ~ PA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h11_PA_love_neg)
+```
+
+```{r h11_PA_love_pos}
+#| output-fold: true
+#| output-summary: "H1.1 PA → Love (positive interaction)"
+
+h11_PA_love_pos <- lme(
+  fixed = love ~ PA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h11_PA_love_pos)
+```
+
+### Closeness
+
+```{r h11_PA_close_neg}
+#| output-fold: true
+#| output-summary: "H1.1 PA → Closeness (negative interaction)"
+
+h11_PA_close_neg <- lme(
+  fixed = close ~ PA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h11_PA_close_neg)
+```
+
+```{r h11_PA_close_pos}
+#| output-fold: true
+#| output-summary: "H1.1 PA → Closeness (positive interaction)"
+
+h11_PA_close_pos <- lme(
+  fixed = close ~ PA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h11_PA_close_pos)
+```
+
+### Diagnostics
+
+```{r h11_PA_diagnostics}
+#| warning: false
+#| output-fold: true
+#| output-summary: "Diagnostics H1.1 PA love (negative interaction)"
+
+lme_diagnostics(h11_PA_love_neg)
+```
+
+## H1.2 – Actual NA Similarity
+
+### Love
+
+```{r h12_NA_love_neg}
+#| output-fold: true
+#| output-summary: "H1.2 NA → Love (negative interaction)"
+
+h12_NA_love_neg <- lme(
+  fixed = love ~ NA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h12_NA_love_neg)
+```
+
+```{r h12_NA_love_pos}
+#| output-fold: true
+#| output-summary: "H1.2 NA → Love (positive interaction)"
+
+h12_NA_love_pos <- lme(
+  fixed = love ~ NA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h12_NA_love_pos)
+```
+
+### Closeness
+
+```{r h12_NA_close_neg}
+#| output-fold: true
+#| output-summary: "H1.2 NA → Closeness (negative interaction)"
+
+h12_NA_close_neg <- lme(
+  fixed = close ~ NA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h12_NA_close_neg)
+```
+
+```{r h12_NA_close_pos}
+#| output-fold: true
+#| output-summary: "H1.2 NA → Closeness (positive interaction)"
+
+h12_NA_close_pos <- lme(
+  fixed = close ~ NA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h12_NA_close_pos)
+```
+
+# Step 1b: Adding Perceived Similarity (H1.3)
+
+$$
+O_{pdc} = b_{0,d} + \beta_1 \bar{S}^{act}_{pdc} + \beta_2 \bar{S}^{perc}_{pdc} + \varepsilon_{pdc}
+$$
+
+with the same dyad-level random intercept as in Step 1a.
+
+Evidence consistent with H1.3: $\beta_2$ in the expected direction, and attenuation of $\beta_1$ relative to Step 1a.
+
+## PA Similarity
+
+### Love
+
+```{r h13_PA_love_neg}
+#| output-fold: true
+#| output-summary: "H1.3 PA → Love (negative interaction)"
+
+h13_PA_love_neg <- lme(
+  fixed = love ~ PA_sim_act + PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h13_PA_love_neg)
+```
+
+```{r h13_PA_love_pos}
+#| output-fold: true
+#| output-summary: "H1.3 PA → Love (positive interaction)"
+
+h13_PA_love_pos <- lme(
+  fixed = love ~ PA_sim_act + PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h13_PA_love_pos)
+```
+
+### Closeness
+
+```{r h13_PA_close_neg}
+#| output-fold: true
+#| output-summary: "H1.3 PA → Closeness (negative interaction)"
+
+h13_PA_close_neg <- lme(
+  fixed = close ~ PA_sim_act + PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h13_PA_close_neg)
+```
+
+```{r h13_PA_close_pos}
+#| output-fold: true
+#| output-summary: "H1.3 PA → Closeness (positive interaction)"
+
+h13_PA_close_pos <- lme(
+  fixed = close ~ PA_sim_act + PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h13_PA_close_pos)
+```
+
+## NA Similarity
+
+### Love
+
+```{r h13_NA_love_neg}
+#| output-fold: true
+#| output-summary: "H1.3 NA → Love (negative interaction)"
+
+h13_NA_love_neg <- lme(
+  fixed = love ~ NA_sim_act + NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h13_NA_love_neg)
+```
+
+```{r h13_NA_love_pos}
+#| output-fold: true
+#| output-summary: "H1.3 NA → Love (positive interaction)"
+
+h13_NA_love_pos <- lme(
+  fixed = love ~ NA_sim_act + NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h13_NA_love_pos)
+```
+
+### Closeness
+
+```{r h13_NA_close_neg}
+#| output-fold: true
+#| output-summary: "H1.3 NA → Closeness (negative interaction)"
+
+h13_NA_close_neg <- lme(
+  fixed = close ~ NA_sim_act + NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h13_NA_close_neg)
+```
+
+```{r h13_NA_close_pos}
+#| output-fold: true
+#| output-summary: "H1.3 NA → Closeness (positive interaction)"
+
+h13_NA_close_pos <- lme(
+  fixed = close ~ NA_sim_act + NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h13_NA_close_pos)
+```
+
+# Step 1c (Exploratory): Actual × Perceived Interaction
+
+To examine whether the association of one form of similarity with post-interaction evaluations depends on the level of the other, we include interaction terms. Grand-mean centered (within each interaction context) similarity indices are used so that main effects remain interpretable at the average level of the moderator.
+
+$$
+O_{pdc} = b_{0,d} + \beta_1 \tilde{S}^{act}_{pdc} + \beta_2 \tilde{S}^{perc}_{pdc} + \beta_3 (\tilde{S}^{act}_{pdc} \times \tilde{S}^{perc}_{pdc}) + \varepsilon_{pdc}
+$$
+
+with the same dyad-level random intercept as before. $\tilde{S}$ denotes the grand-mean centered (within each context) interaction-averaged similarity indices.
+
+If the interaction term $\beta_3$ is significant, we probe simple slopes at low ($-1$ SD), average (0), and high ($+1$ SD) levels of the moderator.
+
+## PA Similarity
+
+### Love
+
+```{r im_PA_love_neg}
+#| output-fold: true
+#| output-summary: "Interaction PA → Love (negative)"
+
+im_PA_love_neg <- lme(
+  fixed = love ~ PA_sim_act_gmc + PA_sim_perc_gmc + PA_sim_act_gmc:PA_sim_perc_gmc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(im_PA_love_neg)
+```
+
+```{r im_PA_love_pos}
+#| output-fold: true
+#| output-summary: "Interaction PA → Love (positive)"
+
+im_PA_love_pos <- lme(
+  fixed = love ~ PA_sim_act_gmc + PA_sim_perc_gmc + PA_sim_act_gmc:PA_sim_perc_gmc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(im_PA_love_pos)
+```
+
+### Probing (negative interaction, love)
+
+```{r im_PA_love_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — PA love (negative)"
+
+# Probe points (−1 SD, 0, +1 SD)
+act_sd_neg  <- sd(sc2_neg$PA_sim_act_gmc,  na.rm = TRUE)
+perc_sd_neg <- sd(sc2_neg$PA_sim_perc_gmc, na.rm = TRUE)
+
+# Simple slopes of actual PA similarity at levels of perceived PA similarity
+slopes_act <- emtrends(
+  im_PA_love_neg,
+  specs = ~ PA_sim_perc_gmc,
+  var   = "PA_sim_act_gmc",
+  at    = list(PA_sim_perc_gmc = c(-perc_sd_neg, 0, perc_sd_neg))
+)
+
+summary(slopes_act, infer = TRUE)
+
+# Simple slopes of perceived PA similarity at levels of actual PA similarity
+slopes_perc <- emtrends(
+  im_PA_love_neg,
+  specs = ~ PA_sim_act_gmc,
+  var   = "PA_sim_perc_gmc",
+  at    = list(PA_sim_act_gmc = c(-act_sd_neg, 0, act_sd_neg))
+)
+
+summary(slopes_perc, infer = TRUE)
+```
+
+### Closeness
+
+```{r im_PA_close_neg}
+#| output-fold: true
+#| output-summary: "Interaction PA → Closeness (negative)"
+
+im_PA_close_neg <- lme(
+  fixed = close ~ PA_sim_act_gmc + PA_sim_perc_gmc + PA_sim_act_gmc:PA_sim_perc_gmc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(im_PA_close_neg)
+```
+
+```{r im_PA_close_pos}
+#| output-fold: true
+#| output-summary: "Interaction PA → Closeness (positive)"
+
+im_PA_close_pos <- lme(
+  fixed = close ~ PA_sim_act_gmc + PA_sim_perc_gmc + PA_sim_act_gmc:PA_sim_perc_gmc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(im_PA_close_pos)
+```
+
+## NA Similarity
+
+### Love
+
+```{r im_NA_love_neg}
+#| output-fold: true
+#| output-summary: "Interaction NA → Love (negative)"
+
+im_NA_love_neg <- lme(
+  fixed = love ~ NA_sim_act_gmc + NA_sim_perc_gmc + NA_sim_act_gmc:NA_sim_perc_gmc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(im_NA_love_neg)
+```
+
+```{r im_NA_love_pos}
+#| output-fold: true
+#| output-summary: "Interaction NA → Love (positive)"
+
+im_NA_love_pos <- lme(
+  fixed = love ~ NA_sim_act_gmc + NA_sim_perc_gmc + NA_sim_act_gmc:NA_sim_perc_gmc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(im_NA_love_pos)
+```
+
+### Closeness
+
+```{r im_NA_close_neg}
+#| output-fold: true
+#| output-summary: "Interaction NA → Closeness (negative)"
+
+im_NA_close_neg <- lme(
+  fixed = close ~ NA_sim_act_gmc + NA_sim_perc_gmc + NA_sim_act_gmc:NA_sim_perc_gmc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(im_NA_close_neg)
+```
+
+```{r im_NA_close_pos}
+#| output-fold: true
+#| output-summary: "Interaction NA → Closeness (positive)"
+
+im_NA_close_pos <- lme(
+  fixed = close ~ NA_sim_act_gmc + NA_sim_perc_gmc + NA_sim_act_gmc:NA_sim_perc_gmc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(im_NA_close_pos)
+```
+
+# Step 2: Mediation by Perceived Similarity (H2.1–H2.2)
+
+We test whether interaction-averaged perceived similarity mediates the association between interaction-averaged actual similarity and post-interaction evaluations. Mediation is estimated separately within each interaction context.
+
+**Mediator Model:**
+
+$$
+\bar{S}^{perc}_{pdc} = t_{0,d} + \theta_1 \bar{S}^{act}_{pdc} + \varepsilon^M_{pdc}
+$$
+
+**Outcome Model:**
+
+$$
+O_{pdc} = f_{0,d} + \varphi_1 \bar{S}^{perc}_{pdc} + \varphi_2 \bar{S}^{act}_{pdc} + \varepsilon^O_{pdc}
+$$
+
+Both with dyad-level random intercepts.
+
+Indirect effect: $\theta_1 \varphi_1$. Confidence intervals via Monte Carlo simulation.
+
+## H2.1 – PA Mediation
+
+### Negative Interaction
+
+#### c-path (total effect)
+
+The c-paths are the Step 1a models: `h11_PA_love_neg` and `h11_PA_close_neg`.
+
+#### a-path (mediator model)
+
+```{r h21_PA_mediator_neg}
+#| output-fold: true
+#| output-summary: "Mediator model PA (negative)"
+
+h21_PA_med_neg <- lme(
+  fixed = PA_sim_perc ~ PA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h21_PA_med_neg)
+```
+
+#### b- and c'-paths (outcome model — love)
+
+```{r h21_PA_out_love_neg}
+#| output-fold: true
+#| output-summary: "Outcome model PA → Love (negative)"
+
+h21_PA_out_love_neg <- lme(
+  fixed = love ~ PA_sim_perc + PA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h21_PA_out_love_neg)
+```
+
+#### b- and c'-paths (outcome model — closeness)
+
+```{r h21_PA_out_close_neg}
+#| output-fold: true
+#| output-summary: "Outcome model PA → Closeness (negative)"
+
+h21_PA_out_close_neg <- lme(
+  fixed = close ~ PA_sim_perc + PA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h21_PA_out_close_neg)
+```
+
+#### Monte Carlo CI – Love (negative interaction)
+
+```{r h21_PA_MC_love_neg}
+#| output-fold: true
+#| output-summary: "Monte Carlo indirect effect — PA love (negative)"
+
+set.seed(42)
+n_sim <- 20000
+
+# Extract coefficients and SEs from mediator and outcome models
+a_est     <- fixef(h21_PA_med_neg)["PA_sim_act"]
+se_a      <- sqrt(vcov(h21_PA_med_neg)["PA_sim_act", "PA_sim_act"])
+b_est     <- fixef(h21_PA_out_love_neg)["PA_sim_perc"]
+se_b      <- sqrt(vcov(h21_PA_out_love_neg)["PA_sim_perc", "PA_sim_perc"])
+cprime    <- fixef(h21_PA_out_love_neg)["PA_sim_act"]
+c_total   <- fixef(h11_PA_love_neg)["PA_sim_act"]
+
+# Monte Carlo draws
+a_sim <- rnorm(n_sim, mean = a_est, sd = se_a)
+b_sim <- rnorm(n_sim, mean = b_est, sd = se_b)
+indirect_sim <- a_sim * b_sim
+
+result <- mc_ci(indirect_sim, a_est, b_est, "PA love neg")
+
+cat(sprintf("Indirect effect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
+            result$point, result$ci_low, result$ci_hi,
+            ifelse(result$p < .001, "< .001", sprintf("%.3f", result$p))))
+cat(sprintf("Total effect (c): %.4f\n", c_total))
+cat(sprintf("Direct effect (c'): %.4f\n", cprime))
+```
+
+#### Monte Carlo CI – Closeness (negative interaction)
+
+```{r h21_PA_MC_close_neg}
+#| output-fold: true
+#| output-summary: "Monte Carlo indirect effect — PA closeness (negative)"
+
+b_est_c   <- fixef(h21_PA_out_close_neg)["PA_sim_perc"]
+se_b_c    <- sqrt(vcov(h21_PA_out_close_neg)["PA_sim_perc", "PA_sim_perc"])
+cprime_c  <- fixef(h21_PA_out_close_neg)["PA_sim_act"]
+c_total_c <- fixef(h11_PA_close_neg)["PA_sim_act"]
+
+b_sim_c <- rnorm(n_sim, mean = b_est_c, sd = se_b_c)
+indirect_sim_c <- a_sim * b_sim_c
+
+result_c <- mc_ci(indirect_sim_c, a_est, b_est_c, "PA close neg")
+
+cat(sprintf("Indirect effect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
+            result_c$point, result_c$ci_low, result_c$ci_hi,
+            ifelse(result_c$p < .001, "< .001", sprintf("%.3f", result_c$p))))
+cat(sprintf("Total effect (c): %.4f\n", c_total_c))
+cat(sprintf("Direct effect (c'): %.4f\n", cprime_c))
+```
+
+### Positive Interaction
+
+#### a-path (mediator model)
+
+```{r h21_PA_mediator_pos}
+#| output-fold: true
+#| output-summary: "Mediator model PA (positive)"
+
+h21_PA_med_pos <- lme(
+  fixed = PA_sim_perc ~ PA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h21_PA_med_pos)
+```
+
+#### b- and c'-paths (outcome models)
+
+```{r h21_PA_out_love_pos}
+#| output-fold: true
+#| output-summary: "Outcome model PA → Love (positive)"
+
+h21_PA_out_love_pos <- lme(
+  fixed = love ~ PA_sim_perc + PA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h21_PA_out_love_pos)
+```
+
+```{r h21_PA_out_close_pos}
+#| output-fold: true
+#| output-summary: "Outcome model PA → Closeness (positive)"
+
+h21_PA_out_close_pos <- lme(
+  fixed = close ~ PA_sim_perc + PA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h21_PA_out_close_pos)
+```
+
+#### Monte Carlo CI – Love (positive interaction)
+
+```{r h21_PA_MC_love_pos}
+#| output-fold: true
+#| output-summary: "Monte Carlo indirect effect — PA love (positive)"
+
+a_est_p   <- fixef(h21_PA_med_pos)["PA_sim_act"]
+se_a_p    <- sqrt(vcov(h21_PA_med_pos)["PA_sim_act", "PA_sim_act"])
+b_est_p   <- fixef(h21_PA_out_love_pos)["PA_sim_perc"]
+se_b_p    <- sqrt(vcov(h21_PA_out_love_pos)["PA_sim_perc", "PA_sim_perc"])
+cprime_p  <- fixef(h21_PA_out_love_pos)["PA_sim_act"]
+c_total_p <- fixef(h11_PA_love_pos)["PA_sim_act"]
+
+a_sim_p <- rnorm(n_sim, mean = a_est_p, sd = se_a_p)
+b_sim_p <- rnorm(n_sim, mean = b_est_p, sd = se_b_p)
+indirect_sim_p <- a_sim_p * b_sim_p
+
+result_p <- mc_ci(indirect_sim_p, a_est_p, b_est_p, "PA love pos")
+
+cat(sprintf("Indirect effect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
+            result_p$point, result_p$ci_low, result_p$ci_hi,
+            ifelse(result_p$p < .001, "< .001", sprintf("%.3f", result_p$p))))
+cat(sprintf("Total effect (c): %.4f\n", c_total_p))
+cat(sprintf("Direct effect (c'): %.4f\n", cprime_p))
+```
+
+#### Monte Carlo CI – Closeness (positive interaction)
+
+```{r h21_PA_MC_close_pos}
+#| output-fold: true
+#| output-summary: "Monte Carlo indirect effect — PA closeness (positive)"
+
+b_est_pc   <- fixef(h21_PA_out_close_pos)["PA_sim_perc"]
+se_b_pc    <- sqrt(vcov(h21_PA_out_close_pos)["PA_sim_perc", "PA_sim_perc"])
+cprime_pc  <- fixef(h21_PA_out_close_pos)["PA_sim_act"]
+c_total_pc <- fixef(h11_PA_close_pos)["PA_sim_act"]
+
+b_sim_pc <- rnorm(n_sim, mean = b_est_pc, sd = se_b_pc)
+indirect_sim_pc <- a_sim_p * b_sim_pc
+
+result_pc <- mc_ci(indirect_sim_pc, a_est_p, b_est_pc, "PA close pos")
+
+cat(sprintf("Indirect effect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
+            result_pc$point, result_pc$ci_low, result_pc$ci_hi,
+            ifelse(result_pc$p < .001, "< .001", sprintf("%.3f", result_pc$p))))
+cat(sprintf("Total effect (c): %.4f\n", c_total_pc))
+cat(sprintf("Direct effect (c'): %.4f\n", cprime_pc))
+```
+
+## H2.2 – NA Mediation
+
+### Negative Interaction
+
+#### a-path
+
+```{r h22_NA_mediator_neg}
+#| output-fold: true
+#| output-summary: "Mediator model NA (negative)"
+
+h22_NA_med_neg <- lme(
+  fixed = NA_sim_perc ~ NA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h22_NA_med_neg)
+```
+
+#### b- and c'-paths
+
+```{r h22_NA_out_love_neg}
+#| output-fold: true
+#| output-summary: "Outcome model NA → Love (negative)"
+
+h22_NA_out_love_neg <- lme(
+  fixed = love ~ NA_sim_perc + NA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h22_NA_out_love_neg)
+```
+
+```{r h22_NA_out_close_neg}
+#| output-fold: true
+#| output-summary: "Outcome model NA → Closeness (negative)"
+
+h22_NA_out_close_neg <- lme(
+  fixed = close ~ NA_sim_perc + NA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h22_NA_out_close_neg)
+```
+
+#### Monte Carlo CI (negative interaction)
+
+```{r h22_NA_MC_neg}
+#| output-fold: true
+#| output-summary: "Monte Carlo indirect effects — NA (negative)"
+
+# Love
+a_NA_neg     <- fixef(h22_NA_med_neg)["NA_sim_act"]
+se_a_NA_neg  <- sqrt(vcov(h22_NA_med_neg)["NA_sim_act", "NA_sim_act"])
+b_NA_love_neg <- fixef(h22_NA_out_love_neg)["NA_sim_perc"]
+se_b_NA_love_neg <- sqrt(vcov(h22_NA_out_love_neg)["NA_sim_perc", "NA_sim_perc"])
+
+a_NA_sim_neg <- rnorm(n_sim, mean = a_NA_neg, sd = se_a_NA_neg)
+b_NA_sim_love_neg <- rnorm(n_sim, mean = b_NA_love_neg, sd = se_b_NA_love_neg)
+ind_NA_love_neg <- a_NA_sim_neg * b_NA_sim_love_neg
+
+res_NA_love_neg <- mc_ci(ind_NA_love_neg, a_NA_neg, b_NA_love_neg, "NA love neg")
+
+cat("--- Love (negative) ---\n")
+cat(sprintf("Indirect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
+            res_NA_love_neg$point, res_NA_love_neg$ci_low, res_NA_love_neg$ci_hi,
+            ifelse(res_NA_love_neg$p < .001, "< .001", sprintf("%.3f", res_NA_love_neg$p))))
+
+# Closeness
+b_NA_close_neg <- fixef(h22_NA_out_close_neg)["NA_sim_perc"]
+se_b_NA_close_neg <- sqrt(vcov(h22_NA_out_close_neg)["NA_sim_perc", "NA_sim_perc"])
+
+b_NA_sim_close_neg <- rnorm(n_sim, mean = b_NA_close_neg, sd = se_b_NA_close_neg)
+ind_NA_close_neg <- a_NA_sim_neg * b_NA_sim_close_neg
+
+res_NA_close_neg <- mc_ci(ind_NA_close_neg, a_NA_neg, b_NA_close_neg, "NA close neg")
+
+cat("\n--- Closeness (negative) ---\n")
+cat(sprintf("Indirect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
+            res_NA_close_neg$point, res_NA_close_neg$ci_low, res_NA_close_neg$ci_hi,
+            ifelse(res_NA_close_neg$p < .001, "< .001", sprintf("%.3f", res_NA_close_neg$p))))
+```
+
+### Positive Interaction
+
+```{r h22_NA_mediator_pos}
+#| output-fold: true
+#| output-summary: "Mediator model NA (positive)"
+
+h22_NA_med_pos <- lme(
+  fixed = NA_sim_perc ~ NA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h22_NA_med_pos)
+```
+
+```{r h22_NA_out_love_pos}
+#| output-fold: true
+#| output-summary: "Outcome model NA → Love (positive)"
+
+h22_NA_out_love_pos <- lme(
+  fixed = love ~ NA_sim_perc + NA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h22_NA_out_love_pos)
+```
+
+```{r h22_NA_out_close_pos}
+#| output-fold: true
+#| output-summary: "Outcome model NA → Closeness (positive)"
+
+h22_NA_out_close_pos <- lme(
+  fixed = close ~ NA_sim_perc + NA_sim_act,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h22_NA_out_close_pos)
+```
+
+#### Monte Carlo CI (positive interaction)
+
+```{r h22_NA_MC_pos}
+#| output-fold: true
+#| output-summary: "Monte Carlo indirect effects — NA (positive)"
+
+# Love
+a_NA_pos     <- fixef(h22_NA_med_pos)["NA_sim_act"]
+se_a_NA_pos  <- sqrt(vcov(h22_NA_med_pos)["NA_sim_act", "NA_sim_act"])
+b_NA_love_pos <- fixef(h22_NA_out_love_pos)["NA_sim_perc"]
+se_b_NA_love_pos <- sqrt(vcov(h22_NA_out_love_pos)["NA_sim_perc", "NA_sim_perc"])
+
+a_NA_sim_pos <- rnorm(n_sim, mean = a_NA_pos, sd = se_a_NA_pos)
+b_NA_sim_love_pos <- rnorm(n_sim, mean = b_NA_love_pos, sd = se_b_NA_love_pos)
+ind_NA_love_pos <- a_NA_sim_pos * b_NA_sim_love_pos
+
+res_NA_love_pos <- mc_ci(ind_NA_love_pos, a_NA_pos, b_NA_love_pos, "NA love pos")
+
+cat("--- Love (positive) ---\n")
+cat(sprintf("Indirect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
+            res_NA_love_pos$point, res_NA_love_pos$ci_low, res_NA_love_pos$ci_hi,
+            ifelse(res_NA_love_pos$p < .001, "< .001", sprintf("%.3f", res_NA_love_pos$p))))
+
+# Closeness
+b_NA_close_pos <- fixef(h22_NA_out_close_pos)["NA_sim_perc"]
+se_b_NA_close_pos <- sqrt(vcov(h22_NA_out_close_pos)["NA_sim_perc", "NA_sim_perc"])
+
+b_NA_sim_close_pos <- rnorm(n_sim, mean = b_NA_close_pos, sd = se_b_NA_close_pos)
+ind_NA_close_pos <- a_NA_sim_pos * b_NA_sim_close_pos
+
+res_NA_close_pos <- mc_ci(ind_NA_close_pos, a_NA_pos, b_NA_close_pos, "NA close pos")
+
+cat("\n--- Closeness (positive) ---\n")
+cat(sprintf("Indirect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
+            res_NA_close_pos$point, res_NA_close_pos$ci_low, res_NA_close_pos$ci_hi,
+            ifelse(res_NA_close_pos$p < .001, "< .001", sprintf("%.3f", res_NA_close_pos$p))))
+```
+
+# Step 3a: Moderation by Trait We-ness (H3.1–H3.2)
+
+We examine whether the similarity–evaluation association depends on trait we-ness ($W^T_{pd}$, grand-mean centered). Models are estimated separately within each interaction context.
+
+For actual similarity:
+
+$$
+O_{pdc} = b_{0,d} + \beta_1 \bar{S}^{act}_{pdc} + \beta_2 W^T_{pd} + \beta_3 (\bar{S}^{act}_{pdc} \times W^T_{pd}) + \varepsilon_{pdc}
+$$
+
+For perceived similarity:
+
+$$
+O_{pdc} = b_{0,d} + \beta_1 \bar{S}^{perc}_{pdc} + \beta_2 W^T_{pd} + \beta_3 (\bar{S}^{perc}_{pdc} \times W^T_{pd}) + \varepsilon_{pdc}
+$$
+
+Both with dyad-level random intercept. The conditional similarity–outcome association is $\beta_1 + \beta_3 W^T_{pd}$.
+
+For PA (H3.1): expected $\beta_3 > 0$ (we-ness amplifies positive effects). For NA (H3.2): expected $\beta_3 > 0$ (we-ness buffers negative effects, making the negative slope less negative).
+
+## H3.1 – PA × We-ness
+
+### Actual PA Similarity
+
+#### Love
+
+```{r h31_PA_act_love_neg}
+#| output-fold: true
+#| output-summary: "H3.1 actual PA × we-ness → Love (negative)"
+
+h31_PA_act_love_neg <- lme(
+  fixed = love ~ PA_sim_act + cwe_ness + PA_sim_act:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h31_PA_act_love_neg)
+```
+
+```{r h31_PA_act_love_pos}
+#| output-fold: true
+#| output-summary: "H3.1 actual PA × we-ness → Love (positive)"
+
+h31_PA_act_love_pos <- lme(
+  fixed = love ~ PA_sim_act + cwe_ness + PA_sim_act:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h31_PA_act_love_pos)
+```
+
+#### Probing (if interaction significant)
+
+```{r h31_PA_act_probe_neg}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual PA × we-ness → Love (negative)"
+
+we_sd <- sd(sc2_neg$cwe_ness, na.rm = TRUE)
+
+slopes_h31 <- emtrends(
+  h31_PA_act_love_neg,
+  specs = ~ cwe_ness,
+  var   = "PA_sim_act",
+  at    = list(cwe_ness = c(-we_sd, 0, we_sd))
+)
+
+slopes_h31_df <- as.data.frame(summary(slopes_h31, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h31 <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h31_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h31_df$PA_sim_act.trend),
+  `SE`            = sprintf("%.4f", slopes_h31_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h31_df$lower.CL, slopes_h31_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h31_df$t.ratio),
+  `p`             = ifelse(slopes_h31_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h31_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h31,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on love at low, average, and high trait we-ness (negative interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+#### Closeness
+
+```{r h31_PA_act_close_neg}
+#| output-fold: true
+#| output-summary: "H3.1 actual PA × we-ness → Closeness (negative)"
+
+h31_PA_act_close_neg <- lme(
+  fixed = close ~ PA_sim_act + cwe_ness + PA_sim_act:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h31_PA_act_close_neg)
+```
+
+```{r h31_PA_act_close_pos}
+#| output-fold: true
+#| output-summary: "H3.1 actual PA × we-ness → Closeness (positive)"
+
+h31_PA_act_close_pos <- lme(
+  fixed = close ~ PA_sim_act + cwe_ness + PA_sim_act:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h31_PA_act_close_pos)
+```
+
+### Perceived PA Similarity
+
+#### Love
+
+```{r h31_PA_perc_love_neg}
+#| output-fold: true
+#| output-summary: "H3.1 perceived PA × we-ness → Love (negative)"
+
+h31_PA_perc_love_neg <- lme(
+  fixed = love ~ PA_sim_perc + cwe_ness + PA_sim_perc:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h31_PA_perc_love_neg)
+```
+
+```{r h31_PA_perc_love_pos}
+#| output-fold: true
+#| output-summary: "H3.1 perceived PA × we-ness → Love (positive)"
+
+h31_PA_perc_love_pos <- lme(
+  fixed = love ~ PA_sim_perc + cwe_ness + PA_sim_perc:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h31_PA_perc_love_pos)
+```
+
+#### Closeness
+
+```{r h31_PA_perc_close_neg}
+#| output-fold: true
+#| output-summary: "H3.1 perceived PA × we-ness → Closeness (negative)"
+
+h31_PA_perc_close_neg <- lme(
+  fixed = close ~ PA_sim_perc + cwe_ness + PA_sim_perc:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h31_PA_perc_close_neg)
+```
+
+```{r h31_PA_perc_close_pos}
+#| output-fold: true
+#| output-summary: "H3.1 perceived PA × we-ness → Closeness (positive)"
+
+h31_PA_perc_close_pos <- lme(
+  fixed = close ~ PA_sim_perc + cwe_ness + PA_sim_perc:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h31_PA_perc_close_pos)
+```
+
+## H3.2 – NA × We-ness
+
+### Actual NA Similarity
+
+#### Love
+
+```{r h32_NA_act_love_neg}
+#| output-fold: true
+#| output-summary: "H3.2 actual NA × we-ness → Love (negative)"
+
+h32_NA_act_love_neg <- lme(
+  fixed = love ~ NA_sim_act + cwe_ness + NA_sim_act:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h32_NA_act_love_neg)
+```
+
+```{r h32_NA_act_love_pos}
+#| output-fold: true
+#| output-summary: "H3.2 actual NA × we-ness → Love (positive)"
+
+h32_NA_act_love_pos <- lme(
+  fixed = love ~ NA_sim_act + cwe_ness + NA_sim_act:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h32_NA_act_love_pos)
+```
+
+#### Closeness
+
+```{r h32_NA_act_close_neg}
+#| output-fold: true
+#| output-summary: "H3.2 actual NA × we-ness → Closeness (negative)"
+
+h32_NA_act_close_neg <- lme(
+  fixed = close ~ NA_sim_act + cwe_ness + NA_sim_act:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h32_NA_act_close_neg)
+```
+
+```{r h32_NA_act_close_pos}
+#| output-fold: true
+#| output-summary: "H3.2 actual NA × we-ness → Closeness (positive)"
+
+h32_NA_act_close_pos <- lme(
+  fixed = close ~ NA_sim_act + cwe_ness + NA_sim_act:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h32_NA_act_close_pos)
+```
+
+### Perceived NA Similarity
+
+#### Love
+
+```{r h32_NA_perc_love_neg}
+#| output-fold: true
+#| output-summary: "H3.2 perceived NA × we-ness → Love (negative)"
+
+h32_NA_perc_love_neg <- lme(
+  fixed = love ~ NA_sim_perc + cwe_ness + NA_sim_perc:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h32_NA_perc_love_neg)
+```
+
+```{r h32_NA_perc_love_pos}
+#| output-fold: true
+#| output-summary: "H3.2 perceived NA × we-ness → Love (positive)"
+
+h32_NA_perc_love_pos <- lme(
+  fixed = love ~ NA_sim_perc + cwe_ness + NA_sim_perc:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h32_NA_perc_love_pos)
+```
+
+#### Closeness
+
+```{r h32_NA_perc_close_neg}
+#| output-fold: true
+#| output-summary: "H3.2 perceived NA × we-ness → Closeness (negative)"
+
+h32_NA_perc_close_neg <- lme(
+  fixed = close ~ NA_sim_perc + cwe_ness + NA_sim_perc:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h32_NA_perc_close_neg)
+```
+
+```{r h32_NA_perc_close_pos}
+#| output-fold: true
+#| output-summary: "H3.2 perceived NA × we-ness → Closeness (positive)"
+
+h32_NA_perc_close_pos <- lme(
+  fixed = close ~ NA_sim_perc + cwe_ness + NA_sim_perc:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h32_NA_perc_close_pos)
+```
+
+# Step 3b: Context Moderation — Negative vs. Positive Interaction (H3.3–H3.4)
+
+We examine whether the similarity–evaluation association differs between the positive and negative interaction contexts. A dummy variable $C_{pdc} = c$ ($c = 0$ negative, $c = 1$ positive) is included in pooled models. Since these models contain two observations per person, both dyad-level and person-level random intercepts are included.
+
+For actual similarity:
+
+$$
+O_{pdc} = b_{0,pd} + \beta_1 \bar{S}^{act}_{pdc} + \beta_2 C_{pdc} + \beta_3 (\bar{S}^{act}_{pdc} \times C_{pdc}) + \varepsilon_{pdc}
+$$
+
+$$
+b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}
+$$
+
+For perceived similarity: analogous model with $\bar{S}^{perc}_{pdc}$.
+
+$\beta_1$ is the similarity–evaluation slope for the negative interaction ($C_{pdc} = 0$), and $\beta_1 + \beta_3$ is the slope for the positive interaction.
+
+For PA (H3.3): expected $\beta_3 < 0$ (PA similarity more beneficial in negative interaction). For NA (H3.4): expected $\beta_3 < 0$ (NA similarity more harmful in positive interaction).
+
+## H3.3 – PA × Context
+
+### Actual PA Similarity
+
+#### Love
+
+```{r h33_PA_act_love}
+#| output-fold: true
+#| output-summary: "H3.3 actual PA × context → Love"
+
+h33_PA_act_love <- lme(
+  fixed = love ~ PA_sim_act + context + PA_sim_act:context,
+  random = ~ 1 | dyad/person,
+  data = sc2,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h33_PA_act_love)
+```
+
+```{r h33_PA_act_love_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual PA × context → Love"
+
+# Simple slopes at negative (context = 0) and positive (context = 1) interaction
+slopes_h33 <- emtrends(
+  h33_PA_act_love,
+  specs = ~ context,
+  var   = "PA_sim_act",
+  at    = list(context = c(0, 1))
+)
+
+slopes_h33_df <- as.data.frame(summary(slopes_h33, infer = TRUE))
+
+tbl_h33 <- data.frame(
+  `Interaction context` = c("Negative (0)", "Positive (1)"),
+  `Simple slope`        = sprintf("%.4f", slopes_h33_df$PA_sim_act.trend),
+  `SE`                  = sprintf("%.4f", slopes_h33_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h33_df$lower.CL, slopes_h33_df$upper.CL),
+  `t`                   = sprintf("%.3f", slopes_h33_df$t.ratio),
+  `p`                   = ifelse(slopes_h33_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", slopes_h33_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h33,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on love in negative and positive interactions (H3.3)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  )
+```
+
+#### Closeness
+
+```{r h33_PA_act_close}
+#| output-fold: true
+#| output-summary: "H3.3 actual PA × context → Closeness"
+
+h33_PA_act_close <- lme(
+  fixed = close ~ PA_sim_act + context + PA_sim_act:context,
+  random = ~ 1 | dyad/person,
+  data = sc2,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h33_PA_act_close)
+```
+
+### Perceived PA Similarity
+
+#### Love
+
+```{r h33_PA_perc_love}
+#| output-fold: true
+#| output-summary: "H3.3 perceived PA × context → Love"
+
+h33_PA_perc_love <- lme(
+  fixed = love ~ PA_sim_perc + context + PA_sim_perc:context,
+  random = ~ 1 | dyad/person,
+  data = sc2,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h33_PA_perc_love)
+```
+
+#### Closeness
+
+```{r h33_PA_perc_close}
+#| output-fold: true
+#| output-summary: "H3.3 perceived PA × context → Closeness"
+
+h33_PA_perc_close <- lme(
+  fixed = close ~ PA_sim_perc + context + PA_sim_perc:context,
+  random = ~ 1 | dyad/person,
+  data = sc2,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h33_PA_perc_close)
+```
+
+## H3.4 – NA × Context
+
+### Actual NA Similarity
+
+#### Love
+
+```{r h34_NA_act_love}
+#| output-fold: true
+#| output-summary: "H3.4 actual NA × context → Love"
+
+h34_NA_act_love <- lme(
+  fixed = love ~ NA_sim_act + context + NA_sim_act:context,
+  random = ~ 1 | dyad/person,
+  data = sc2,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h34_NA_act_love)
+```
+
+```{r h34_NA_act_love_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual NA × context → Love"
+
+slopes_h34 <- emtrends(
+  h34_NA_act_love,
+  specs = ~ context,
+  var   = "NA_sim_act",
+  at    = list(context = c(0, 1))
+)
+
+slopes_h34_df <- as.data.frame(summary(slopes_h34, infer = TRUE))
+
+tbl_h34 <- data.frame(
+  `Interaction context` = c("Negative (0)", "Positive (1)"),
+  `Simple slope`        = sprintf("%.4f", slopes_h34_df$NA_sim_act.trend),
+  `SE`                  = sprintf("%.4f", slopes_h34_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h34_df$lower.CL, slopes_h34_df$upper.CL),
+  `t`                   = sprintf("%.3f", slopes_h34_df$t.ratio),
+  `p`                   = ifelse(slopes_h34_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", slopes_h34_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h34,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on love in negative and positive interactions (H3.4)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  )
+```
+
+#### Closeness
+
+```{r h34_NA_act_close}
+#| output-fold: true
+#| output-summary: "H3.4 actual NA × context → Closeness"
+
+h34_NA_act_close <- lme(
+  fixed = close ~ NA_sim_act + context + NA_sim_act:context,
+  random = ~ 1 | dyad/person,
+  data = sc2,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h34_NA_act_close)
+```
+
+### Perceived NA Similarity
+
+#### Love
+
+```{r h34_NA_perc_love}
+#| output-fold: true
+#| output-summary: "H3.4 perceived NA × context → Love"
+
+h34_NA_perc_love <- lme(
+  fixed = love ~ NA_sim_perc + context + NA_sim_perc:context,
+  random = ~ 1 | dyad/person,
+  data = sc2,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h34_NA_perc_love)
+```
+
+#### Closeness
+
+```{r h34_NA_perc_close}
+#| output-fold: true
+#| output-summary: "H3.4 perceived NA × context → Closeness"
+
+h34_NA_perc_close <- lme(
+  fixed = close ~ NA_sim_perc + context + NA_sim_perc:context,
+  random = ~ 1 | dyad/person,
+  data = sc2,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h34_NA_perc_close)
+```
