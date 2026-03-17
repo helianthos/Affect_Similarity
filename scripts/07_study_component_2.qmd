@@ -198,26 +198,6 @@ cat(sprintf("Negative context: %d obs\n", nrow(sc2_neg)))
 cat(sprintf("Positive context: %d obs\n", nrow(sc2_pos)))
 ```
 
-## Descriptive Overview
-
-```{r sc2_descriptives}
-
-# Descriptive statistics per context
-sc2 %>%
-  group_by(topic) %>%
-  summarise(
-    n = n(),
-    across(c(love, close, PA_sim_act, PA_sim_perc, NA_sim_act, NA_sim_perc, we_ness),
-           list(M = ~mean(.x, na.rm = TRUE), SD = ~sd(.x, na.rm = TRUE)),
-           .names = "{.col}_{.fn}")
-  ) %>%
-  pivot_longer(-topic) %>%
-  pivot_wider(names_from = topic, values_from = value)
-
-# Number of VMR segments per person-interaction
-summary(vmr_agg$n_segments)
-```
-
 ## Model Specification in R
 
 For models estimated within a single context (Steps 1a–1c, 2, 3a), one observation per person per interaction, only a dyad-level random intercept is estimable:
@@ -267,17 +247,34 @@ h11_PA_love_neg <- lme(
 model_output(h11_PA_love_neg)
 ```
 
+**Intercept** $\beta_0 = 89.05$, 95% CI $[79.88,98.23]$, $p < .001$
+
+This is the expected post-interaction love when $\bar{S}^{act}_{pdc} = 0$, i.e., when a person's interaction-averaged actual PA similarity is zero. As we discussed, that means the elevation and mismatch exactly cancel out across the interaction. On average, the partners were at their affect baselines or any shared elevation was exactly offset by divergence.
+
+The value of 89 is high on a 0–100 scale, suggesting that even after a **negative** interaction (disagreement topic), couples report feeling quite loving toward their partner. This might reflect that the lab setting is relatively benign, or that love is a more stable construct that does not drop sharply from a single 8-minute disagreement.
+
+**PA similarity slope** $\beta_1 = 0.379$, 95% CI $[0.060,0.697]$, $p=.020$
+
+For every one-unit increase in interaction-averaged actual PA similarity, post-interaction love increases by 0.38 points. Since PA similarity is on a scale derived from 0–100 affect ratings, a 10-unit increase in average similarity corresponds to +3.8 love points. The effect is significant but modest, and the CI is wide, reflecting substantial uncertainty with only 98 dyad-level data points informing this estimate.
+The direction is consistent with H1.1: more shared PA during the negative interaction predicts more love afterward.
+
+**Random effects and variance decomposition**
+
+**Dyad intercept** $SD=8.84$, variance $= 78.16$
+
+**Residual** $SD=18.35$, variance $= 336.86$
+
+The total variance is $78.16+336.86=415.02$
+
+The **ICC** (proportion of variance at the dyad level) is $78.16/415.02=0.188$, or about $19\%$. This means that roughly one fifth of the variability in post-interaction love is attributable to stable differences between couples, while the remaining 81% is within-dyad, differences between the two partners within the same couple.
+The residual is quite large ($SD=18.35$) relative to the dyad intercept ($SD=8.84$). This means partners within the same dyad can differ substantially in how much love they report after the same interaction. That makes sense: two people can experience the same disagreement quite differently.
+An ICC of 0.19 is modest but non-negligible, confirming that the dyad random intercept is justified: ignoring the nesting would underestimate standard errors.
+
 ```{r h11_PA_love_pos}
 #| output-fold: true
 #| output-summary: "H1.1 PA → Love (positive interaction)"
 
-h11_PA_love_pos <- lme(
-  fixed = love ~ PA_sim_act,
-  random = ~ 1 | dyad,
-  data = sc2_pos,
-  method = "REML",
-  na.action = na.exclude
-)
+h11_PA_love_pos <- lme( fixed = love ~ PA_sim_act, random = ~ 1 | dyad, data = sc2_pos, method = "REML", na.action = na.exclude )
 
 model_output(h11_PA_love_pos)
 ```
