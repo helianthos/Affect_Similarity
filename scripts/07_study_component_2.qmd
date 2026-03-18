@@ -232,6 +232,8 @@ Interpretation:
 
 ### Love
 
+#### Negative interaction
+
 ```{r h11_PA_love_neg}
 #| output-fold: true
 #| output-summary: "H1.1 PA → Love (negative interaction)"
@@ -253,10 +255,9 @@ This is the expected post-interaction love when $\bar{S}^{act}_{pdc} = 0$, i.e.,
 
 The value of 89 is high on a 0–100 scale, suggesting that even after a **negative** interaction (disagreement topic), couples report feeling quite loving toward their partner. This might reflect that the lab setting is relatively benign, or that love is a more stable construct that does not drop sharply from a single 8-minute disagreement.
 
-**PA similarity slope** $\beta_1 = 0.379$, 95% CI $[0.060,0.697]$, $p=.020$
+**Slope** $\beta_1 = 0.379$, 95% CI $[0.060,0.697]$, $p=.020$
 
-For every one-unit increase in interaction-averaged actual PA similarity, post-interaction love increases by 0.38 points. Since PA similarity is on a scale derived from 0–100 affect ratings, a 10-unit increase in average similarity corresponds to +3.8 love points. The effect is significant but modest, and the CI is wide, reflecting substantial uncertainty with only 98 dyad-level data points informing this estimate.
-The direction is consistent with H1.1: more shared PA during the negative interaction predicts more love afterward.
+For every one-unit increase in interaction-averaged actual PA similarity, post-interaction love increases by 0.38 points. Since PA similarity is on a scale derived from 0–100 affect ratings, a 10-unit increase in average similarity corresponds to +3.8 love points. The effect is significant but modest, and the CI is wide, reflecting substantial uncertainty with only 98 dyad-level data points informing this estimate. The direction is consistent with H1.1: more shared PA during the negative interaction predicts more love afterward.
 
 **Random effects and variance decomposition**
 
@@ -266,9 +267,11 @@ The direction is consistent with H1.1: more shared PA during the negative intera
 
 The total variance is $78.16+336.86=415.02$
 
-The **ICC** (proportion of variance at the dyad level) is $78.16/415.02=0.188$, or about $19\%$. This means that roughly one fifth of the variability in post-interaction love is attributable to stable differences between couples, while the remaining 81% is within-dyad, differences between the two partners within the same couple.
-The residual is quite large ($SD=18.35$) relative to the dyad intercept ($SD=8.84$). This means partners within the same dyad can differ substantially in how much love they report after the same interaction. That makes sense: two people can experience the same disagreement quite differently.
-An ICC of 0.19 is modest but non-negligible, confirming that the dyad random intercept is justified: ignoring the nesting would underestimate standard errors.
+The **ICC** (proportion of variance at the dyad level) is $78.16/415.02=0.188$, or about $19\%$. This means that roughly one fifth of the variability in post-interaction love is attributable to stable differences between couples, while the remaining 81% is within-dyad, differences between the two partners within the same couple. The residual is quite large ($SD=18.35$) relative to the dyad intercept ($SD=8.84$). This means partners within the same dyad can differ substantially in how much love they report after the same interaction. That makes sense: two people can experience the same disagreement quite differently. An ICC of 0.19 is modest but non-negligible, confirming that the dyad random intercept is justified: ignoring the nesting would underestimate standard errors.
+
+**The model provides initial support for H1.1** in the negative interaction context: couples who share more PA on average during the disagreement interaction report more love afterward. But the effect is modest, estimated with considerable uncertainty
+
+#### Positive interaction
 
 ```{r h11_PA_love_pos}
 #| output-fold: true
@@ -279,7 +282,27 @@ h11_PA_love_pos <- lme( fixed = love ~ PA_sim_act, random = ~ 1 | dyad, data = s
 model_output(h11_PA_love_pos)
 ```
 
+**Intercept** $\beta_0 = 85.97$, 95% CI $[82.79, 89.15]$, $p < .001$.
+
+Expected post-interaction love when interaction-averaged actual PA similarity is zero. The intercept is lower than in the negative interaction model ($89.05$), which might seem counterintuitive since one might expect higher love after a positive interaction. However, this comparison is not straightforward because the intercept is evaluated at $\bar{S}^{act} = 0$, and the distribution of PA similarity likely differs between contexts (the positive interaction may have a higher mean PA similarity such that $\bar{S}^{act} = 0$ indicates a 'below average couple' , while hte negative interaction may have lower mean PA similarity so the intercept is looking at a 'higher than average couple'. The intercept being lower in the positive context ($85.97$) than the negative context ($89.05$) may simply mean: a below-average-similarity couple in a positive interaction reports less love than an above-average-similarity couple in a negative interaction.
+
+**Slope** $\beta_1 = 0.459$, 95% CI $[0.127, 0.792]$, $p = .007$.
+
+For every one-unit increase in interaction-averaged actual PA similarity during the positive interaction, post-interaction love increases by $0.46$ points. A 10-unit increase in average similarity corresponds to $+4.6$ love points. The effect is somewhat stronger and more precisely estimated than in the negative interaction ($\beta_1 = 0.379$, $p = .020$), and the evidence is clearer ($p = .007$ vs. $p = .020$). Like the negative interaction, **the direction is consistent with H1.1**.
+
+**Random effects and variance decomposition**
+
+The dyad random intercept is $SD = 10.47$ (variance $= 109.64$) and the residual is $SD = 13.28$ (variance $= 176.33$), yielding a total variance of $285.97$. The ICC is $109.64 / 285.97 = 0.383$, notably higher than in the negative interaction ($0.188$). This means that **after the positive interaction, nearly 40% of the variability in love is between couples rather than between partners within couples. Partners agree more about their love after a positive interaction than after a negative one, which makes sense: a positive discussion may produce a more uniform relational experience within couples, while a disagreement is more likely to be experienced asymmetrically.**
+
+The residual $SD = 13.28$ is considerably smaller than in the negative interaction ($SD = 18.35$). Combined with the higher ICC, this indicates that post-interaction love after a positive interaction is both more homogeneous within couples and less variable overall.
+
+The standardized residuals range from $-3.63$ to $+1.97$, showing the same left-skewed pattern observed across all love models (ceiling compression).
+
+------------------------------------------------------------------------
+
 ### Closeness
+
+#### Negative interaction
 
 ```{r h11_PA_close_neg}
 #| output-fold: true
@@ -296,6 +319,20 @@ h11_PA_close_neg <- lme(
 model_output(h11_PA_close_neg)
 ```
 
+**Intercept** $\beta_0 = 92.07$, 95% CI $[82.10, 102.04]$, $p < .001$.
+
+Expected post-interaction closeness when interaction-averaged actual PA similarity is zero. The value is high on the 0–100 scale and even higher than the corresponding love intercept in the same context ($89.05$), suggesting that couples report feeling very close after a negative interaction. There is a wide CI ($\approx 20$ points).
+
+**Slope** $\beta_1 = 0.432$, 95% CI $[0.086, 0.778]$, $p = .015$.
+
+For every one-unit increase in interaction-averaged actual PA similarity during the negative interaction, post-interaction closeness increases by $0.43$ points. A 10-unit increase corresponds to $+4.3$ closeness points. The effect is slightly larger than for love in the same context ($\beta_1 = 0.379$, $p = .020$) and has a comparable level of evidence. T**he direction is consistent with H1.1: sharing more PA during the disagreement predicts feeling closer afterward.**
+
+**Random effects and variance decomposition**
+
+The dyad random intercept is $SD = 12.75$ (variance $= 162.65$) and the residual is $SD = 16.06$ (variance $= 257.79$), yielding a total variance of $420.44$. The ICC is $162.65 / 420.44 = 0.387$. This is substantially higher than the ICC for love in the same context ($0.188$), meaning that partners within the same couple agree much more about their closeness after a negative interaction than about their love. Nearly 40% of the variability in post-interaction closeness is between couples, with the remaining 60% reflecting differences between partners within couples.
+
+#### Positive interaction
+
 ```{r h11_PA_close_pos}
 #| output-fold: true
 #| output-summary: "H1.1 PA → Closeness (positive interaction)"
@@ -311,15 +348,93 @@ h11_PA_close_pos <- lme(
 model_output(h11_PA_close_pos)
 ```
 
+**Intercept** $\beta_0 = 87.27$, 95% CI $[84.36, 90.17]$, $p < .001$.
+
+Expected post-interaction closeness when interaction-averaged actual PA similarity is zero. As with love, the intercept is lower than in the negative interaction ($92.07$), likely reflecting the same issue: the distribution of PA similarity differs between contexts, so the intercept evaluates at a different relative position in the data rather than reflecting a genuine difference in closeness across contexts.
+
+**Slope** $\beta_1 = 0.376$, 95% CI $[0.072, 0.679]$, $p = .016$.
+
+For every one-unit increase in interaction-averaged actual PA similarity during the positive interaction, post-interaction closeness increases by $0.38$ points. A 10-unit increase corresponds to $+3.8$ closeness points. The effect is comparable to the love outcome in the positive interaction ($\beta_1 = 0.459$, $p = .007$) and to closeness in the negative interaction ($\beta_1 = 0.432$, $p = .015$), though slightly smaller in magnitude. T**he direction is again consistent with H1.1.**
+
+**Random effects and variance decomposition**
+
+The dyad random intercept is $SD = 9.37$ (variance $= 87.81$) and the residual is $SD = 12.42$ (variance $= 154.31$), yielding a total variance of $242.12$. The ICC is $87.81 / 242.12 = 0.363$. This is similar to the love ICC in the positive interaction ($0.383$) and to the closeness ICC in the negative interaction ($0.387$), suggesting that roughly a third to two fifths of the variability in post-interaction evaluations is between couples across both outcomes in both contexts, with the exception of love after the negative interaction, where the ICC is notably lower ($0.188$). L**ove after a disagreement is the outcome where partners diverge the most.**
+
+The total variance ($242.12$) is the lowest of the four Step 1a models, indicating that closeness after a positive interaction is the least variable outcome overall. This is consistent with a positive discussion producing both strong agreement within couples and modest differentiation across couples.
+
+### Summary of results
+
+|   | Negative Interaction | Positive Interaction |
+|:-----------------------|:-----------------------|:-----------------------|
+| **Love** | $\beta_1 = 0.379$, $p = .020$, 95% CI $[0.060, 0.697]$; ICC $= 18.8\%$ | $\beta_1 = 0.459$, $p = .007$, 95% CI $[0.127, 0.792]$; ICC $= 38.3\%$ |
+| **Closeness** | $\beta_1 = 0.432$, $p = .015$, 95% CI $[0.086, 0.778]$; ICC $= 38.7\%$ | $\beta_1 = 0.376$, $p = .016$, 95% CI $[0.072, 0.679]$; ICC $= 36.3\%$ |
+
+: Actual PA similarity predicting post-interaction evaluations (H1.1). All models include a dyad-level random intercept. ICC reflects the proportion of variance between dyads (i.e., the expected within-dyad partner correlation).
+
 ### Diagnostics
 
-```{r h11_PA_diagnostics}
+```{r h11_PA_love_neg_diagnostics}
 #| warning: false
 #| output-fold: true
 #| output-summary: "Diagnostics H1.1 PA love (negative interaction)"
 
 lme_diagnostics(h11_PA_love_neg)
 ```
+
+#### **Diagnostics - H1.1 Actual PA → Love (Negative Interaction)**
+
+**Residuals vs. fitted values.** The LOESS curve deviates from the zero line, dipping below zero at lower fitted values (around 55–65) and running slightly above zero for higher fitted values (75–90). This suggests mild nonlinearity: the model somewhat overpredicts love for couples with low predicted values and slightly underpredicts at the high end. There is also visible heteroscedasticity — the residual spread is larger at lower fitted values and compresses toward higher fitted values, consistent with a ceiling effect where most observations cluster near the upper bound of the 0–100 scale. The bulk of the data concentrates at fitted values above 75, with relatively few observations below 70 informing the left side of the plot.
+
+**QQ-plot.** The central range (theoretical quantiles between approximately $-1.5$ and $+1.5$) follows the reference line reasonably well, indicating approximate normality in the bulk of the distribution. However, the left tail deviates substantially — observed residuals are more extreme than expected under normality, with several points falling well below the line. The right tail is compressed (points fall below the line), meaning the model produces fewer large positive residuals than a normal distribution would predict. This asymmetry is the same ceiling-driven pattern observed in the SC1 models: love ratings near 100 leave no room for positive residuals, producing a left-skewed residual distribution.
+
+These patterns are not ideal but are expected given the bounded outcome scale and the high baseline love observed in this sample. The fixed-effect estimates remain interpretable, but standard errors and $p$-values should be treated with some caution.
+
+```{r h11_PA_love_pos_diagnostics}
+#| warning: false
+#| output-fold: true
+#| output-summary: "Diagnostics H1.1 PA love (positive interaction)"
+
+lme_diagnostics(h11_PA_love_pos)
+```
+
+#### Diagnostics - H1.1 Actual PA → Love (Positive Interaction)
+
+**Residuals vs. fitted values.** The LOESS curve runs below zero for lower fitted values (50–75) and approaches zero for higher fitted values (80–95). The pattern is similar to the negative interaction but more pronounced: there are a few isolated observations with very low fitted values (around 50–60) and large negative residuals, pulling the LOESS curve down on the left. Heteroscedasticity is again present — residual spread is wider at lower fitted values and compresses toward the ceiling. The data concentration is shifted further right compared to the negative interaction, with most observations above fitted value 80.
+
+**QQ-plot.** The central range follows the reference line well. The left tail shows the familiar deviation — observed residuals more extreme than expected — with a few notable outliers around theoretical quantile $-3$. The right tail is compressed. Overall comparable to the negative interaction diagnostics.
+
+```{r h11_PA_close_neg_diagnostics}
+#| warning: false
+#| output-fold: true
+#| output-summary: "Diagnostics H1.1 PA closeness (negative interaction)"
+
+lme_diagnostics(h11_PA_love_neg)
+```
+
+#### Diagnostics - H1.1 Actual PA → Closeness (Negative Interaction)
+
+**Residuals vs. fitted values.** The LOESS curve shows a similar pattern to the love models: dipping below zero at lower fitted values (55–70) and levelling off near zero at higher fitted values (75–90). The heteroscedasticity pattern is consistent — wider residual spread at lower fitted values, compression at higher values. The data distribution is very similar to the love model in the same context.
+
+**QQ-plot.** Slightly better behaved than the love models. The central range tracks the reference line closely. The left tail deviates but somewhat less dramatically — fewer extreme outliers pulling away from the line. The right tail shows moderate compression. Overall, the normality assumption is approximately met in the central range with the expected ceiling-driven departures in the tails.
+
+```{r h11_PA_close_pos_diagnostics}
+#| warning: false
+#| output-fold: true
+#| output-summary: "Diagnostics H1.1 PA closeness (positive[] interaction)"
+
+lme_diagnostics(h11_PA_love_neg)
+
+```
+
+#### Diagnostics - H1.1 Actual PA → Closeness (Positive Interaction)
+
+**Residuals vs. fitted values.** Very similar to the other three models: LOESS below zero at lower fitted values, converging toward zero at higher values. The residual spread again compresses toward higher fitted values. The bulk of the data sits above fitted value 75, consistent with the positive interaction generally producing high closeness ratings.
+
+**QQ-plot.** The best-behaved of the four models. The central range follows the reference line closely, and the left-tail deviations are present but somewhat milder. There is one notable outlier below theoretical quantile $-2.5$. The right tail is compressed as in the other models.
+
+#### Diagnostics - Summary
+
+All four diagnostic panels show the same constellation: mild nonlinearity in the LOESS curve driven by sparse low-fitted-value observations, heteroscedasticity from ceiling compression, and left-skewed residuals in the QQ-plot. These patterns are structural consequences of the bounded 0–100 outcome scale combined with high baseline love and closeness in this sample. The closeness models show slightly better residual behaviour than the love models, and the positive interaction models show slightly denser concentration at high fitted values. None of the models show patterns that would invalidate the fixed-effect conclusions, but the ceiling-driven violations warrant caution when interpreting standard errors and $p$-values.
 
 ## H1.2 – Actual NA Similarity
 
