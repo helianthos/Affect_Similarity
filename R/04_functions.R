@@ -521,3 +521,12 @@ make_rows <- function(df, trend_col, predictor_label, moderator = "responsivenes
   ) %>%
     rename(!!level_col := ` `, !!value_col := `  `)
 }
+
+# mediation plots SC2 - Format label with CI and significance
+fmt <- function(est, ci_low, ci_up, p) {
+  stars <- ifelse(p < .001, "***", ifelse(p < .01, "**", ifelse(p < .05, "*", " (ns)")))
+  sprintf("%.3f%s [%.3f, %.3f]", est, stars, ci_low, ci_up)
+}
+
+# mediation plots SC2 - Color edges/labels based on significance
+sig_col <- function(p) ifelse(p < .05, "black", "grey75")
