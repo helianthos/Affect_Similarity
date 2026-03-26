@@ -23,6 +23,9 @@ bg_data   <- readRDS(file.path(dir_data_ana, "bg_ana.rds"))
 # plot initialisation
 plot_counter <- 1
 prefix <- "SC2"
+
+# mente carlo number of simulations
+n_sim <- 20000
 ```
 
 # Introduction
@@ -705,23 +708,23 @@ The variance decomposition shows:
 
 -   **For love:**
 
-+-------------+----------------------+---------------------+--------------------+-------------+
-| Context     | $\sigma^2_{between}$ | $\sigma^2_{within}$ | $\sigma^2_{total}$ | ICC         |
-+=============+======================+=====================+====================+=============+
-| Positive    | 110.5                | 176.3               | 286.9              | .385        |
-+-------------+----------------------+---------------------+--------------------+-------------+
-| Negative    | 91.3                 | 336.9               | 428.1              | .213        |
-+-------------+----------------------+---------------------+--------------------+-------------+
++------------+----------------------+---------------------+--------------------+------------+
+| Context    | $\sigma^2_{between}$ | $\sigma^2_{within}$ | $\sigma^2_{total}$ | ICC        |
++============+======================+=====================+====================+============+
+| Positive   | 110.5                | 176.3               | 286.9              | .385       |
++------------+----------------------+---------------------+--------------------+------------+
+| Negative   | 91.3                 | 336.9               | 428.1              | .213       |
++------------+----------------------+---------------------+--------------------+------------+
 
 -   **For closeness:**
 
-+-------------+----------------------+---------------------+--------------------+-------------+
-| Context     | $\sigma^2_{between}$ | $\sigma^2_{within}$ | $\sigma^2_{total}$ | ICC         |
-+=============+======================+=====================+====================+=============+
-| Positive    | 80.9                 | 154.3               | 235.2              | .344        |
-+-------------+----------------------+---------------------+--------------------+-------------+
-| Negative    | 179.8                | 257.8               | 437.6              | .411        |
-+-------------+----------------------+---------------------+--------------------+-------------+
++------------+----------------------+---------------------+--------------------+------------+
+| Context    | $\sigma^2_{between}$ | $\sigma^2_{within}$ | $\sigma^2_{total}$ | ICC        |
++============+======================+=====================+====================+============+
+| Positive   | 80.9                 | 154.3               | 235.2              | .344       |
++------------+----------------------+---------------------+--------------------+------------+
+| Negative   | 179.8                | 257.8               | 437.6              | .411       |
++------------+----------------------+---------------------+--------------------+------------+
 
 The variance patterns closely replicate those from H1.1. For both outcomes, total variance increases substantially from positive to negative contexts, confirming that negative interactions are more broadly destabilizing. The within-dyad variance increases from positive to negative for both outcomes (partners diverge more after disagreement), while the between-dyad variance decreases for love but increases for closeness. This replicates the same scissor effect for love and the uniform expansion for closeness observed in the PA models, which is reassuring: these variance patterns are properties of the outcome distributions and the interaction contexts, not artefacts of the specific predictor entered in the model.
 
@@ -896,21 +899,21 @@ Dyad intercept $SD = 9.35$, variance $= 87.44$; residual $SD = 12.38$, variance 
 
 ### Summary of results
 
-+------------------------------------------------------------------------+----------------------------------------------------------------+---------------------------------------------------------------+
-| **Love**                                                               | Negative Interaction                                           | Positive Interaction                                          |
-|                                                                        |                                                                |                                                               |
-| *('hoe liefdevol voel je je op dit momenten opzichte van je partner')* | $\beta_1^{act} = 0.444$, $p = .048$ (1a: $0.379$, $p = .020$)  | $\beta_1^{act} = 0.386$, $p = .063$ (1a: $0.459$, $p = .007$) |
-|                                                                        |                                                                |                                                               |
-|                                                                        | $\beta_2^{perc} = -0.081$, $p = .670$                          | $\beta_2^{perc} = 0.105$, $p = .538$                          |
-|                                                                        |                                                                |                                                               |
-|                                                                        | Actual similarity: **increased**                               | Actual similarity: **attenuated (modest)** \|                 |
-+------------------------------------------------------------------------+----------------------------------------------------------------+---------------------------------------------------------------+
-| **Closeness**                                                          | $\beta_1^{act} = 0.456$, $p = .045$ (1a: $0.432$, $p = .015$)  | $\beta_1^{act} = 0.215$, $p = .256$ (1a: $0.376$, $p = .016$) |
-|                                                                        |                                                                |                                                               |
-| *('hoe hecht voel je je op dit moment met je partner')*                | $\beta_2^{perc} = -0.031$, $p = .863$                          | $\beta_2^{perc} = 0.229$, $p = .147$                          |
-|                                                                        |                                                                |                                                               |
-|                                                                        | Actual similarity: **increased**                               | Actual similarity: **attenuated (substantial)** \|            |
-+------------------------------------------------------------------------+----------------------------------------------------------------+---------------------------------------------------------------+
++------------------------------------------------------------------------+---------------------------------------------------------------+---------------------------------------------------------------+
+| **Love**                                                               | Negative Interaction                                          | Positive Interaction                                          |
+|                                                                        |                                                               |                                                               |
+| *('hoe liefdevol voel je je op dit momenten opzichte van je partner')* | $\beta_1^{act} = 0.444$, $p = .048$ (1a: $0.379$, $p = .020$) | $\beta_1^{act} = 0.386$, $p = .063$ (1a: $0.459$, $p = .007$) |
+|                                                                        |                                                               |                                                               |
+|                                                                        | $\beta_2^{perc} = -0.081$, $p = .670$                         | $\beta_2^{perc} = 0.105$, $p = .538$                          |
+|                                                                        |                                                               |                                                               |
+|                                                                        | Actual similarity: **increased**                              | Actual similarity: **attenuated (modest)**                    |
++------------------------------------------------------------------------+---------------------------------------------------------------+---------------------------------------------------------------+
+| **Closeness**                                                          | $\beta_1^{act} = 0.456$, $p = .045$ (1a: $0.432$, $p = .015$) | $\beta_1^{act} = 0.215$, $p = .256$ (1a: $0.376$, $p = .016$) |
+|                                                                        |                                                               |                                                               |
+| *('hoe hecht voel je je op dit moment met je partner')*                | $\beta_2^{perc} = -0.031$, $p = .863$                         | $\beta_2^{perc} = 0.229$, $p = .147$                          |
+|                                                                        |                                                               |                                                               |
+|                                                                        | Actual similarity: **increased**                              | Actual similarity: **attenuated (substantial)**               |
++------------------------------------------------------------------------+---------------------------------------------------------------+---------------------------------------------------------------+
 
 : *Note.* Step 1b PA models: actual and perceived PA similarity entered simultaneously predicting post-interaction evaluations (H1.3). Step 1a estimates shown in parentheses for comparison. All models include a dyad-level random intercept.
 
@@ -1307,9 +1310,33 @@ Statistically zero. As in the other three PA models, the association between act
 
 Dyad intercept $SD = 9.48$, variance $= 89.88$; residual $SD = 12.36$, variance $= 152.81$. Unchanged from Steps 1a and 1b.
 
-#### Summary of results
+### Summary of results
 
 **Across all four models (two outcomes** $\times$ two contexts), the interaction between actual and perceived PA similarity is consistently zero. **There is no evidence that the two forms of similarity synergize or compensate in predicting post-interaction evaluations.**
+
++-------------------------------------------------------------------------+--------------------------------------------------+-------------------------------------------------+
+|                                                                         | Negative Interaction                             | Positive Interaction                            |
++:========================================================================+:=================================================+:================================================+
+| **Love**                                                                | $\beta_1^{act} = 0.437$, $p = .053$              | $\beta_1^{act} = 0.393$, $p = .061$             |
+|                                                                         |                                                  |                                                 |
+| *('hoe liefdevol voel je je op dit momentten opzichte van je partner')* | $\beta_2^{perc} = -0.067$, $p = .738$            | $\beta_2^{perc} = 0.099$, $p = .564$            |
+|                                                                         |                                                  |                                                 |
+|                                                                         | $\beta_3^{act \times perc} = 0.003$, $p = .808$  | $\beta_3^{act \times perc} = 0.003$, $p = .798$ |
++-------------------------------------------------------------------------+--------------------------------------------------+-------------------------------------------------+
+| **Closeness**                                                           | $\beta_1^{act} = 0.464$, $p = .043$              | $\beta_1^{act} = 0.221$, $p = .249$             |
+|                                                                         |                                                  |                                                 |
+| *('hoe hecht voel je je op dit moment met je partner')*                 | $\beta_2^{perc} = -0.048$, $p = .798$            | $\beta_2^{perc} = 0.224$, $p = .157$            |
+|                                                                         |                                                  |                                                 |
+|                                                                         | $\beta_3^{act \times perc} = -0.004$, $p = .774$ | $\beta_3^{act \times perc} = 0.003$, $p = .796$ |
++-------------------------------------------------------------------------+--------------------------------------------------+-------------------------------------------------+
+
+: *Note.* Step 1c PA models: actual and perceived PA similarity (grand-mean centered within context) with interaction term predicting post-interaction evaluations. All models include a dyad-level random intercept.
+
+The interaction terms are statistically zero in all four models (ranging from $-0.004$ to $+0.003$, all $p > .77$), providing clear evidence that actual and perceived PA similarity do not modulate each other's association with post-interaction evaluations.
+
+The main effect patterns replicate Steps 1a and 1b and split by context. In the **negative interaction**, actual PA similarity retains its predictive value for closeness ($0.464$, $p = .043$) and falls just short for love ($0.437$, $p = .053$). These coefficients are stable or slightly increased relative to Step 1a (love: $0.379$; closeness: $0.432$), consistent with the pattern identified in Step 1b where actual similarity was unaffected by the inclusion of perceived similarity. Perceived similarity is statistically zero and slightly negative for both outcomes, confirming it plays no role in the negative interaction.
+
+In the **positive interaction**, neither predictor reaches significance for love ($0.393$, $p = .061$ and $0.099$, $p = .564$), reflecting the collinearity-driven splitting of a modest total effect (Step 1a: $0.459$, $p = .007$) across two correlated predictors. For closeness, the same splitting pattern is more pronounced: both coefficients are of comparable magnitude ($0.221$ and $0.224$) but neither is significant, as the Step 1a total effect ($0.376$, $p = .016$) is divided roughly evenly between the two predictors.
 
 ## NA Similarity
 
@@ -1473,6 +1500,164 @@ Dyad intercept $SD = 9.09$, variance $= 82.69$; residual $SD = 12.37$, variance 
 
 **The model confirms that the suppression pattern for NA similarity predicting closeness in the positive interaction is robust to the inclusion of an interaction term. Actual similarity retains its strengthened coefficient (**$\approx 0.53$), perceived similarity continues to trend negatively but remains non-significant, and the two do not modulate each other. This is the only model across the entire Step 1c series where a main effect is clearly significant, and it is the actual (not perceived) similarity channel that carries the signal.
 
+### Summary of results
+
++-------------------------------------------------------------------------+---------------------------------------------------+-------------------------------------------------+
+|                                                                         | Negative Interaction                              | Positive Interaction                            |
++:========================================================================+:==================================================+:================================================+
+| **Love**                                                                | $\beta_1^{act} = -0.200$, $p = .441$              | $\beta_1^{act} = 0.333$, $p = .063$             |
+|                                                                         |                                                   |                                                 |
+| *('hoe liefdevol voel je je op dit momentten opzichte van je partner')* | $\beta_2^{perc} = 0.096$, $p = .645$              | $\beta_2^{perc} = 0.026$, $p = .856$            |
+|                                                                         |                                                   |                                                 |
+|                                                                         | $\beta_3^{act \times perc} = -0.008$, $p = .673$  | $\beta_3^{act \times perc} = 0.001$, $p = .928$ |
++-------------------------------------------------------------------------+---------------------------------------------------+-------------------------------------------------+
+| **Closeness**                                                           | $\beta_1^{act} = -0.171$, $p = .527$              | $\beta_1^{act} = 0.531$, $p = .001$             |
+|                                                                         |                                                   |                                                 |
+| *('hoe hecht voel je je op dit moment met je partner')*                 | $\beta_2^{perc} = 0.024$, $p = .903$              | $\beta_2^{perc} = -0.169$, $p = .198$           |
+|                                                                         |                                                   |                                                 |
+|                                                                         | $\beta_3^{act \times perc} = -0.002$, $p = .921$  | $\beta_3^{act \times perc} = 0.005$, $p = .548$ |
++-------------------------------------------------------------------------+---------------------------------------------------+-------------------------------------------------+
+
+: *Note.* Step 1c NA models: actual and perceived NA similarity (grand-mean centered within context) with interaction term predicting post-interaction evaluations. All models include a dyad-level random intercept.
+
+The interaction terms are statistically zero in all four models (all $p > .54$), confirming that actual and perceived NA similarity do not modulate each other's association with post-interaction evaluations. This mirrors the Step 1c PA results, where all interaction terms were also null (all $p > .77$). Across all eight Step 1c models (two affect types $\times$ two outcomes $\times$ two contexts), there is no evidence that the two forms of similarity interact.
+
+The main effect patterns replicate what was observed in Steps 1a and 1b. In the **negative interaction**, all coefficients are statistically zero for both outcomes: NA similarity is uninformative for post-interaction evaluations regardless of model specification. In the **positive interaction**, the two outcomes diverge. For love, actual NA similarity falls just short of significance ($0.333$, $p = .063$), stable across Steps 1b ($0.332$) and 1c ($0.333$), with the marginal $p$-value reflecting collinearity rather than a substantive change. For closeness, actual NA similarity is clearly significant ($0.531$, $p = .001$), strengthened relative to Step 1a ($0.383$) by the suppression effect identified in Step 1b. This remains the only clearly significant main effect across the entire Step 1c series, and it is the actual (not perceived) similarity channel that carries the signal.
+
+The perceived NA similarity coefficient for closeness in the positive interaction ($-0.169$, $p = .198$) is the largest non-significant perceived similarity effect across the NA models. Its negative direction, opposite to the actual similarity effect, sustains the suppression pattern noted in Step 1b but does not reach significance in any specification.
+
+# Summary of steps 1a, 1b, and 1c
+
+```{r step1_summary_table}
+#| tbl-cap: "Summary of Steps 1a, 1b, and 1c: Fixed effects for actual and perceived affect similarity predicting post-interaction love and closeness"
+
+# --- Build rows ---
+rows <- list(
+  # ---- Closeness / PA ----
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>",
+       fmt_cell(h11_PA_close_pos, "PA_sim_act"),
+       fmt_cell(h13_PA_close_pos, "PA_sim_act"),
+       fmt_cell(im_PA_close_pos,  "PA_sim_act_gmc"),
+       fmt_cell(h11_PA_close_neg, "PA_sim_act"),
+       fmt_cell(h13_PA_close_neg, "PA_sim_act"),
+       fmt_cell(im_PA_close_neg,  "PA_sim_act_gmc")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>",
+       "",
+       fmt_cell(h13_PA_close_pos, "PA_sim_perc"),
+       fmt_cell(im_PA_close_pos,  "PA_sim_perc_gmc"),
+       "",
+       fmt_cell(h13_PA_close_neg, "PA_sim_perc"),
+       fmt_cell(im_PA_close_neg,  "PA_sim_perc_gmc")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Act × Perc</b>",
+       "", "",
+       fmt_cell(im_PA_close_pos, "PA_sim_act_gmc:PA_sim_perc_gmc"),
+       "", "",
+       fmt_cell(im_PA_close_neg, "PA_sim_act_gmc:PA_sim_perc_gmc")),
+  # ---- Closeness / NA ----
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>",
+       fmt_cell(h12_NA_close_pos, "NA_sim_act"),
+       fmt_cell(h13_NA_close_pos, "NA_sim_act"),
+       fmt_cell(im_NA_close_pos,  "NA_sim_act_gmc"),
+       fmt_cell(h12_NA_close_neg, "NA_sim_act"),
+       fmt_cell(h13_NA_close_neg, "NA_sim_act"),
+       fmt_cell(im_NA_close_neg,  "NA_sim_act_gmc")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>",
+       "",
+       fmt_cell(h13_NA_close_pos, "NA_sim_perc"),
+       fmt_cell(im_NA_close_pos,  "NA_sim_perc_gmc"),
+       "",
+       fmt_cell(h13_NA_close_neg, "NA_sim_perc"),
+       fmt_cell(im_NA_close_neg,  "NA_sim_perc_gmc")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Act × Perc</b>",
+       "", "",
+       fmt_cell(im_NA_close_pos, "NA_sim_act_gmc:NA_sim_perc_gmc"),
+       "", "",
+       fmt_cell(im_NA_close_neg, "NA_sim_act_gmc:NA_sim_perc_gmc")),
+  # ---- Love / PA ----
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>",
+       fmt_cell(h11_PA_love_pos, "PA_sim_act"),
+       fmt_cell(h13_PA_love_pos, "PA_sim_act"),
+       fmt_cell(im_PA_love_pos,  "PA_sim_act_gmc"),
+       fmt_cell(h11_PA_love_neg, "PA_sim_act"),
+       fmt_cell(h13_PA_love_neg, "PA_sim_act"),
+       fmt_cell(im_PA_love_neg,  "PA_sim_act_gmc")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>",
+       "",
+       fmt_cell(h13_PA_love_pos, "PA_sim_perc"),
+       fmt_cell(im_PA_love_pos,  "PA_sim_perc_gmc"),
+       "",
+       fmt_cell(h13_PA_love_neg, "PA_sim_perc"),
+       fmt_cell(im_PA_love_neg,  "PA_sim_perc_gmc")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Act × Perc</b>",
+       "", "",
+       fmt_cell(im_PA_love_pos, "PA_sim_act_gmc:PA_sim_perc_gmc"),
+       "", "",
+       fmt_cell(im_PA_love_neg, "PA_sim_act_gmc:PA_sim_perc_gmc")),
+  # ---- Love / NA ----
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>",
+       fmt_cell(h12_NA_love_pos, "NA_sim_act"),
+       fmt_cell(h13_NA_love_pos, "NA_sim_act"),
+       fmt_cell(im_NA_love_pos,  "NA_sim_act_gmc"),
+       fmt_cell(h12_NA_love_neg, "NA_sim_act"),
+       fmt_cell(h13_NA_love_neg, "NA_sim_act"),
+       fmt_cell(im_NA_love_neg,  "NA_sim_act_gmc")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>",
+       "",
+       fmt_cell(h13_NA_love_pos, "NA_sim_perc"),
+       fmt_cell(im_NA_love_pos,  "NA_sim_perc_gmc"),
+       "",
+       fmt_cell(h13_NA_love_neg, "NA_sim_perc"),
+       fmt_cell(im_NA_love_neg,  "NA_sim_perc_gmc")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Act × Perc</b>",
+       "", "",
+       fmt_cell(im_NA_love_pos, "NA_sim_act_gmc:NA_sim_perc_gmc"),
+       "", "",
+       fmt_cell(im_NA_love_neg, "NA_sim_act_gmc:NA_sim_perc_gmc"))
+)
+
+# Assemble into data frame
+tbl_df <- do.call(rbind, lapply(rows, function(r) {
+  data.frame(
+    Outcome   = r[[1]],
+    Affect    = r[[2]],
+    Predictor = r[[3]],
+    `1a`      = r[[4]],
+    `1b`      = r[[5]],
+    `1c`      = r[[6]],
+    `1a `     = r[[7]],
+    `1b `     = r[[8]],
+    `1c `     = r[[9]],
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+}))
+
+kable(tbl_df,
+  format    = "html",
+  col.names = c("Outcome", "Affect Similarity", "Predictor",
+                "1a", "1b", "1c", "1a", "1b", "1c"),
+  align     = c("l", "l", "l", rep("c", 6)),
+  booktabs  = TRUE,
+  escape    = FALSE
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    position   = "left",
+    font_size  = 12
+  ) %>%
+  add_header_above(c(" " = 3,
+                      "Positive Interaction" = 3,
+                      "Negative Interaction" = 3)) %>%
+  collapse_rows(columns = 1:2, valign = "middle") %>%
+  footnote(
+    general = "Coefficients with * p < .05, ** p < .01, *** p < .001. Significant coefficients (p < .05) in bold. Step 1a includes actual similarity only. Step 1b adds perceived similarity. Step 1c adds the actual × perceived interaction (predictors grand-mean centered within context). All models include a dyad-level random intercept. Empty cells indicate that the predictor is not in the model at that step.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE,
+    escape = FALSE
+  )
+```
+
 # Step 2: Mediation by Perceived Similarity (H2.1–H2.2)
 
 We test whether interaction-averaged perceived similarity mediates the association between interaction-averaged actual similarity and post-interaction evaluations. Mediation is estimated separately within each interaction context.
@@ -1493,7 +1678,7 @@ Both with dyad-level random intercepts.
 
 Indirect effect: $\theta_1 \varphi_1$. Confidence intervals via Monte Carlo simulation.
 
-## H2.1 – PA Mediation
+## H2.1 – PA Similarity Mediation
 
 ### Negative Interaction
 
@@ -1586,14 +1771,14 @@ Statistically zero. Perceived PA similarity does not predict closeness after the
 
 The direct effect of actual PA similarity on closeness, controlling for perceived similarity. As in the love model, this is slightly larger than the total effect from Step 1a ($c = 0.432$, $p = .015$), indicating no attenuation.
 
-#### Monte Carlo CI – Love (negative interaction)
+#### Monte Carlo CI (negative interaction)
 
-```{r h21_PA_MC_love_neg}
+```{r h21_PA_MC_neg}
 #| output-fold: true
-#| output-summary: "Monte Carlo indirect effect — PA love (negative)"
+#| output-summary: "Monte Carlo indirect effect — PA closeness (negative)"
 
+# love
 set.seed(42)
-n_sim <- 20000
 
 # Extract coefficients and SEs from mediator and outcome models
 a_est     <- fixef(h21_PA_med_neg)["PA_sim_act"]
@@ -1615,18 +1800,11 @@ cat(sprintf("Indirect effect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
             ifelse(result$p < .001, "< .001", sprintf("%.3f", result$p))))
 cat(sprintf("Total effect (c): %.4f\n", c_total))
 cat(sprintf("Direct effect (c'): %.4f\n", cprime))
-```
 
-**Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = -0.065$, 95% MC CI $[-0.364, 0.235]$, $p = .677$
+# closeness
+set.seed(42)
 
-The indirect effect is non-significant, as anticipated from the null b-path. The CI is wide and centered near zero, confirming that perceived PA similarity does not mediate the association between actual PA similarity and love in the negative interaction. The total effect ($c = 0.379$) is fully retained in the direct effect ($c' = 0.444$), with the slight increase reflecting the non-mediating role of perceived similarity rather than suppression in any meaningful sense (the b-path is too close to zero).
-
-#### Monte Carlo CI – Closeness (negative interaction)
-
-```{r h21_PA_MC_close_neg}
-#| output-fold: true
-#| output-summary: "Monte Carlo indirect effect — PA closeness (negative)"
-
+# Extract coefficients and SEs from outcome models
 b_est_c   <- fixef(h21_PA_out_close_neg)["PA_sim_perc"]
 se_b_c    <- sqrt(vcov(h21_PA_out_close_neg)["PA_sim_perc", "PA_sim_perc"])
 cprime_c  <- fixef(h21_PA_out_close_neg)["PA_sim_act"]
@@ -1644,7 +1822,11 @@ cat(sprintf("Total effect (c): %.4f\n", c_total_c))
 cat(sprintf("Direct effect (c'): %.4f\n", cprime_c))
 ```
 
-**Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = -0.024$, 95% MC CI $[-0.300, 0.250]$, $p = .861$
+**Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = -0.065$, 95% MC CI $[-0.364, 0.235]$, $p = .677$
+
+The indirect effect is non-significant, as anticipated from the null b-path. The CI is wide and centered near zero, confirming that perceived PA similarity does not mediate the association between actual PA similarity and love in the negative interaction. The total effect ($c = 0.379$) is fully retained in the direct effect ($c' = 0.444$), with the slight increase reflecting the non-mediating role of perceived similarity rather than suppression in any meaningful sense (the b-path is too close to zero).
+
+**Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = -0.024$, 95% MC CI $[-0.263, 0.284]$, $p = .858$
 
 The indirect effect is non-significant and even smaller than for love ($-0.065$), consistent with the weaker b-path for closeness ($-0.031$) compared to love ($-0.081$). The total effect ($c = 0.432$) is again fully retained in the direct effect ($c' = 0.456$).
 
@@ -1862,11 +2044,14 @@ Statistically zero, though this is the largest b-path coefficient across all PA 
 
 Statistically zero. The direct effect attenuates substantially from the total effect ($c = 0.376$, $p = .016$), more so than for love in the same context. As discussed in Step 1b, this is the model where the Step 1a total effect splits most evenly between the two predictors ($0.215$ vs. $0.229$), but neither reaches significance individually.
 
-#### Monte Carlo CI – Love (positive interaction)
+#### Monte Carlo CI (positive interaction)
 
-```{r h21_PA_MC_love_pos}
+```{r h21_PA_MC_pos}
 #| output-fold: true
 #| output-summary: "Monte Carlo indirect effect — PA love (positive)"
+
+# love
+set.seed(42)
 
 a_est_p   <- fixef(h21_PA_med_pos)["PA_sim_act"]
 se_a_p    <- sqrt(vcov(h21_PA_med_pos)["PA_sim_act", "PA_sim_act"])
@@ -1886,17 +2071,9 @@ cat(sprintf("Indirect effect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
             ifelse(result_p$p < .001, "< .001", sprintf("%.3f", result_p$p))))
 cat(sprintf("Total effect (c): %.4f\n", c_total_p))
 cat(sprintf("Direct effect (c'): %.4f\n", cprime_p))
-```
 
-**Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = 0.074$, 95% MC CI $[-0.164, 0.309]$, $p = .536$
-
-The indirect effect is non-significant, as anticipated from the null b-path. The total effect ($c = 0.459$) attenuates modestly to the direct effect ($c' = 0.386$), but this reduction is not carried by a functioning mediation pathway.
-
-#### Monte Carlo CI – Closeness (positive interaction)
-
-```{r h21_PA_MC_close_pos}
-#| output-fold: true
-#| output-summary: "Monte Carlo indirect effect — PA closeness (positive)"
+# closeness
+set.seed(42)
 
 b_est_pc   <- fixef(h21_PA_out_close_pos)["PA_sim_perc"]
 se_b_pc    <- sqrt(vcov(h21_PA_out_close_pos)["PA_sim_perc", "PA_sim_perc"])
@@ -1915,7 +2092,11 @@ cat(sprintf("Total effect (c): %.4f\n", c_total_pc))
 cat(sprintf("Direct effect (c'): %.4f\n", cprime_pc))
 ```
 
-**Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = 0.161$, 95% MC CI $[-0.059, 0.382]$, $p = .145$
+**Love - Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = 0.074$, 95% MC CI $[-0.161, 0.313]$, $p = .544$
+
+The indirect effect is non-significant, as anticipated from the null b-path. The total effect ($c = 0.459$) attenuates modestly to the direct effect ($c' = 0.386$), but this reduction is not carried by a functioning mediation pathway.
+
+**Closeness - Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = 0.161$, 95% MC CI $[-0.049, 0.435]$, $p = .151$
 
 This is the largest PA indirect effect across all four models, and the CI comes closest to excluding zero, but it remains non-significant. The total effect ($c = 0.376$) attenuates substantially to the direct effect ($c' = 0.215$), with the indirect pathway accounting for the difference. However, without a significant b-path or a significant indirect effect, this attenuation pattern does not constitute evidence for mediation.
 
@@ -2042,7 +2223,7 @@ The a-path is strong ($\theta_1 = 0.702$, $p < .001$), and the b-path is the lar
 
 **H2.1 is not supported for closeness in the positive interaction**, though this is the model where the mediation pattern comes closest. Across all four PA mediation models (two outcomes $\times$ two contexts), the conclusion is consistent: the a-path is always strong (actors perceive actual PA similarity accurately), but the b-path never reaches significance (this perception does not uniquely predict post-interaction evaluations). PA mediation is not supported in SC2.
 
-## H2.2 – NA Mediation
+## H2.2 – NA Similarity Mediation
 
 ### Negative Interaction
 
@@ -2131,11 +2312,14 @@ Statistically zero. Perceived NA similarity does not predict closeness after the
 
 Statistically zero, consistent with the null total effect from Step 1a ($c = -0.157$, $p = .497$).
 
-#### Monte Carlo CI - Love (negative interaction)
+#### Monte Carlo CI (negative interaction)
 
-```{r h22_NA_MC_love_neg}
+```{r h22_NA_MC_neg}
 #| output-fold: true
 #| output-summary: "Monte Carlo indirect effects — NA (negative)"
+
+# love
+set.seed(42)
 
 a_NA_neg     <- fixef(h22_NA_med_neg)["NA_sim_act"]
 se_a_NA_neg  <- sqrt(vcov(h22_NA_med_neg)["NA_sim_act", "NA_sim_act"])
@@ -2152,15 +2336,9 @@ cat("--- Love (negative) ---\n")
 cat(sprintf("Indirect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
             res_NA_love_neg$point, res_NA_love_neg$ci_low, res_NA_love_neg$ci_hi,
             ifelse(res_NA_love_neg$p < .001, "< .001", sprintf("%.3f", res_NA_love_neg$p))))
-```
 
-**Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = 0.076$, 95% MC CI $[-0.209, 0.363]$, $p = .602$
-
-#### Monte Carlo CI - Closeness (negative interaction)
-
-```{r h22_NA_MC_close_neg}
-#| output-fold: true
-#| output-summary: "Monte Carlo indirect effects — NA (negative)"
+# closeness
+set.seed(42)
 
 b_NA_close_neg <- fixef(h22_NA_out_close_neg)["NA_sim_perc"]
 se_b_NA_close_neg <- sqrt(vcov(h22_NA_out_close_neg)["NA_sim_perc", "NA_sim_perc"])
@@ -2176,7 +2354,9 @@ cat(sprintf("Indirect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
             ifelse(res_NA_close_neg$p < .001, "< .001", sprintf("%.3f", res_NA_close_neg$p))))
 ```
 
-**Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = 0.019$, 95% MC CI $[-0.244, 0.290]$, $p = .875$
+**Love - Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = 0.076$, 95% MC CI $[-0.209, 0.368]$, $p = .605$
+
+**Closeness - Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = 0.019$, 95% MC CI $[-0.205, 0.336]$, $p = .891$
 
 #### Mediation diagramme for negative interaction
 
@@ -2324,6 +2504,22 @@ h22_NA_med_pos <- lme(
 model_output(h22_NA_med_pos)
 ```
 
+**Intercept** $\theta_0 = -1.286$, 95% CI $[-3.745, 1.173]$, $p = .302$
+
+Statistically zero. When actual NA similarity is zero, perceived NA similarity is approximately zero on average in the positive interaction. This contrasts with the negative interaction, where the intercept was small but significantly positive ($2.067$, $p = .008$), and with the PA positive interaction, where the intercept was clearly positive ($4.322$, $p < .001$). In the positive interaction, actors do not show a systematic perceptual bias for NA similarity at zero actual overlap.
+
+**a-path** $\theta_1 = 0.817$, 95% CI $[0.716, 0.919]$, $p < .001$
+
+Actual NA similarity is a strong predictor of perceived NA similarity. This is the strongest a-path across all four mediator models (PA negative: $0.798$; PA positive: $0.702$; NA negative: $0.701$; NA positive: $0.817$). Perception tracks actuality most closely for NA during the positive interaction, which may reflect the salience of shared negative affect in an otherwise positive context making it easier to detect.
+
+**Random effects**
+
+The dyad intercept is essentially zero ($SD = 0.0005$), as in all mediator models. The residual $SD = 7.70$ is comparable to the other mediator models.
+
+**The a-path is clearly established for NA in the positive interaction.** From the Step 1b results, the b-path for love was statistically zero ($0.025$, $p = .862$), while for closeness the b-path trended negative ($-0.177$, $p = .174$) as part of the suppression pattern. The total effects (Step 1a) were significant for both outcomes ($0.352$ for love, $0.383$ for closeness), so unlike the negative interaction, there is an association that could in principle be mediated.
+
+#### b- and c'-paths (outcome model - love)
+
 ```{r h22_NA_out_love_pos}
 #| output-fold: true
 #| output-summary: "Outcome model NA → Love (positive)"
@@ -2338,6 +2534,16 @@ h22_NA_out_love_pos <- lme(
 
 model_output(h22_NA_out_love_pos)
 ```
+
+**b-path** $\varphi_1 = 0.025$, 95% CI $[-0.256, 0.305]$, $p = .862$
+
+Statistically zero. Perceived NA similarity does not predict love after the positive interaction once actual similarity is controlled. Despite the strong a-path ($0.817$), the perceptual channel carries no information to the outcome.
+
+**c'-path (direct effect)** $\varphi_2 = 0.332$, 95% CI $[-0.017, 0.681]$, $p = .062$
+
+The direct effect attenuates modestly from the total effect ($c = 0.352$, $p = .009$) and drops below conventional significance. As in the PA love positive interaction model, the loss of significance reflects collinearity rather than a functioning mediation pathway, since the b-path is essentially zero.
+
+#### b- and c'-paths (outcome model - closeness)
 
 ```{r h22_NA_out_close_pos}
 #| output-fold: true
@@ -2354,6 +2560,14 @@ h22_NA_out_close_pos <- lme(
 model_output(h22_NA_out_close_pos)
 ```
 
+**b-path** $\varphi_1 = -0.177$, 95% CI $[-0.434, 0.080]$, $p = .174$
+
+Statistically zero, though the negative direction is consistent with the suppression pattern identified in Step 1b. Perceived NA similarity trends toward predicting *less* closeness once actual similarity is controlled, opposite to the direction of the actual similarity effect. This is the largest b-path magnitude across all eight mediation outcome models, but it does not reach significance.
+
+**c'-path (direct effect)** $\varphi_2 = 0.528$, 95% CI $[0.212, 0.843]$, $p = .001$
+
+The direct effect *increases* from the total effect ($c = 0.383$, $p = .002$), confirming the suppression pattern: controlling for perceived similarity strengthens rather than attenuates the actual similarity coefficient. This is the opposite of what mediation produces, and it is the clearest suppression effect across all mediation models.
+
 #### Monte Carlo CI (positive interaction)
 
 ```{r h22_NA_MC_pos}
@@ -2361,6 +2575,8 @@ model_output(h22_NA_out_close_pos)
 #| output-summary: "Monte Carlo indirect effects — NA (positive)"
 
 # Love
+set.seed(42)
+
 a_NA_pos     <- fixef(h22_NA_med_pos)["NA_sim_act"]
 se_a_NA_pos  <- sqrt(vcov(h22_NA_med_pos)["NA_sim_act", "NA_sim_act"])
 b_NA_love_pos <- fixef(h22_NA_out_love_pos)["NA_sim_perc"]
@@ -2378,6 +2594,8 @@ cat(sprintf("Indirect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
             ifelse(res_NA_love_pos$p < .001, "< .001", sprintf("%.3f", res_NA_love_pos$p))))
 
 # Closeness
+set.seed(42)
+
 b_NA_close_pos <- fixef(h22_NA_out_close_pos)["NA_sim_perc"]
 se_b_NA_close_pos <- sqrt(vcov(h22_NA_out_close_pos)["NA_sim_perc", "NA_sim_perc"])
 
@@ -2391,6 +2609,143 @@ cat(sprintf("Indirect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
             res_NA_close_pos$point, res_NA_close_pos$ci_low, res_NA_close_pos$ci_hi,
             ifelse(res_NA_close_pos$p < .001, "< .001", sprintf("%.3f", res_NA_close_pos$p))))
 ```
+
+**Love:**
+
+**Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = 0.020$, 95% MC CI $[-0.207, 0.250]$, $p = .856$
+
+The indirect effect is non-significant and essentially zero. **H2.2 is not supported for love in the positive interaction.** Despite the strongest a-path across all mediator models ($0.817$), the null b-path ($0.025$) ensures that the mediation pathway carries no signal.
+
+**Closeness:**
+
+**Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = -0.145$, 95% MC CI $[-0.311, 0.070]$, $p = .173$
+
+The indirect effect is negative and the largest in absolute magnitude across all eight mediation tests, but it does not reach significance. The CI just includes zero. This is the suppression pathway identified in the outcome model: actors who perceive more shared NA than actually exists tend to report slightly less closeness, partially counteracting the positive direct effect of actual similarity. The suppression is not statistically reliable at conventional levels, but the direction and magnitude are consistent with the pattern observed across Steps 1b and 1c.
+
+#### Mediation diagramme for the positive interaction
+
+```{r h22_NA_mediation_diagram_pos}
+#| fig-cap: "NA mediation model — Positive interaction"
+#| fig-width: 8
+#| fig-height: 4
+
+# Extract coefficients and CIs
+a_est  <- fixef(h22_NA_med_pos)["NA_sim_act"]
+a_ci   <- intervals(h22_NA_med_pos, which = "fixed")$fixed["NA_sim_act", ]
+a_p    <- summary(h22_NA_med_pos)$tTable["NA_sim_act", "p-value"]
+
+b_love_est  <- fixef(h22_NA_out_love_pos)["NA_sim_perc"]
+b_love_ci   <- intervals(h22_NA_out_love_pos, which = "fixed")$fixed["NA_sim_perc", ]
+b_love_p    <- summary(h22_NA_out_love_pos)$tTable["NA_sim_perc", "p-value"]
+
+cp_love_est <- fixef(h22_NA_out_love_pos)["NA_sim_act"]
+cp_love_ci  <- intervals(h22_NA_out_love_pos, which = "fixed")$fixed["NA_sim_act", ]
+cp_love_p   <- summary(h22_NA_out_love_pos)$tTable["NA_sim_act", "p-value"]
+
+c_love_est  <- fixef(h12_NA_love_pos)["NA_sim_act"]
+c_love_ci   <- intervals(h12_NA_love_pos, which = "fixed")$fixed["NA_sim_act", ]
+c_love_p    <- summary(h12_NA_love_pos)$tTable["NA_sim_act", "p-value"]
+
+b_close_est  <- fixef(h22_NA_out_close_pos)["NA_sim_perc"]
+b_close_ci   <- intervals(h22_NA_out_close_pos, which = "fixed")$fixed["NA_sim_perc", ]
+b_close_p    <- summary(h22_NA_out_close_pos)$tTable["NA_sim_perc", "p-value"]
+
+cp_close_est <- fixef(h22_NA_out_close_pos)["NA_sim_act"]
+cp_close_ci  <- intervals(h22_NA_out_close_pos, which = "fixed")$fixed["NA_sim_act", ]
+cp_close_p   <- summary(h22_NA_out_close_pos)$tTable["NA_sim_act", "p-value"]
+
+c_close_est  <- fixef(h12_NA_close_pos)["NA_sim_act"]
+c_close_ci   <- intervals(h12_NA_close_pos, which = "fixed")$fixed["NA_sim_act", ]
+c_close_p    <- summary(h12_NA_close_pos)$tTable["NA_sim_act", "p-value"]
+
+# --- Love diagram ---
+nodes_love <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual NA\nSimilarity", "Perceived NA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+layout_love <- get_layout(
+  "X", "M",
+  NA,  "Y",
+  rows = 2
+)
+
+edges_love <- data.frame(
+  from      = c("X", "M", "X", "X"),
+  to        = c("M", "Y", "Y", "Y"),
+  label     = c(paste0("a: ",  fmt(a_est, a_ci["lower"], a_ci["upper"], a_p)),
+                paste0("b: ",  fmt(b_love_est, b_love_ci["lower"], b_love_ci["upper"], b_love_p)),
+                paste0("c': ", fmt(cp_love_est, cp_love_ci["lower"], cp_love_ci["upper"], cp_love_p)),
+                paste0("c: ",  fmt(c_love_est, c_love_ci["lower"], c_love_ci["upper"], c_love_p))),
+  linetype  = c(1, 1, 1, 2),
+  colour    = c(sig_col(a_p), sig_col(b_love_p), sig_col(cp_love_p), sig_col(c_love_p)),
+  curvature = c(NA, NA, NA, -30)
+)
+
+p_love <- prepare_graph(
+  nodes  = nodes_love,
+  edges  = edges_love,
+  layout = layout_love,
+  spacing_x = 3, spacing_y = 2,
+  rect_width = 0.8, rect_height = 0.5
+)
+
+edges(p_love)$linetype     <- edges_love$linetype
+edges(p_love)$colour       <- edges_love$colour
+edges(p_love)$label_colour <- edges_love$colour
+edges(p_love)$label_hjust  <- "center"
+
+p1 <- plot(p_love) + ggtitle("NA Mediation — Positive Interaction — Love")
+
+# --- Closeness diagram ---
+nodes_close <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual NA\nSimilarity", "Perceived NA\nSimilarity", "Closeness"),
+  shape = c("rect", "rect", "rect")
+)
+
+edges_close <- data.frame(
+  from      = c("X", "M", "X", "X"),
+  to        = c("M", "Y", "Y", "Y"),
+  label     = c(paste0("a: ",  fmt(a_est, a_ci["lower"], a_ci["upper"], a_p)),
+                paste0("b: ",  fmt(b_close_est, b_close_ci["lower"], b_close_ci["upper"], b_close_p)),
+                paste0("c': ", fmt(cp_close_est, cp_close_ci["lower"], cp_close_ci["upper"], cp_close_p)),
+                paste0("c: ",  fmt(c_close_est, c_close_ci["lower"], c_close_ci["upper"], c_close_p))),
+  linetype  = c(1, 1, 1, 2),
+  colour    = c(sig_col(a_p), sig_col(b_close_p), sig_col(cp_close_p), sig_col(c_close_p)),
+  curvature = c(NA, NA, NA, -30)
+)
+
+p_close <- prepare_graph(
+  nodes  = nodes_close,
+  edges  = edges_close,
+  layout = layout_love,
+  spacing_x = 3, spacing_y = 2,
+  rect_width = 0.8, rect_height = 0.5
+)
+
+edges(p_close)$linetype     <- edges_close$linetype
+edges(p_close)$colour       <- edges_close$colour
+edges(p_close)$label_colour <- edges_close$colour
+edges(p_close)$label_hjust  <- "center"
+
+p2 <- plot(p_close) + ggtitle("NA Mediation — Positive Interaction — Closeness")
+
+p1 / p2
+```
+
+#### Mediation summary for love in the positive interaction
+
+The a-path is the strongest observed across all mediator models ($\theta_1 = 0.817$, $p < .001$), but the b-path is statistically zero ($\varphi_1 = 0.025$, $p = .862$). The indirect effect ($\theta_1 \times \varphi_1 = 0.817 \times 0.025 = 0.020$) is expected to be non-significant. Despite a significant total effect in Step 1a, the mediation pathway is blocked at the b-path: actors perceive actual NA overlap very accurately during the positive interaction, but this perception does not translate into higher or lower love.
+
+#### Mediation summary for closeness in the positive interaction
+
+The a-path is strong ($\theta_1 = 0.817$, $p < .001$) and the b-path trends negative ($\varphi_1 = -0.177$, $p = .174$), producing an indirect effect in the negative direction ($\theta_1 \times \varphi_1 = 0.817 \times -0.177 = -0.145$). If significant, this would indicate *suppression* rather than mediation: perceived similarity would be partially masking the actual similarity effect, explaining why the total effect ($0.383$) is weaker than the direct effect ($0.528$). The Monte Carlo CI will determine whether this suppression pathway is statistically reliable.
+
+**H2.2 is not supported for closeness in the positive interaction.** The pattern is the opposite of mediation: rather than carrying the actual similarity effect to the outcome, perceived similarity partially counteracts it. Actors who perceive more shared NA (beyond the actual overlap) tend to report slightly less closeness, while the actual overlap itself predicts more closeness. The two channels pull in opposing directions, consistent with the suppression pattern observed throughout Steps 1b and 1c for this specific model.
+
+**H2.2 is not supported for closeness in the positive interaction**, though this model comes closest to revealing a statistically reliable indirect pathway, and the pathway that nearly emerges is suppression rather than mediation. Across all eight NA mediation tests (two outcomes $\times$ two contexts), no indirect effect reaches significance. The a-path is consistently strong, but the b-path never reliably connects perceived similarity to the outcome, blocking mediation at every turn.
 
 # Step 3a: Moderation by Trait We-ness (H3.1–H3.2)
 

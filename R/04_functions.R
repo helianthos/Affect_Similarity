@@ -530,3 +530,16 @@ fmt <- function(est, ci_low, ci_up, p) {
 
 # mediation plots SC2 - Color edges/labels based on significance
 sig_col <- function(p) ifelse(p < .05, "black", "grey75")
+
+# For global summary table: extract β and p, format with stars, bold if significant
+# Helper: extract β and p, format with stars, bold if significant
+fmt_cell <- function(model, param) {
+  tt <- summary(model)$tTable
+  if (!(param %in% rownames(tt))) return("")
+  est <- tt[param, "Value"]
+  p   <- tt[param, "p-value"]
+  stars <- ifelse(p < .001, "***", ifelse(p < .01, "**", ifelse(p < .05, "*", "")))
+  txt <- sprintf("%.3f%s", est, stars)
+  if (p < .05) txt <- paste0("<b>", txt, "</b>")
+  txt
+}
