@@ -1154,6 +1154,53 @@ Dyad intercept $SD = 8.88$, variance $= 78.84$; residual $SD = 18.44$, variance 
 
 The model confirms that perceived PA similarity neither predicts love after the negative interaction nor modulates the actual similarity effect. The actual similarity coefficient is stable across Steps 1a ($0.379$), 1b ($0.444$), and 1c ($0.437$) regardless of whether perceived similarity is entered as a main effect or allowed to interact, indicating that perceived similarity is simply irrelevant to this association.
 
+#### Probing negative interaction
+
+```{r im_PA_love_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — PA love (negative)"
+
+# Probe points (−1 SD, 0, +1 SD)
+act_sd_neg  <- sd(sc2_neg$PA_sim_act_gmc,  na.rm = TRUE)
+perc_sd_neg <- sd(sc2_neg$PA_sim_perc_gmc, na.rm = TRUE)
+
+# Simple slopes of actual PA similarity at levels of perceived PA similarity
+slopes_act <- emtrends(
+  im_PA_love_neg,
+  specs = ~ PA_sim_perc_gmc,
+  var   = "PA_sim_act_gmc",
+  at    = list(PA_sim_perc_gmc = c(-perc_sd_neg, 0, perc_sd_neg))
+)
+
+summary(slopes_act, infer = TRUE)
+
+# Simple slopes of perceived PA similarity at levels of actual PA similarity
+slopes_perc <- emtrends(
+  im_PA_love_neg,
+  specs = ~ PA_sim_act_gmc,
+  var   = "PA_sim_perc_gmc",
+  at    = list(PA_sim_act_gmc = c(-act_sd_neg, 0, act_sd_neg))
+)
+
+summary(slopes_perc, infer = TRUE)
+```
+
+The simple slopes of actual PA similarity on love are virtually constant across levels of perceived PA similarity: $0.404$ at $-1$ SD, $0.437$ at the mean, $0.471$ at $+1$ SD. None reaches conventional significance (all $p > .05$), which reflects the collinearity-driven widening of standard errors discussed above rather than a meaningful change in the slope.
+
+Conversely, the simple slopes of perceived PA similarity on love are statistically zero at all levels of actual similarity ($-0.098$, $-0.067$, $-0.036$; all $p > .63$). Perceived PA similarity is uninformative for post-interaction love regardless of how much actual PA overlap couples share.
+
+The slopes are flat across moderator levels in both directions, and perceived similarity contributes nothing at any level of actual similarity. There is no synergy or compensation between the two forms of similarity. The remaining Step 1c models (positive interaction love, and both closeness models) show the same null interaction pattern, so probing results are not reported for those.
+
+::: callout-important
+## Interpreting simple slopes when the interaction is non-significant
+
+Throughout Steps 1c and 3a, we report simple slopes at $-1$ SD, mean, and $+1$ SD of the moderator even when the interaction term is non-significant. It is important to note that the interaction test and the simple slope tests answer different questions. The interaction asks whether the slopes *differ from each other* across moderator levels. The simple slope asks whether a specific slope *differs from zero* at a given moderator value. These are independent tests with different standard errors.
+
+A common pattern in these results is that a slope is significant at one moderator level but not at another, despite the interaction being non-significant. This does not mean the slopes are different from each other. The significance of individual slopes depends on the precision of the estimate at that specific moderator value (which varies), while the interaction test evaluates the rate of change in the slope across the moderator range. More concisely: "the difference between significant and not significant is not itself necessarily significant." A non-significant slope does not mean the slope *is* zero; it means zero cannot be ruled out given the precision at that point. The true slopes at different moderator values could all be very similar, with the apparent variation in significance reflecting differences in estimation precision rather than differences in the underlying effect.
+
+Accordingly, the simple slopes should be read as showing where in the moderator range the similarity effect is detectably different from zero, not as evidence for or against moderation. Only the interaction test addresses whether the effect varies across the moderator range.
+:::
+
 #### Positive interaction
 
 ```{r im_PA_love_pos}
@@ -1193,44 +1240,42 @@ Dyad intercept $SD = 10.50$, variance $= 110.16$; residual $SD = 13.34$, varianc
 
 **Neither actual nor perceived PA similarity reaches significance in this model, and the interaction between them is essentially zero (**$\beta_3 = 0.003$, $p = .798$). Combined with the identical null interaction in the negative context ($\beta_3 = 0.003$, $p = .808$), the Step 1c results provide clear evidence that the two forms of similarity do not modulate each other's association with post-interaction love in either context. The non-significance of both main effects in the positive interaction reflects the collinearity-driven splitting of a modest total effect (Step 1a: $\beta = 0.459$, $p = .007$) across two correlated predictors, rather than a genuine absence of association.
 
-### Probing (negative interaction, love)
+#### Probing positive interaction
 
-```{r im_PA_love_neg_probe}
+```{r im_PA_love_pos_probe}
 #| output-fold: true
-#| output-summary: "Simple slopes — PA love (negative)"
+#| output-summary: "Simple slopes — PA love (positive)"
 
 # Probe points (−1 SD, 0, +1 SD)
-act_sd_neg  <- sd(sc2_neg$PA_sim_act_gmc,  na.rm = TRUE)
-perc_sd_neg <- sd(sc2_neg$PA_sim_perc_gmc, na.rm = TRUE)
+act_sd_pos  <- sd(sc2_pos$PA_sim_act_gmc,  na.rm = TRUE)
+perc_sd_pos <- sd(sc2_pos$PA_sim_perc_gmc, na.rm = TRUE)
 
 # Simple slopes of actual PA similarity at levels of perceived PA similarity
 slopes_act <- emtrends(
-  im_PA_love_neg,
+  im_PA_love_pos,
   specs = ~ PA_sim_perc_gmc,
   var   = "PA_sim_act_gmc",
-  at    = list(PA_sim_perc_gmc = c(-perc_sd_neg, 0, perc_sd_neg))
+  at    = list(PA_sim_perc_gmc = c(-perc_sd_pos, 0, perc_sd_pos))
 )
 
 summary(slopes_act, infer = TRUE)
 
 # Simple slopes of perceived PA similarity at levels of actual PA similarity
 slopes_perc <- emtrends(
-  im_PA_love_neg,
+  im_PA_love_pos,
   specs = ~ PA_sim_act_gmc,
   var   = "PA_sim_perc_gmc",
-  at    = list(PA_sim_act_gmc = c(-act_sd_neg, 0, act_sd_neg))
+  at    = list(PA_sim_act_gmc = c(-act_sd_pos, 0, act_sd_pos))
 )
 
 summary(slopes_perc, infer = TRUE)
 ```
 
-**Simple slopes (confirming the null interaction)**
+The simple slopes of actual PA similarity on love are virtually constant across levels of perceived PA similarity: $0.363$ at $-1$ SD, $0.393$ at the mean, $0.423$ at $+1$ SD. None reaches conventional significance (all $p > .06$), reflecting the collinearity-driven weakening of the main effect observed throughout.
 
-The simple slopes of actual PA similarity on love are virtually constant across levels of perceived PA similarity: $0.404$ at $-1$ SD, $0.437$ at the mean, $0.471$ at $+1$ SD. None reaches conventional significance (all $p > .05$), which reflects the collinearity-driven widening of standard errors discussed above rather than a meaningful change in the slope. The near-identical magnitudes confirm that perceived PA similarity does not modulate the actual similarity effect.
+Conversely, the simple slopes of perceived PA similarity on love are statistically zero at all levels of actual similarity ($0.070$, $0.099$, $0.128$; all $p > .51$). Perceived PA similarity is uninformative for post-interaction love regardless of actual PA overlap.
 
-Conversely, the simple slopes of perceived PA similarity on love are statistically zero at all levels of actual similarity ($-0.098$, $-0.067$, $-0.036$; all $p > .63$). Perceived PA similarity is uninformative for post-interaction love regardless of how much actual PA overlap couples share.
-
-Together, the probing results corroborate the null interaction term: the actual similarity slope is constant across levels of perceived similarity, and perceived similarity is statistically zero regardless of actual similarity level. There is no synergy or compensation between the two forms of similarity. The remaining Step 1c models (positive interaction love, and both closeness models) show the same null interaction pattern, so probing results are not reported for those.
+As in the negative interaction, the slopes are flat across moderator levels and perceived similarity contributes nothing at any level of actual similarity.
 
 ### Closeness
 
@@ -1273,6 +1318,43 @@ Dyad intercept $SD = 12.83$, variance $= 164.69$; residual $SD = 16.13$, varianc
 
 **As with love, perceived PA similarity neither predicts closeness after the negative interaction nor modulates the actual similarity effect. Actual similarity retains its predictive value regardless of model specification.**
 
+#### Probing negative interaction
+
+```{r im_PA_close_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — PA closeness (negative)"
+
+# Probe points (−1 SD, 0, +1 SD)
+act_sd_neg  <- sd(sc2_neg$PA_sim_act_gmc,  na.rm = TRUE)
+perc_sd_neg <- sd(sc2_neg$PA_sim_perc_gmc, na.rm = TRUE)
+
+# Simple slopes of actual PA similarity at levels of perceived PA similarity
+slopes_act <- emtrends(
+  im_PA_close_neg,
+  specs = ~ PA_sim_perc_gmc,
+  var   = "PA_sim_act_gmc",
+  at    = list(PA_sim_perc_gmc = c(-perc_sd_neg, 0, perc_sd_neg))
+)
+
+summary(slopes_act, infer = TRUE)
+
+# Simple slopes of perceived PA similarity at levels of actual PA similarity
+slopes_perc <- emtrends(
+  im_PA_close_neg,
+  specs = ~ PA_sim_act_gmc,
+  var   = "PA_sim_perc_gmc",
+  at    = list(PA_sim_act_gmc = c(-act_sd_neg, 0, act_sd_neg))
+)
+
+summary(slopes_perc, infer = TRUE)
+```
+
+The simple slopes of actual PA similarity on closeness are virtually constant across levels of perceived PA similarity: $0.504$ at $-1$ SD, $0.464$ at the mean, $0.425$ at $+1$ SD. The slope at the mean is significant ($p = .043$); the other two fall just short (both $p < .10$). The variation in significance across moderator levels reflects differences in estimation precision rather than a meaningful gradient.
+
+Conversely, the simple slopes of perceived PA similarity on closeness are statistically zero at all levels of actual similarity ($-0.011$, $-0.048$, $-0.084$; all $p > .74$). As in all other models, perceived PA similarity is uninformative for post-interaction evaluations regardless of actual PA overlap.
+
+The pattern replicates the love models: flat gradients in both directions and no contribution from perceived similarity.
+
 #### Positive interaction
 
 ```{r im_PA_close_pos}
@@ -1309,6 +1391,41 @@ Statistically zero. As in the other three PA models, the association between act
 **Random effects and variance decomposition**
 
 Dyad intercept $SD = 9.48$, variance $= 89.88$; residual $SD = 12.36$, variance $= 152.81$. Unchanged from Steps 1a and 1b.
+
+#### Probing positive interaction
+
+```{r im_PA_close_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — PA closeness (positive)"
+
+# Probe points (−1 SD, 0, +1 SD)
+act_sd_pos  <- sd(sc2_pos$PA_sim_act_gmc,  na.rm = TRUE)
+perc_sd_pos <- sd(sc2_pos$PA_sim_perc_gmc, na.rm = TRUE)
+
+# Simple slopes of actual PA similarity at levels of perceived PA similarity
+slopes_act <- emtrends(
+  im_PA_close_pos,
+  specs = ~ PA_sim_perc_gmc,
+  var   = "PA_sim_act_gmc",
+  at    = list(PA_sim_perc_gmc = c(-perc_sd_pos, 0, perc_sd_pos))
+)
+
+summary(slopes_act, infer = TRUE)
+
+# Simple slopes of perceived PA similarity at levels of actual PA similarity
+slopes_perc <- emtrends(
+  im_PA_close_pos,
+  specs = ~ PA_sim_act_gmc,
+  var   = "PA_sim_perc_gmc",
+  at    = list(PA_sim_act_gmc = c(-act_sd_pos, 0, act_sd_pos))
+)
+
+summary(slopes_perc, infer = TRUE)
+```
+
+The simple slopes of actual PA similarity on closeness are virtually constant across levels of perceived PA similarity: $0.193$ at $-1$ SD, $0.221$ at the mean, $0.249$ at $+1$ SD. None reaches significance (all $p > .24$), consistent with the non-significant main effect in this model.
+
+The simple slopes of perceived PA similarity on closeness are also non-significant at all levels of actual similarity ($0.198$, $0.224$, $0.251$; all $p > .15$). Notably, this is the only probing table where both sets of slopes are of comparable magnitude and both trend positive, consistent with the Step 1b finding that the total effect splits roughly evenly between the two predictors in this specific model. Neither reaches significance individually due to the collinearity-driven splitting of a modest total effect (Step 1a: $0.376$, $p = .016$).
 
 ### Summary of results
 
@@ -1381,6 +1498,39 @@ Dyad intercept $SD = 9.48$, variance $= 89.93$; residual $SD = 18.47$, variance 
 
 **The model confirms the consistent null pattern for NA similarity in the negative interaction: neither actual nor perceived similarity predicts love, and the two do not interact. NA similarity during the disagreement interaction is uninformative for post-interaction love regardless of model specification.**
 
+#### Probing negative interaction
+
+```{r im_NA_love_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — NA love (negative)"
+
+# Probe points (−1 SD, 0, +1 SD)
+act_sd_neg  <- sd(sc2_neg$NA_sim_act_gmc,  na.rm = TRUE)
+perc_sd_neg <- sd(sc2_neg$NA_sim_perc_gmc, na.rm = TRUE)
+
+# Simple slopes of actual NA similarity at levels of perceived NA similarity
+slopes_act <- emtrends(
+  im_NA_love_neg,
+  specs = ~ NA_sim_perc_gmc,
+  var   = "NA_sim_act_gmc",
+  at    = list(NA_sim_perc_gmc = c(-perc_sd_neg, 0, perc_sd_neg))
+)
+
+summary(slopes_act, infer = TRUE)
+
+# Simple slopes of perceived NA similarity at levels of actual NA similarity
+slopes_perc <- emtrends(
+  im_NA_love_neg,
+  specs = ~ NA_sim_act_gmc,
+  var   = "NA_sim_perc_gmc",
+  at    = list(NA_sim_act_gmc = c(-act_sd_neg, 0, act_sd_neg))
+)
+
+summary(slopes_perc, infer = TRUE)
+```
+
+The simple slopes of actual NA similarity on love are statistically zero at all levels of perceived NA similarity ($-0.133$, $-0.200$, $-0.266$; all $p > .35$). The simple slopes of perceived NA similarity on love are likewise statistically zero at all levels of actual similarity ($0.155$, $0.096$, $0.038$; all $p > .52$). Both sets of slopes are flat and uniformly null, consistent with the broader pattern from Steps 1a and 1b: NA similarity in the negative interaction is uninformative for post-interaction love regardless of model specification, and neither form of similarity modulates the other.
+
 #### Positive interaction
 
 ```{r im_NA_love_pos}
@@ -1419,6 +1569,41 @@ Statistically zero. This is the smallest interaction term observed across all ei
 Dyad intercept $SD = 10.51$, variance $= 110.36$; residual $SD = 13.38$, variance $= 178.93$. Unchanged from Steps 1a and 1b.
 
 **The model confirms that perceived NA similarity neither predicts love after the positive interaction nor modulates the actual similarity effect. The actual similarity coefficient remains stable at** $\approx 0.33$ **across Steps 1b and 1c regardless of whether perceived similarity is entered as a main effect or allowed to interact, indicating that perceived similarity is simply irrelevant to this association.**
+
+#### Probing positive interaction
+
+```{r im_NA_love_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — NA love (positive)"
+
+# Probe points (−1 SD, 0, +1 SD)
+act_sd_pos  <- sd(sc2_pos$NA_sim_act_gmc,  na.rm = TRUE)
+perc_sd_pos <- sd(sc2_pos$NA_sim_perc_gmc, na.rm = TRUE)
+
+# Simple slopes of actual NA similarity at levels of perceived NA similarity
+slopes_act <- emtrends(
+  im_NA_love_pos,
+  specs = ~ NA_sim_perc_gmc,
+  var   = "NA_sim_act_gmc",
+  at    = list(NA_sim_perc_gmc = c(-perc_sd_pos, 0, perc_sd_pos))
+)
+
+summary(slopes_act, infer = TRUE)
+
+# Simple slopes of perceived NA similarity at levels of actual NA similarity
+slopes_perc <- emtrends(
+  im_NA_love_pos,
+  specs = ~ NA_sim_act_gmc,
+  var   = "NA_sim_perc_gmc",
+  at    = list(NA_sim_act_gmc = c(-act_sd_pos, 0, act_sd_pos))
+)
+
+summary(slopes_perc, infer = TRUE)
+```
+
+The simple slopes of actual NA similarity on love are virtually constant across levels of perceived NA similarity: $0.322$ at $-1$ SD, $0.333$ at the mean, $0.343$ at $+1$ SD. None reaches conventional significance (all $p > .06$), reflecting the collinearity-driven attenuation of the Step 1a main effect ($0.352$, $p = .009$) observed throughout. The slopes are positive and stable, confirming that the actual NA similarity effect does not depend on perceived similarity.
+
+The simple slopes of perceived NA similarity on love are statistically zero at all levels of actual similarity ($0.016$, $0.026$, $0.036$; all $p > .85$). This is the flattest and most uniformly null set of perceived similarity slopes across all probing tables, consistent with perceived NA similarity contributing nothing to love in the positive interaction.
 
 ### Closeness
 
@@ -1461,6 +1646,39 @@ Dyad intercept $SD = 13.43$, variance $= 180.33$; residual $SD = 16.16$, varianc
 
 **The model completes the negative interaction NA series across Steps 1a, 1b, and 1c. Across all model specifications and both outcomes, NA similarity during the disagreement interaction is consistently uninformative for post-interaction evaluations. Neither actual nor perceived similarity predicts love or closeness, and the two do not interact.**
 
+#### Probing negative interaction
+
+```{r im_NA_close_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — NA closeness (negative)"
+
+# Probe points (−1 SD, 0, +1 SD)
+act_sd_neg  <- sd(sc2_neg$NA_sim_act_gmc,  na.rm = TRUE)
+perc_sd_neg <- sd(sc2_neg$NA_sim_perc_gmc, na.rm = TRUE)
+
+# Simple slopes of actual NA similarity at levels of perceived NA similarity
+slopes_act <- emtrends(
+  im_NA_close_neg,
+  specs = ~ NA_sim_perc_gmc,
+  var   = "NA_sim_act_gmc",
+  at    = list(NA_sim_perc_gmc = c(-perc_sd_neg, 0, perc_sd_neg))
+)
+
+summary(slopes_act, infer = TRUE)
+
+# Simple slopes of perceived NA similarity at levels of actual NA similarity
+slopes_perc <- emtrends(
+  im_NA_close_neg,
+  specs = ~ NA_sim_act_gmc,
+  var   = "NA_sim_perc_gmc",
+  at    = list(NA_sim_act_gmc = c(-act_sd_neg, 0, act_sd_neg))
+)
+
+summary(slopes_perc, infer = TRUE)
+```
+
+The simple slopes of actual NA similarity on closeness are statistically zero at all levels of perceived NA similarity ($-0.156$, $-0.171$, $-0.187$; all $p > .52$). The simple slopes of perceived NA similarity on closeness are likewise statistically zero at all levels of actual similarity ($0.038$, $0.024$, $0.010$; all $p > .87$). Both sets are flat and uniformly null, replicating the love results in the same context. As throughout the negative interaction NA models, neither form of similarity carries information for post-interaction evaluations, and the two do not modulate each other.
+
 #### Positive interaction
 
 ```{r im_NA_close_pos}
@@ -1499,6 +1717,43 @@ Statistically zero. The suppression pattern observed in the main effects does no
 Dyad intercept $SD = 9.09$, variance $= 82.69$; residual $SD = 12.37$, variance $= 152.95$. Unchanged from Steps 1a and 1b.
 
 **The model confirms that the suppression pattern for NA similarity predicting closeness in the positive interaction is robust to the inclusion of an interaction term. Actual similarity retains its strengthened coefficient (**$\approx 0.53$), perceived similarity continues to trend negatively but remains non-significant, and the two do not modulate each other. This is the only model across the entire Step 1c series where a main effect is clearly significant, and it is the actual (not perceived) similarity channel that carries the signal.
+
+#### Probing positive interaction
+
+```{r im_NA_close_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — NA closeness (positive)"
+
+# Probe points (−1 SD, 0, +1 SD)
+act_sd_pos  <- sd(sc2_pos$NA_sim_act_gmc,  na.rm = TRUE)
+perc_sd_pos <- sd(sc2_pos$NA_sim_perc_gmc, na.rm = TRUE)
+
+# Simple slopes of actual NA similarity at levels of perceived NA similarity
+slopes_act <- emtrends(
+  im_NA_close_pos,
+  specs = ~ NA_sim_perc_gmc,
+  var   = "NA_sim_act_gmc",
+  at    = list(NA_sim_perc_gmc = c(-perc_sd_pos, 0, perc_sd_pos))
+)
+
+summary(slopes_act, infer = TRUE)
+
+# Simple slopes of perceived NA similarity at levels of actual NA similarity
+slopes_perc <- emtrends(
+  im_NA_close_pos,
+  specs = ~ NA_sim_act_gmc,
+  var   = "NA_sim_perc_gmc",
+  at    = list(NA_sim_act_gmc = c(-act_sd_pos, 0, act_sd_pos))
+)
+
+summary(slopes_perc, infer = TRUE)
+```
+
+The simple slopes of actual NA similarity on closeness are significant at all three levels of perceived NA similarity: $0.467$ at $-1$ SD ($p = .014$), $0.531$ at the mean ($p = .001$), $0.595$ at $+1$ SD ($p = .003$). This is the only probing table across the entire Step 1c series where all three slopes of the focal predictor are significant. The slopes are stable across moderator levels, consistent with the null interaction term, and reflect the robust actual NA similarity effect identified in this model.
+
+The simple slopes of perceived NA similarity on closeness are negative at all levels of actual similarity ($-0.228$, $-0.169$, $-0.110$; all $p > .14$). None reaches significance, but the consistently negative direction is consistent with the suppression pattern identified in Steps 1b and 1c: perceived NA similarity trends toward predicting *less* closeness once actual similarity is controlled, opposite to the actual similarity effect. The slopes attenuate toward zero at higher actual similarity, though this gradient is not reliable given the null interaction.
+
+This probing confirms the distinctive status of this model: actual NA similarity has a robust positive association with closeness after the positive interaction that holds across all levels of perceived similarity, while perceived similarity trends in the opposing direction but never reaches significance.
 
 ### Summary of results
 
@@ -1830,7 +2085,7 @@ The indirect effect is non-significant, as anticipated from the null b-path. The
 
 The indirect effect is non-significant and even smaller than for love ($-0.065$), consistent with the weaker b-path for closeness ($-0.031$) compared to love ($-0.081$). The total effect ($c = 0.432$) is again fully retained in the direct effect ($c' = 0.456$).
 
-#### Mediation diagramme
+#### Mediation diagram (negative interaction)
 
 ```{r h21_PA_mediation_diagram_neg}
 #| fig-cap: "PA mediation model — Negative interaction"
@@ -2100,7 +2355,7 @@ The indirect effect is non-significant, as anticipated from the null b-path. The
 
 This is the largest PA indirect effect across all four models, and the CI comes closest to excluding zero, but it remains non-significant. The total effect ($c = 0.376$) attenuates substantially to the direct effect ($c' = 0.215$), with the indirect pathway accounting for the difference. However, without a significant b-path or a significant indirect effect, this attenuation pattern does not constitute evidence for mediation.
 
-#### Mediation diagramme positive interaction
+#### Mediation diagram (positive interaction)
 
 ```{r h21_PA_mediation_diagram_pos}
 #| fig-cap: "PA mediation model — Positive interaction"
@@ -2358,7 +2613,7 @@ cat(sprintf("Indirect: %.4f, 95%% MC CI [%.4f, %.4f], p = %s\n",
 
 **Closeness - Monte Carlo indirect effect** $\theta_1 \times \varphi_1 = 0.019$, 95% MC CI $[-0.205, 0.336]$, $p = .891$
 
-#### Mediation diagramme for negative interaction
+#### Mediation diagram (negative interaction)
 
 ```{r h22_NA_mediation_diagram_neg}
 #| fig-cap: "NA mediation model — Negative interaction"
@@ -2622,7 +2877,7 @@ The indirect effect is non-significant and essentially zero. **H2.2 is not suppo
 
 The indirect effect is negative and the largest in absolute magnitude across all eight mediation tests, but it does not reach significance. The CI just includes zero. This is the suppression pathway identified in the outcome model: actors who perceive more shared NA than actually exists tend to report slightly less closeness, partially counteracting the positive direct effect of actual similarity. The suppression is not statistically reliable at conventional levels, but the direction and magnitude are consistent with the pattern observed across Steps 1b and 1c.
 
-#### Mediation diagramme for the positive interaction
+#### Mediation diagram (positive interaction)
 
 ```{r h22_NA_mediation_diagram_pos}
 #| fig-cap: "NA mediation model — Positive interaction"
@@ -2771,7 +3026,9 @@ For PA (H3.1): expected $\beta_3 > 0$ (we-ness amplifies positive effects). For 
 
 ### Actual PA Similarity
 
-#### Love
+#### Love 
+
+##### Negative interaction
 
 ```{r h31_PA_act_love_neg}
 #| output-fold: true
@@ -2788,24 +3045,31 @@ h31_PA_act_love_neg <- lme(
 model_output(h31_PA_act_love_neg)
 ```
 
-```{r h31_PA_act_love_pos}
-#| output-fold: true
-#| output-summary: "H3.1 actual PA × we-ness → Love (positive)"
+**Intercept** $\beta_0 = 88.27$, 95% CI $[79.12, 97.42]$, $p < .001$
 
-h31_PA_act_love_pos <- lme(
-  fixed = love ~ PA_sim_act + cwe_ness + PA_sim_act:cwe_ness,
-  random = ~ 1 | dyad,
-  data = sc2_pos,
-  method = "REML",
-  na.action = na.exclude
-)
+Expected post-interaction love at zero actual PA similarity and average trait we-ness (grand-mean centered). Close to the Step 1a intercept ($89.05$).
 
-model_output(h31_PA_act_love_pos)
-```
+**Actual PA similarity** $\beta_1 = 0.341$, 95% CI $[0.025, 0.657]$, $p = .035$
 
-#### Probing (if interaction significant)
+The main effect of actual PA similarity at average we-ness. Significant and comparable to the Step 1a estimate ($0.379$), confirming that the similarity effect persists after controlling for we-ness.
 
-```{r h31_PA_act_probe_neg}
+**Trait we-ness** $\beta_2 = -0.657$, 95% CI $[-22.672, 21.358]$, $p = .953$
+
+Statistically zero. Trait we-ness does not predict post-interaction love at average PA similarity. The extremely wide CI reflects the small between-dyad sample ($N = 98$ dyads) and the limited variance in we-ness.
+
+**Interaction** $\beta_3 = -0.383$, 95% CI $[-1.144, 0.377]$, $p = .320$
+
+Statistically zero. Trait we-ness does not moderate the association between actual PA similarity and love after the negative interaction. H3.1 predicted $\beta_3 > 0$ (higher we-ness amplifying the positive similarity effect). The point estimate is in the opposite direction, but the CI is wide and comfortably includes zero in both directions, so the sign is not interpretable.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 8.13$, variance $= 66.15$; residual $SD = 18.28$, variance $= 334.06$. The dyad-level variance decreases slightly from Step 1a ($78.16$), consistent with we-ness absorbing a small amount of between-dyad variation, though the effect is minimal.
+
+**The model does not support H3.1 for actual PA similarity predicting love in the negative interaction.** Trait we-ness neither predicts love directly nor moderates the PA similarity effect.
+
+##### Probing negative interaction
+
+```{r h31_PA_act_love_neg_probe}
 #| output-fold: true
 #| output-summary: "Simple slopes — actual PA × we-ness → Love (negative)"
 
@@ -2851,7 +3115,102 @@ kable(tbl_h31,
   )
 ```
 
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual PA similarity on love is significant at low ($−1 SD: \beta = 0.500$, $p=.040$ and average ( $\beta = 0.341$, $p=.034$) trait we-ness, but not at high ( $+1 SD: \beta = 0.183$, $p=.380$) we-ness. This pattern is descriptively consistent with a trend toward attenuation at higher we-ness, in the opposite direction to H3.1's prediction. However, the non-significant interaction term indicates that this gradient is not reliably different from zero, and the individual slope significances should not be interpreted as evidence for moderation. They reflect proximity to the overall main effect rather than a differential effect across we-ness levels.
+
+##### Positive interaction
+
+```{r h31_PA_act_love_pos}
+#| output-fold: true
+#| output-summary: "H3.1 actual PA × we-ness → Love (positive)"
+
+h31_PA_act_love_pos <- lme(
+  fixed = love ~ PA_sim_act + cwe_ness + PA_sim_act:cwe_ness,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(h31_PA_act_love_pos)
+```
+
+**Intercept** $\beta_0 = 85.59$, 95% CI $[82.60, 88.57]$, $p < .001$
+
+Expected post-interaction love at zero actual PA similarity and average trait we-ness. Close to the Step 1a intercept ($85.97$).
+
+**Actual PA similarity** $\beta_1 = 0.300$, 95% CI $[-0.032, 0.631]$, $p = .076$
+
+The main effect of actual PA similarity at average we-ness falls just below conventional significance, slightly attenuated from the Step 1a estimate ($0.459$, $p = .007$). The attenuation is partly due to we-ness absorbing some between-dyad variance (see below).
+
+**Trait we-ness** $\beta_2 = 8.301$, 95% CI $[1.411, 15.191]$, $p = .019$
+
+Significant. Couples higher in trait we-ness report more love after the positive interaction, at average levels of PA similarity. A one-unit increase in we-ness (on the grand-mean centered DCI scale) corresponds to about 8.3 points more love. This is the only context and outcome where we-ness has a significant direct association with post-interaction evaluations in the Step 3a models.
+
+**Interaction** $\beta_3 = -0.476$, 95% CI $[-1.259, 0.307]$, $p = .230$
+
+Statistically zero. Trait we-ness does not moderate the association between actual PA similarity and love after the positive interaction. As in the negative interaction, H3.1 predicted $\beta_3 > 0$, but the point estimate is in the opposite direction. The CI is wide and includes zero.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 9.12$, variance $= 83.12$; residual $SD = 13.42$, variance $= 180.04$. The dyad-level variance decreases from Step 1a ($109.64$), consistent with the significant we-ness main effect absorbing between-dyad variation in love.
+
+**The model does not support H3.1 for actual PA similarity predicting love in the positive interaction.** The moderation is non-significant. However, trait we-ness has a significant direct effect on love in this context, suggesting that couples with a stronger sense of shared coping report more love after a positive interaction regardless of how similar their PA was during the interaction.
+
+##### Probing positive interaction
+
+```{r h31_PA_act_love_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual PA × we-ness → Love (positive)"
+
+we_sd_pos <- sd(sc2_pos$cwe_ness, na.rm = TRUE)
+
+slopes_h31_pos <- emtrends(
+  h31_PA_act_love_pos,
+  specs = ~ cwe_ness,
+  var   = "PA_sim_act",
+  at    = list(cwe_ness = c(-we_sd_pos, 0, we_sd_pos))
+)
+
+slopes_h31_pos_df <- as.data.frame(summary(slopes_h31_pos, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h31_pos <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h31_pos_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h31_pos_df$PA_sim_act.trend),
+  `SE`            = sprintf("%.4f", slopes_h31_pos_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h31_pos_df$lower.CL, slopes_h31_pos_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h31_pos_df$t.ratio),
+  `p`             = ifelse(slopes_h31_pos_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h31_pos_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h31_pos,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on love at low, average, and high trait we-ness (positive interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual PA similarity on love is significant at low ($-1$ SD: $\beta = 0.496$, $p = .012$) we-ness, marginally non-significant at average ($\beta = 0.300$, $p = .076$) we-ness, and clearly non-significant at high ($+1$ SD: $\beta = 0.103$, $p = .699$) we-ness. The pattern mirrors the negative interaction: a descriptive gradient of attenuation at higher we-ness, in the opposite direction to H3.1's prediction ($\beta_3 > 0$). However, the non-significant interaction term ($\beta_3 = -0.476$, $p = .230$) indicates that this gradient is not reliably different from zero. The significant slope at low we-ness reflects proximity to the Step 1a main effect ($0.459$) evaluated at a point where the SE is favorable, not evidence for differential moderation.
+
+Notably, the gradient is somewhat steeper in the positive interaction (from $0.496$ to $0.103$) than in the negative interaction (from $0.500$ to $0.183$), consistent with the slightly larger (though still non-significant) interaction term in the positive context ($-0.476$ vs. $-0.383$). In both contexts, the descriptive pattern suggests that if anything, PA similarity matters *more* for couples low in we-ness, the opposite of the hypothesized amplification. But the data do not provide reliable evidence for this trend in either context.
+
 #### Closeness
+
+##### Negative interaction
 
 ```{r h31_PA_act_close_neg}
 #| output-fold: true
@@ -2868,6 +3227,82 @@ h31_PA_act_close_neg <- lme(
 model_output(h31_PA_act_close_neg)
 ```
 
+**Intercept** $\beta_0 = 91.07$, 95% CI $[81.32, 100.82]$, $p < .001$
+
+Expected post-interaction closeness at zero actual PA similarity and average trait we-ness. Close to the Step 1a intercept ($92.07$).
+
+**Actual PA similarity** $\beta_1 = 0.385$, 95% CI $[0.048, 0.722]$, $p = .025$
+
+The main effect of actual PA similarity at average we-ness. Significant and comparable to the Step 1a estimate ($0.432$), confirming that the similarity effect persists after controlling for we-ness.
+
+**Trait we-ness** $\beta_2 = -0.173$, 95% CI $[-22.109, 21.762]$, $p = .988$
+
+Statistically zero, as in the love model for the same context. Trait we-ness does not predict post-interaction closeness at average PA similarity.
+
+**Interaction** $\beta_3 = -0.441$, 95% CI $[-1.199, 0.316]$, $p = .250$
+
+Statistically zero. Trait we-ness does not moderate the association between actual PA similarity and closeness after the negative interaction. The coefficient is in the same direction and of comparable magnitude to the love model in the same context ($-0.383$, $p = .320$), and again opposite to H3.1's prediction of $\beta_3 > 0$.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 11.80$, variance $= 139.15$; residual $SD = 15.96$, variance $= 254.84$. The dyad-level variance decreases from Step 1a ($162.65$), suggesting we-ness absorbs a modest amount of between-dyad variation in closeness.
+
+**The model does not support H3.1 for actual PA similarity predicting closeness in the negative interaction.** The pattern is consistent with love in the same context: a non-significant interaction in the direction opposite to the hypothesis, with a comparable magnitude ($-0.441$ vs. $-0.383$). Across both outcomes in the negative interaction, trait we-ness neither predicts post-interaction evaluations directly nor moderates the PA similarity effect.
+
+##### Probing negative interaction
+
+```{r h31_PA_act_close_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual PA × we-ness → Closeness (negative)"
+
+we_sd_neg <- sd(sc2_neg$cwe_ness, na.rm = TRUE)
+
+slopes_h31_close_neg <- emtrends(
+  h31_PA_act_close_neg,
+  specs = ~ cwe_ness,
+  var   = "PA_sim_act",
+  at    = list(cwe_ness = c(-we_sd_neg, 0, we_sd_neg))
+)
+
+slopes_h31_close_neg_df <- as.data.frame(summary(slopes_h31_close_neg, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h31_close_neg <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h31_close_neg_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h31_close_neg_df$PA_sim_act.trend),
+  `SE`            = sprintf("%.4f", slopes_h31_close_neg_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h31_close_neg_df$lower.CL, slopes_h31_close_neg_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h31_close_neg_df$t.ratio),
+  `p`             = ifelse(slopes_h31_close_neg_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h31_close_neg_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h31_close_neg,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on closeness at low, average, and high trait we-ness (negative interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual PA similarity on closeness is significant at low ($-1$ SD: $\beta = 0.567$, $p = .023$) and average ($\beta = 0.386$, $p = .025$) we-ness, but not at high ($+1$ SD: $\beta = 0.204$, $p = .348$) we-ness. The pattern replicates the love results in the same context almost exactly: a descriptive gradient from a significant slope at low we-ness to a non-significant slope at high we-ness, opposite to H3.1's prediction. The non-significant interaction term ($\beta_3 = -0.441$, $p = .250$) confirms that this gradient is not reliably different from zero.
+
+The consistency across both outcomes in the negative interaction is notable: for both love and closeness, the slopes decrease from roughly $0.50$ at low we-ness to roughly $0.20$ at high we-ness, with significance dropping out at the high end. This convergence across outcomes makes it less likely that the pattern is pure noise, but the interaction terms remain non-significant in both models, so the descriptive trend cannot be treated as evidence for moderation.
+
+##### Positive interaction
+
 ```{r h31_PA_act_close_pos}
 #| output-fold: true
 #| output-summary: "H3.1 actual PA × we-ness → Closeness (positive)"
@@ -2883,9 +3318,87 @@ h31_PA_act_close_pos <- lme(
 model_output(h31_PA_act_close_pos)
 ```
 
+**Intercept** $\beta_0 = 86.78$, 95% CI $[84.16, 89.39]$, $p < .001$
+
+Expected post-interaction closeness at zero actual PA similarity and average trait we-ness. Close to the Step 1a intercept ($87.27$).
+
+**Actual PA similarity** $\beta_1 = 0.196$, 95% CI $[-0.095, 0.488]$, $p = .185$
+
+Statistically zero. The main effect of actual PA similarity at average we-ness is attenuated from the Step 1a estimate ($0.376$, $p = .016$) and no longer significant. This attenuation is partly due to we-ness absorbing between-dyad variance (see below).
+
+**Trait we-ness** $\beta_2 = 10.932$, 95% CI $[4.759, 17.104]$, $p < .001$
+
+Highly significant. Couples higher in trait we-ness report more closeness after the positive interaction, at average levels of PA similarity. A one-unit increase in we-ness corresponds to about 10.9 points more closeness. This is the strongest we-ness direct effect across all Step 3a models, larger than the already significant love effect in the same context ($8.301$, $p = .019$). The positive interaction is the only context where we-ness has a direct association with post-interaction evaluations, and the effect is stronger for closeness than for love.
+
+**Interaction** $\beta_3 = -0.447$, 95% CI $[-1.148, 0.253]$, $p = .208$
+
+Statistically zero. Trait we-ness does not moderate the association between actual PA similarity and closeness after the positive interaction. The coefficient is remarkably consistent with the other three H3.1 actual PA models: $-0.383$ (love negative), $-0.476$ (love positive), $-0.441$ (closeness negative), and $-0.447$ here. All four are negative, all non-significant, and all of comparable magnitude.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 7.49$, variance $= 56.06$; residual $SD = 12.41$, variance $= 154.06$. The dyad-level variance decreases substantially from Step 1a ($87.81$), consistent with the strong we-ness direct effect absorbing a large portion of between-dyad variation in closeness.
+
+**The model does not support H3.1 for actual PA similarity predicting closeness in the positive interaction.** The moderation is non-significant. However, trait we-ness has a strong direct effect on closeness in this context ($p < .001$), even stronger than for love ($p = .019$). Couples with a stronger sense of shared coping report higher closeness after a positive interaction regardless of PA similarity levels. The attenuation of the PA similarity main effect (from $0.376$ to $0.196$) likely reflects partial confounding: couples high in we-ness tend to report both higher PA similarity and higher closeness, so controlling for we-ness removes some of the between-dyad variation that previously contributed to the PA similarity effect.
+
+##### Probing positive interaction
+
+```{r h31_PA_act_close_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual PA × we-ness → Closeness (positive)"
+
+we_sd_pos <- sd(sc2_pos$cwe_ness, na.rm = TRUE)
+
+slopes_h31_close_pos <- emtrends(
+  h31_PA_act_close_pos,
+  specs = ~ cwe_ness,
+  var   = "PA_sim_act",
+  at    = list(cwe_ness = c(-we_sd_pos, 0, we_sd_pos))
+)
+
+slopes_h31_close_pos_df <- as.data.frame(summary(slopes_h31_close_pos, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h31_close_pos <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h31_close_pos_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h31_close_pos_df$PA_sim_act.trend),
+  `SE`            = sprintf("%.4f", slopes_h31_close_pos_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h31_close_pos_df$lower.CL, slopes_h31_close_pos_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h31_close_pos_df$t.ratio),
+  `p`             = ifelse(slopes_h31_close_pos_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h31_close_pos_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h31_close_pos,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on closeness at low, average, and high trait we-ness (positive interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual PA similarity on closeness is significant only at low ($-1$ SD: $\beta = 0.381$, $p = .029$) we-ness, non-significant at average ($\beta = 0.196$, $p = .185$) we-ness, and essentially zero at high ($+1$ SD: $\beta = 0.012$, $p = .960$) we-ness. This is the steepest descriptive gradient across the four H3.1 actual PA probing tables: the slope drops from $0.381$ to near zero, and the high we-ness slope is the smallest observed across all probing results.
+
+The pattern is consistent with the other three models: PA similarity matters more for couples low in we-ness, opposite to H3.1. In this model the gradient is particularly pronounced, likely because the strong we-ness direct effect ($\beta_2 = 10.932$, $p < .001$) leaves little room for PA similarity to add predictive value at high we-ness: couples high in we-ness already report high closeness regardless of PA similarity, so the similarity slope is effectively redundant. At low we-ness, where baseline closeness is lower and more variable, PA similarity retains its predictive role.
+
+Despite being the most visually compelling of the four probing patterns, the interaction term remains non-significant ($\beta_3 = -0.447$, $p = .208$), so this gradient cannot be treated as evidence for moderation.
+
 ### Perceived PA Similarity
 
 #### Love
+
+##### Negative interaction
 
 ```{r h31_PA_perc_love_neg}
 #| output-fold: true
@@ -2902,6 +3415,80 @@ h31_PA_perc_love_neg <- lme(
 model_output(h31_PA_perc_love_neg)
 ```
 
+**Intercept** $\beta_0 = 81.79$, 95% CI $[75.25, 88.33]$, $p < .001$
+
+Expected post-interaction love at zero perceived PA similarity and average trait we-ness.
+
+**Perceived PA similarity** $\beta_1 = 0.144$, 95% CI $[-0.130, 0.417]$, $p = .300$
+
+Statistically zero. Perceived PA similarity does not predict love after the negative interaction at average we-ness, consistent with the null perceived similarity effects observed throughout Steps 1a-1c.
+
+**Trait we-ness** $\beta_2 = 12.334$, 95% CI $[-3.931, 28.598]$, $p = .136$
+
+Statistically zero, though the coefficient is larger than in the actual similarity model for the same context ($-0.657$, $p = .953$). The difference reflects the different predictors in the model rather than a genuine change in the we-ness effect: perceived similarity is a weaker predictor than actual similarity, so the model redistributes variance differently.
+
+**Interaction** $\beta_3 = 0.089$, 95% CI $[-0.594, 0.772]$, $p = .797$
+
+Statistically zero. Trait we-ness does not moderate the association between perceived PA similarity and love after the negative interaction. The direction is positive, nominally consistent with H3.1 ($\beta_3 > 0$), but the CI is extremely wide and the coefficient is far from significance.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 8.14$, variance $= 66.33$; residual $SD = 18.49$, variance $= 341.92$. Comparable to the actual similarity model.
+
+**The model does not support H3.1 for perceived PA similarity predicting love in the negative interaction.** Neither the main effect nor the moderation is significant. With the perceived similarity main effect already null across all prior model specifications, a null moderation is unsurprising: there is no effect for we-ness to amplify.
+
+##### Probing negative interaction
+
+```{r h31_PA_perc_love_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived PA × we-ness → Love (negative)"
+
+we_sd_neg <- sd(sc2_neg$cwe_ness, na.rm = TRUE)
+
+slopes_h31_perc_love_neg <- emtrends(
+  h31_PA_perc_love_neg,
+  specs = ~ cwe_ness,
+  var   = "PA_sim_perc",
+  at    = list(cwe_ness = c(-we_sd_neg, 0, we_sd_neg))
+)
+
+slopes_h31_perc_love_neg_df <- as.data.frame(summary(slopes_h31_perc_love_neg, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h31_perc_love_neg <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h31_perc_love_neg_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h31_perc_love_neg_df$PA_sim_perc.trend),
+  `SE`            = sprintf("%.4f", slopes_h31_perc_love_neg_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h31_perc_love_neg_df$lower.CL, slopes_h31_perc_love_neg_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h31_perc_love_neg_df$t.ratio),
+  `p`             = ifelse(slopes_h31_perc_love_neg_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h31_perc_love_neg_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h31_perc_love_neg,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on love at low, average, and high trait we-ness (negative interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived PA similarity on love is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = 0.107$, $p = .580$), average ($\beta = 0.144$, $p = .300$), and high ($+1$ SD: $\beta = 0.180$, $p = .375$). The slopes are nearly flat across we-ness levels, consistent with the null interaction term ($\beta_3 = 0.089$, $p = .797$). Unlike the actual PA similarity probing, where slopes were significant at low and average we-ness and dropped off at high we-ness, here there is no signal at any level. This confirms that the null perceived similarity effect observed throughout Steps 1a-1c is not masked by we-ness: perceived PA similarity is unrelated to post-interaction love in the negative interaction regardless of a couple's sense of shared coping.
+
+##### Positive interaction
+
 ```{r h31_PA_perc_love_pos}
 #| output-fold: true
 #| output-summary: "H3.1 perceived PA × we-ness → Love (positive)"
@@ -2917,7 +3504,83 @@ h31_PA_perc_love_pos <- lme(
 model_output(h31_PA_perc_love_pos)
 ```
 
+**Intercept** $\beta_0 = 83.70$, 95% CI $[81.06, 86.33]$, $p < .001$
+
+Expected post-interaction love at zero perceived PA similarity and average trait we-ness.
+
+**Perceived PA similarity** $\beta_1 = 0.273$, 95% CI $[0.003, 0.543]$, $p = .047$
+
+Significant, just crossing the threshold. This is noteworthy because perceived PA similarity was non-significant in all Step 1a-1c models. The difference here is that we-ness is the covariate rather than actual similarity: we-ness and perceived similarity are less collinear than actual and perceived similarity, so the standard error is smaller and the coefficient reaches significance. This does not indicate that perceived similarity is a stronger predictor than previously observed; it indicates that the collinearity with actual similarity was what suppressed it in earlier models.
+
+**Trait we-ness** $\beta_2 = 11.828$, 95% CI $[5.893, 17.763]$, $p < .001$
+
+Highly significant. Couples higher in trait we-ness report more love after the positive interaction, consistent with the actual similarity model for the same context ($8.301$, $p = .019$). The coefficient is larger here, likely because perceived similarity is a weaker predictor than actual similarity, leaving more between-dyad variance for we-ness to absorb.
+
+**Interaction** $\beta_3 = -0.234$, 95% CI $[-0.941, 0.473]$, $p = .513$
+
+Statistically zero. Trait we-ness does not moderate the association between perceived PA similarity and love after the positive interaction.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 8.59$, variance $= 73.71$; residual $SD = 13.74$, variance $= 188.70$. The dyad-level variance decreases substantially from Step 1a ($109.64$), consistent with the strong we-ness direct effect.
+
+**The model does not support H3.1 for perceived PA similarity predicting love in the positive interaction.** The moderation is non-significant. The significant perceived similarity main effect ($p = .047$) is a consequence of reduced collinearity compared to the Step 1b models (where actual similarity was the co-predictor) rather than evidence of a newly emerged effect.
+
+##### Probing positive interaction
+
+```{r h31_PA_perc_love_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived PA × we-ness → Love (positive)"
+
+we_sd_pos <- sd(sc2_pos$cwe_ness, na.rm = TRUE)
+
+slopes_h31_perc_love_pos <- emtrends(
+  h31_PA_perc_love_pos,
+  specs = ~ cwe_ness,
+  var   = "PA_sim_perc",
+  at    = list(cwe_ness = c(-we_sd_pos, 0, we_sd_pos))
+)
+
+slopes_h31_perc_love_pos_df <- as.data.frame(summary(slopes_h31_perc_love_pos, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h31_perc_love_pos <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h31_perc_love_pos_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h31_perc_love_pos_df$PA_sim_perc.trend),
+  `SE`            = sprintf("%.4f", slopes_h31_perc_love_pos_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h31_perc_love_pos_df$lower.CL, slopes_h31_perc_love_pos_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h31_perc_love_pos_df$t.ratio),
+  `p`             = ifelse(slopes_h31_perc_love_pos_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h31_perc_love_pos_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h31_perc_love_pos,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on love at low, average, and high trait we-ness (positive interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived PA similarity on love is significant at low ($-1$ SD: $\beta = 0.369$, $p = .046$) and average ($\beta = 0.273$, $p = .047$) we-ness, but not at high ($+1$ SD: $\beta = 0.177$, $p = .415$) we-ness. The pattern mirrors the actual PA similarity probing in the same context: a descriptive gradient of attenuation at higher we-ness, with significance dropping out at the high end. The direction is again opposite to H3.1's prediction.
+
+The significant slopes at low and average we-ness are consistent with the significant main effect in this model ($\beta_1 = 0.273$, $p = .047$), which itself emerged because the co-predictor here is we-ness rather than actual similarity, reducing collinearity. The probing pattern should be interpreted accordingly: the slopes are significant at low and average we-ness not because we-ness modulates the effect, but because the main effect is marginally significant and the simple slopes at these points inherit that signal. At high we-ness, the slope attenuates descriptively, but the non-significant interaction ($\beta_3 = -0.234$, $p = .513$) confirms this gradient is not reliable.
+
 #### Closeness
+
+##### Negative interaction
 
 ```{r h31_PA_perc_close_neg}
 #| output-fold: true
@@ -2934,6 +3597,80 @@ h31_PA_perc_close_neg <- lme(
 model_output(h31_PA_perc_close_neg)
 ```
 
+**Intercept** $\beta_0 = 83.73$, 95% CI $[77.17, 90.29]$, $p < .001$
+
+Expected post-interaction closeness at zero perceived PA similarity and average trait we-ness.
+
+**Perceived PA similarity** $\beta_1 = 0.159$, 95% CI $[-0.110, 0.429]$, $p = .243$
+
+Statistically zero. Perceived PA similarity does not predict closeness after the negative interaction at average we-ness, consistent with all prior models.
+
+**Trait we-ness** $\beta_2 = 12.898$, 95% CI $[-2.985, 28.780]$, $p = .110$
+
+Statistically zero, though the coefficient is the largest we-ness direct effect observed in the negative interaction models. It falls short of significance due to the wide CI.
+
+**Interaction** $\beta_3 = 0.019$, 95% CI $[-0.641, 0.679]$, $p = .955$
+
+Statistically zero and essentially exactly zero. This is the smallest interaction term across all H3.1 models. Trait we-ness does not moderate the association between perceived PA similarity and closeness after the negative interaction.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 11.80$, variance $= 139.19$; residual $SD = 16.22$, variance $= 262.94$. Comparable to the actual similarity model for the same context.
+
+**The model does not support H3.1 for perceived PA similarity predicting closeness in the negative interaction.** As with love in the same context, both the main effect and the moderation are null. The perceived similarity main effect is non-significant across all we-ness levels (as the probing will confirm), and there is no effect for we-ness to amplify.
+
+##### Probing Negative interaction
+
+```{r h31_PA_perc_close_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived PA × we-ness → Closeness (negative)"
+
+we_sd_neg <- sd(sc2_neg$cwe_ness, na.rm = TRUE)
+
+slopes_h31_perc_close_neg <- emtrends(
+  h31_PA_perc_close_neg,
+  specs = ~ cwe_ness,
+  var   = "PA_sim_perc",
+  at    = list(cwe_ness = c(-we_sd_neg, 0, we_sd_neg))
+)
+
+slopes_h31_perc_close_neg_df <- as.data.frame(summary(slopes_h31_perc_close_neg, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h31_perc_close_neg <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h31_perc_close_neg_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h31_perc_close_neg_df$PA_sim_perc.trend),
+  `SE`            = sprintf("%.4f", slopes_h31_perc_close_neg_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h31_perc_close_neg_df$lower.CL, slopes_h31_perc_close_neg_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h31_perc_close_neg_df$t.ratio),
+  `p`             = ifelse(slopes_h31_perc_close_neg_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h31_perc_close_neg_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h31_perc_close_neg,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on closeness at low, average, and high trait we-ness (negative interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived PA similarity on closeness is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = 0.152$, $p = .420$), average ($\beta = 0.159$, $p = .243$), and high ($+1$ SD: $\beta = 0.167$, $p = .402$). The slopes are virtually identical across we-ness levels, consistent with the near-zero interaction term ($\beta_3 = 0.019$, $p = .955$). The pattern mirrors the love model in the same context: perceived PA similarity is uniformly unrelated to post-interaction evaluations in the negative interaction regardless of we-ness level, with no hint of moderation.
+
+##### Positive interaction
+
 ```{r h31_PA_perc_close_pos}
 #| output-fold: true
 #| output-summary: "H3.1 perceived PA × we-ness → Closeness (positive)"
@@ -2949,11 +3686,87 @@ h31_PA_perc_close_pos <- lme(
 model_output(h31_PA_perc_close_pos)
 ```
 
+**Intercept** $\beta_0 = 85.31$, 95% CI $[83.00, 87.63]$, $p < .001$
+
+Expected post-interaction closeness at zero perceived PA similarity and average trait we-ness.
+
+**Perceived PA similarity** $\beta_1 = 0.293$, 95% CI $[0.053, 0.533]$, $p = .017$
+
+Significant. As with the love model in the same context ($0.273$, $p = .047$), perceived PA similarity reaches significance here because the co-predictor is we-ness rather than actual similarity, reducing collinearity. The coefficient is somewhat larger and more precisely estimated than for love, consistent with closeness being the outcome where perceived similarity showed the largest (though non-significant) coefficient in Step 1b ($0.229$, $p = .147$).
+
+**Trait we-ness** $\beta_2 = 13.736$, 95% CI $[8.469, 19.003]$, $p < .001$
+
+Highly significant, and the largest we-ness direct effect across all Step 3a models. Couples higher in trait we-ness report substantially more closeness after the positive interaction, consistent with the actual similarity model for the same context ($10.932$, $p < .001$). The positive interaction closeness models consistently show the strongest we-ness effects.
+
+**Interaction** $\beta_3 = -0.180$, 95% CI $[-0.812, 0.451]$, $p = .572$
+
+Statistically zero. Trait we-ness does not moderate the association between perceived PA similarity and closeness after the positive interaction.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 7.19$, variance $= 51.65$; residual $SD = 12.47$, variance $= 155.41$. The dyad-level variance decreases substantially from Step 1a ($87.81$), consistent with the strong we-ness direct effect absorbing between-dyad variation.
+
+**The model does not support H3.1 for perceived PA similarity predicting closeness in the positive interaction.** The moderation is non-significant. The significant perceived similarity main effect ($p = .017$) is, as with love, attributable to reduced collinearity compared to the Step 1b models. The we-ness direct effect is the strongest observed across the entire Step 3a series, reinforcing the finding that trait we-ness is a powerful predictor of closeness after a positive interaction regardless of similarity levels.
+
+##### Probing positive interaction
+
+```{r h31_PA_perc_close_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived PA × we-ness → Closeness (positive)"
+
+we_sd_pos <- sd(sc2_pos$cwe_ness, na.rm = TRUE)
+
+slopes_h31_perc_close_pos <- emtrends(
+  h31_PA_perc_close_pos,
+  specs = ~ cwe_ness,
+  var   = "PA_sim_perc",
+  at    = list(cwe_ness = c(-we_sd_pos, 0, we_sd_pos))
+)
+
+slopes_h31_perc_close_pos_df <- as.data.frame(summary(slopes_h31_perc_close_pos, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h31_perc_close_pos <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h31_perc_close_pos_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h31_perc_close_pos_df$PA_sim_perc.trend),
+  `SE`            = sprintf("%.4f", slopes_h31_perc_close_pos_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h31_perc_close_pos_df$lower.CL, slopes_h31_perc_close_pos_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h31_perc_close_pos_df$t.ratio),
+  `p`             = ifelse(slopes_h31_perc_close_pos_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h31_perc_close_pos_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h31_perc_close_pos,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on closeness at low, average, and high trait we-ness (positive interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived PA similarity on closeness is significant at low ($-1$ SD: $\beta = 0.367$, $p = .027$) and average ($\beta = 0.293$, $p = .017$) we-ness, but not at high ($+1$ SD: $\beta = 0.219$, $p = .259$) we-ness. The pattern replicates the love model in the same context almost exactly: significance at low and average we-ness, dropping out at high we-ness, with a descriptive gradient opposite to H3.1's prediction.
+
+Across both outcomes in the positive interaction, the perceived PA similarity probing results are strikingly parallel: for love the slopes are $0.369$, $0.273$, $0.177$; for closeness $0.367$, $0.293$, $0.219$. Both show the same attenuation at high we-ness, both have significant slopes only at low and average we-ness, and both have non-significant interaction terms. As noted above, the significant slopes reflect the reduced collinearity from pairing perceived similarity with we-ness rather than actual similarity, not evidence for moderation. The descriptive attenuation at high we-ness is consistent with PA similarity being less informative for couples who already report high evaluations due to strong we-ness, but the interaction terms ($-0.234$ for love, $-0.180$ for closeness) are too imprecise to support this interpretation.
+
 ## H3.2 – NA × We-ness
 
 ### Actual NA Similarity
 
 #### Love
+
+##### Negative interaction
 
 ```{r h32_NA_act_love_neg}
 #| output-fold: true
@@ -2970,6 +3783,80 @@ h32_NA_act_love_neg <- lme(
 model_output(h32_NA_act_love_neg)
 ```
 
+**Intercept** $\beta_0 = 76.74$, 95% CI $[71.94, 81.54]$, $p < .001$
+
+Expected post-interaction love at zero actual NA similarity and average trait we-ness. Close to the Step 1a intercept ($77.53$).
+
+**Actual NA similarity** $\beta_1 = -0.212$, 95% CI $[-0.627, 0.203]$, $p = .312$
+
+Statistically zero. Actual NA similarity does not predict love after the negative interaction at average we-ness, consistent with the null main effect in Step 1a ($-0.141$, $p = .504$).
+
+**Trait we-ness** $\beta_2 = 14.204$, 95% CI $[2.558, 25.849]$, $p = .017$
+
+Significant. Couples higher in trait we-ness report more love after the negative interaction, at average levels of NA similarity. This is notable because we-ness was non-significant in all H3.1 PA models for the negative interaction. The difference may reflect confounding between we-ness and the NA similarity predictor distribution: the NA model evaluates the intercept and we-ness effect at a different point in the predictor space than the PA model.
+
+**Interaction** $\beta_3 = 0.307$, 95% CI $[-0.724, 1.339]$, $p = .556$
+
+Statistically zero. Trait we-ness does not moderate the association between actual NA similarity and love after the negative interaction. The direction is positive, nominally consistent with H3.2's prediction ($\beta_3 > 0$, meaning we-ness would buffer the negative similarity effect), but the CI is extremely wide and the main effect is null to begin with. With no reliable NA similarity effect to buffer, the moderation hypothesis is moot.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 8.39$, variance $= 70.41$; residual $SD = 18.37$, variance $= 337.31$. The dyad-level variance decreases from Step 1a ($91.25$), consistent with the significant we-ness direct effect absorbing between-dyad variation.
+
+**The model does not support H3.2 for actual NA similarity predicting love in the negative interaction.** The moderation is non-significant, and the main effect of NA similarity remains null. The significant we-ness direct effect ($p = .017$) indicates that couples with stronger shared coping report more love after the disagreement, but this operates independently of NA similarity.
+
+##### Probing negative interaction
+
+```{r h32_NA_act_love_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual NA × we-ness → Love (negative)"
+
+we_sd_neg <- sd(sc2_neg$cwe_ness, na.rm = TRUE)
+
+slopes_h32_act_love_neg <- emtrends(
+  h32_NA_act_love_neg,
+  specs = ~ cwe_ness,
+  var   = "NA_sim_act",
+  at    = list(cwe_ness = c(-we_sd_neg, 0, we_sd_neg))
+)
+
+slopes_h32_act_love_neg_df <- as.data.frame(summary(slopes_h32_act_love_neg, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h32_act_love_neg <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h32_act_love_neg_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h32_act_love_neg_df$NA_sim_act.trend),
+  `SE`            = sprintf("%.4f", slopes_h32_act_love_neg_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h32_act_love_neg_df$lower.CL, slopes_h32_act_love_neg_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h32_act_love_neg_df$t.ratio),
+  `p`             = ifelse(slopes_h32_act_love_neg_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h32_act_love_neg_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h32_act_love_neg,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on love at low, average, and high trait we-ness (negative interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual NA similarity on love is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = -0.339$, $p = .205$), average ($\beta = -0.212$, $p = .312$), and high ($+1$ SD: $\beta = -0.086$, $p = .796$). All slopes are negative and none approaches significance. The descriptive gradient moves toward zero at higher we-ness, nominally consistent with H3.2's prediction that we-ness would buffer the negative NA similarity effect, but the main effect is null to begin with and the interaction term is non-significant ($\beta_3 = 0.307$, $p = .556$), so this gradient is uninterpretable. The probing confirms that NA similarity is uninformative for post-interaction love in the negative interaction at every level of we-ness.
+
+##### Positive interaction
+
 ```{r h32_NA_act_love_pos}
 #| output-fold: true
 #| output-summary: "H3.2 actual NA × we-ness → Love (positive)"
@@ -2985,7 +3872,83 @@ h32_NA_act_love_pos <- lme(
 model_output(h32_NA_act_love_pos)
 ```
 
+**Intercept** $\beta_0 = 89.37$, 95% CI $[83.16, 95.57]$, $p < .001$
+
+Expected post-interaction love at zero actual NA similarity and average trait we-ness.
+
+**Actual NA similarity** $\beta_1 = 0.251$, 95% CI $[-0.004, 0.506]$, $p = .054$
+
+Just below conventional significance. The coefficient is somewhat attenuated from the Step 1a estimate ($0.352$, $p = .009$), partly because we-ness absorbs between-dyad variance. The positive direction remains counter to H1.2's prediction, consistent with the pattern observed throughout: higher actual NA similarity during the positive interaction predicts more, not less, love.
+
+**Trait we-ness** $\beta_2 = 10.701$, 95% CI $[-2.227, 23.629]$, $p = .104$
+
+Statistically zero, though the coefficient is large. The wide CI reflects the small between-dyad sample. This contrasts with the PA model for the same context, where we-ness was significant ($8.301$, $p = .019$); the difference likely reflects the stronger collinearity between we-ness and the NA similarity predictor in this model.
+
+**Interaction** $\beta_3 = 0.022$, 95% CI $[-0.512, 0.556]$, $p = .934$
+
+Statistically zero and essentially exactly zero. Trait we-ness does not moderate the association between actual NA similarity and love after the positive interaction. H3.2 predicted $\beta_3 > 0$, but with the main effect already positive (counter to the hypothesized negative direction), the buffering logic of H3.2 does not apply: there is no negative effect for we-ness to attenuate.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 9.20$, variance $= 84.66$; residual $SD = 13.50$, variance $= 182.32$. The dyad-level variance decreases from Step 1a ($110.54$), consistent with we-ness absorbing some between-dyad variation.
+
+**The model does not support H3.2 for actual NA similarity predicting love in the positive interaction.** The moderation is essentially zero, and the hypothesis is structurally inapplicable: H3.2 assumes a negative similarity effect that we-ness buffers, but the actual NA similarity effect in the positive interaction is positive.
+
+##### Probing positive interaction
+
+```{r h32_NA_act_love_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual NA × we-ness → Love (positive)"
+
+we_sd_pos <- sd(sc2_pos$cwe_ness, na.rm = TRUE)
+
+slopes_h32_act_love_pos <- emtrends(
+  h32_NA_act_love_pos,
+  specs = ~ cwe_ness,
+  var   = "NA_sim_act",
+  at    = list(cwe_ness = c(-we_sd_pos, 0, we_sd_pos))
+)
+
+slopes_h32_act_love_pos_df <- as.data.frame(summary(slopes_h32_act_love_pos, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h32_act_love_pos <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h32_act_love_pos_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h32_act_love_pos_df$NA_sim_act.trend),
+  `SE`            = sprintf("%.4f", slopes_h32_act_love_pos_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h32_act_love_pos_df$lower.CL, slopes_h32_act_love_pos_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h32_act_love_pos_df$t.ratio),
+  `p`             = ifelse(slopes_h32_act_love_pos_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h32_act_love_pos_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h32_act_love_pos,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on love at low, average, and high trait we-ness (positive interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual NA similarity on love is virtually identical across all three levels of we-ness: low ($-1$ SD: $\beta = 0.242$, $p = .170$), average ($\beta = 0.251$, $p = .054$), and high ($+1$ SD: $\beta = 0.260$, $p = .116$). The slopes are flat, consistent with the near-zero interaction term ($\beta_3 = 0.022$, $p = .934$). None reaches conventional significance, though the average slope is marginal ($p = .054$), reflecting the same collinearity-driven attenuation from the Step 1a estimate ($0.352$, $p = .009$) that was observed when other covariates were added in Steps 1b and 1c.
+
+The probing confirms that we-ness has no differential effect on the NA similarity slope. All three slopes are positive and of comparable magnitude, reinforcing the finding from Step 1a that actual NA similarity during the positive interaction is positively (not negatively) associated with love, and that this association does not depend on a couple's sense of shared coping.
+
 #### Closeness
+
+##### Negative interaction
 
 ```{r h32_NA_act_close_neg}
 #| output-fold: true
@@ -3002,6 +3965,80 @@ h32_NA_act_close_neg <- lme(
 model_output(h32_NA_act_close_neg)
 ```
 
+**Intercept** $\beta_0 = 77.99$, 95% CI $[72.84, 83.14]$, $p < .001$
+
+Expected post-interaction closeness at zero actual NA similarity and average trait we-ness. Close to the Step 1a intercept ($78.97$).
+
+**Actual NA similarity** $\beta_1 = -0.255$, 95% CI $[-0.698, 0.189]$, $p = .257$
+
+Statistically zero. Actual NA similarity does not predict closeness after the negative interaction at average we-ness, consistent with the null main effect in Step 1a ($-0.157$, $p = .497$).
+
+**Trait we-ness** $\beta_2 = 15.205$, 95% CI $[3.572, 26.839]$, $p = .011$
+
+Significant. Couples higher in trait we-ness report more closeness after the negative interaction, at average levels of NA similarity. The coefficient is comparable to the love model in the same context ($14.204$, $p = .017$). In the negative interaction, we-ness emerges as a significant predictor of both outcomes in the NA models, while it was non-significant in the PA models for the same context. This likely reflects the different predictor distributions: NA similarity is less correlated with we-ness than PA similarity, leaving more between-dyad variance for we-ness to capture.
+
+**Interaction** $\beta_3 = 0.191$, 95% CI $[-0.834, 1.216]$, $p = .712$
+
+Statistically zero. Trait we-ness does not moderate the association between actual NA similarity and closeness after the negative interaction. As with love, the main effect is null, so the moderation hypothesis is moot.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 12.14$, variance $= 147.29$; residual $SD = 16.04$, variance $= 257.13$. The dyad-level variance decreases from Step 1a ($179.76$), consistent with the significant we-ness direct effect absorbing between-dyad variation.
+
+**The model does not support H3.2 for actual NA similarity predicting closeness in the negative interaction.** The moderation is non-significant and the main effect remains null. As with love, we-ness has a significant direct effect ($p = .011$), indicating that couples with stronger shared coping report higher closeness after the disagreement independently of NA similarity levels.
+
+##### Probing negative interaction
+
+```{r h32_NA_act_close_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual NA × we-ness → Closeness (negative)"
+
+we_sd_neg <- sd(sc2_neg$cwe_ness, na.rm = TRUE)
+
+slopes_h32_act_close_neg <- emtrends(
+  h32_NA_act_close_neg,
+  specs = ~ cwe_ness,
+  var   = "NA_sim_act",
+  at    = list(cwe_ness = c(-we_sd_neg, 0, we_sd_neg))
+)
+
+slopes_h32_act_close_neg_df <- as.data.frame(summary(slopes_h32_act_close_neg, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h32_act_close_neg <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h32_act_close_neg_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h32_act_close_neg_df$NA_sim_act.trend),
+  `SE`            = sprintf("%.4f", slopes_h32_act_close_neg_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h32_act_close_neg_df$lower.CL, slopes_h32_act_close_neg_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h32_act_close_neg_df$t.ratio),
+  `p`             = ifelse(slopes_h32_act_close_neg_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h32_act_close_neg_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h32_act_close_neg,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on closeness at low, average, and high trait we-ness (negative interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual NA similarity on closeness is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = -0.334$, $p = .230$), average ($\beta = -0.255$, $p = .257$), and high ($+1$ SD: $\beta = -0.176$, $p = .604$). The pattern mirrors the love probing in the same context almost exactly: all slopes are negative, none approaches significance, and there is a slight descriptive flattening toward zero at higher we-ness. As with love, this nominal gradient is consistent with H3.2's buffering prediction but is uninterpretable given both the null interaction ($\beta_3 = 0.191$, $p = .712$) and the null main effect. NA similarity remains uninformative for post-interaction closeness in the negative interaction at every level of we-ness.
+
+##### Positive interaction
+
 ```{r h32_NA_act_close_pos}
 #| output-fold: true
 #| output-summary: "H3.2 actual NA × we-ness → Closeness (positive)"
@@ -3017,9 +4054,85 @@ h32_NA_act_close_pos <- lme(
 model_output(h32_NA_act_close_pos)
 ```
 
+**Intercept** $\beta_0 = 91.50$, 95% CI $[86.17, 96.83]$, $p < .001$
+
+Expected post-interaction closeness at zero actual NA similarity and average trait we-ness.
+
+**Actual NA similarity** $\beta_1 = 0.265$, 95% CI $[0.046, 0.484]$, $p = .018$
+
+Significant. The coefficient is attenuated from the Step 1a estimate ($0.383$, $p = .002$), partly because we-ness absorbs between-dyad variance, but it retains significance. As with love, the direction is positive, counter to H1.2's hypothesized negative association.
+
+**Trait we-ness** $\beta_2 = 9.679$, 95% CI $[-1.684, 21.042]$, $p = .094$
+
+Statistically zero, though the coefficient is large. This contrasts with the PA model for the same context, where we-ness was highly significant ($10.932$, $p < .001$). The difference likely reflects the stronger correlation between we-ness and PA similarity than between we-ness and NA similarity, which changes how variance is partitioned across predictors.
+
+**Interaction** $\beta_3 = -0.129$, 95% CI $[-0.597, 0.340]$, $p = .587$
+
+Statistically zero. Trait we-ness does not moderate the association between actual NA similarity and closeness after the positive interaction. As with love in the same context, H3.2's buffering logic is structurally inapplicable: the main effect is positive rather than negative, so there is no harmful effect for we-ness to attenuate.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 7.15$, variance $= 51.05$; residual $SD = 12.52$, variance $= 156.77$. The dyad-level variance decreases from Step 1a ($80.91$), consistent with we-ness absorbing between-dyad variation.
+
+**The model does not support H3.2 for actual NA similarity predicting closeness in the positive interaction.** The moderation is non-significant, and the hypothesis is structurally inapplicable given the positive direction of the NA similarity effect. The actual similarity main effect remains significant ($p = .018$), confirming that the positive association between shared NA and closeness during the positive interaction persists after controlling for we-ness.
+
+##### Probing positive interaction
+
+```{r h32_NA_act_close_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual NA × we-ness → Closeness (positive)"
+
+we_sd_pos <- sd(sc2_pos$cwe_ness, na.rm = TRUE)
+
+slopes_h32_act_close_pos <- emtrends(
+  h32_NA_act_close_pos,
+  specs = ~ cwe_ness,
+  var   = "NA_sim_act",
+  at    = list(cwe_ness = c(-we_sd_pos, 0, we_sd_pos))
+)
+
+slopes_h32_act_close_pos_df <- as.data.frame(summary(slopes_h32_act_close_pos, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h32_act_close_pos <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h32_act_close_pos_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h32_act_close_pos_df$NA_sim_act.trend),
+  `SE`            = sprintf("%.4f", slopes_h32_act_close_pos_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h32_act_close_pos_df$lower.CL, slopes_h32_act_close_pos_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h32_act_close_pos_df$t.ratio),
+  `p`             = ifelse(slopes_h32_act_close_pos_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h32_act_close_pos_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h32_act_close_pos,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on closeness at low, average, and high trait we-ness (positive interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual NA similarity on closeness is significant at low ($-1$ SD: $\beta = 0.318$, $p = .039$) and average ($\beta = 0.265$, $p = .018$) we-ness, but not at high ($+1$ SD: $\beta = 0.212$, $p = .140$) we-ness. All slopes are positive, consistent with the counter-to-hypothesis pattern from Step 1a. The descriptive attenuation at higher we-ness mirrors what was observed across the H3.1 PA models: similarity effects tend to be stronger at low we-ness and weaker at high we-ness, regardless of affect type. As in those models, the interpretation is likely that couples high in we-ness already report high closeness, leaving less room for similarity to add predictive value.
+
+The pattern is notable in one respect: this is one of only two probing tables across the entire Step 3a series where the significant slope at average we-ness corresponds to a significant main effect in the omnibus model ($\beta_1 = 0.265$, $p = .018$), rather than inheriting marginal significance from a weakened main effect. The actual NA similarity effect on closeness in the positive interaction is robust enough to survive both the addition of we-ness and the splitting across we-ness levels, though it does not survive at the high end. The non-significant interaction ($\beta_3 = -0.129$, $p = .587$) confirms that the attenuation gradient is not reliable.
+
 ### Perceived NA Similarity
 
 #### Love
+
+##### Negative interaction
 
 ```{r h32_NA_perc_love_neg}
 #| output-fold: true
@@ -3036,6 +4149,82 @@ h32_NA_perc_love_neg <- lme(
 model_output(h32_NA_perc_love_neg)
 ```
 
+**Intercept** $\beta_0 = 78.61$, 95% CI $[75.21, 82.00]$, $p < .001$
+
+Expected post-interaction love at zero perceived NA similarity and average trait we-ness.
+
+**Perceived NA similarity** $\beta_1 = 0.005$, 95% CI $[-0.331, 0.341]$, $p = .977$
+
+Statistically zero. Perceived NA similarity does not predict love after the negative interaction at average we-ness, consistent with all prior models.
+
+**Trait we-ness** $\beta_2 = 14.128$, 95% CI $[5.868, 22.388]$, $p = .001$
+
+Highly significant, and the most precisely estimated we-ness direct effect in the negative interaction series. Couples higher in trait we-ness report substantially more love after the disagreement, independently of perceived NA similarity. The coefficient is comparable to the actual NA model for the same context ($14.204$, $p = .017$) but estimated with greater precision (narrower CI, smaller $p$-value), likely because the perceived similarity predictor absorbs less between-dyad variance than actual similarity, leaving more for we-ness to capture.
+
+**Interaction** $\beta_3 = 0.758$, 95% CI $[-0.198, 1.714]$, $p = .119$
+
+Statistically zero, though this is the largest interaction coefficient across all Step 3a models and the closest to significance. The direction is positive, consistent with H3.2's prediction that we-ness would buffer the negative perceived NA similarity effect. However, the main effect is essentially zero ($0.005$), so the interaction, even if it were significant, would not reflect buffering of a harmful effect but rather a differential emergence of an effect that is otherwise absent. The probing will clarify the slope pattern across we-ness levels.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 8.27$, variance $= 68.42$; residual $SD = 18.36$, variance $= 337.26$. The dyad-level variance decreases from Step 1a ($91.25$), consistent with the strong we-ness direct effect.
+
+**The model does not support H3.2 for perceived NA similarity predicting love in the negative interaction.** The moderation does not reach significance, and the main effect is essentially zero. The near-significant interaction ($p = .119$) is the most suggestive moderation result in the Step 3a series but remains above conventional thresholds.
+
+##### Probing negative interaction
+
+```{r h32_NA_perc_love_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived NA × we-ness → Love (negative)"
+
+we_sd_neg <- sd(sc2_neg$cwe_ness, na.rm = TRUE)
+
+slopes_h32_perc_love_neg <- emtrends(
+  h32_NA_perc_love_neg,
+  specs = ~ cwe_ness,
+  var   = "NA_sim_perc",
+  at    = list(cwe_ness = c(-we_sd_neg, 0, we_sd_neg))
+)
+
+slopes_h32_perc_love_neg_df <- as.data.frame(summary(slopes_h32_perc_love_neg, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h32_perc_love_neg <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h32_perc_love_neg_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h32_perc_love_neg_df$NA_sim_perc.trend),
+  `SE`            = sprintf("%.4f", slopes_h32_perc_love_neg_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h32_perc_love_neg_df$lower.CL, slopes_h32_perc_love_neg_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h32_perc_love_neg_df$t.ratio),
+  `p`             = ifelse(slopes_h32_perc_love_neg_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h32_perc_love_neg_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h32_perc_love_neg,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived NA similarity on love at low, average, and high trait we-ness (negative interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived NA similarity on love shifts from negative at low we-ness ($-1$ SD: $\beta = -0.308$, $p = .193$) to essentially zero at average ($\beta = 0.005$, $p = .977$) to positive at high we-ness ($+1$ SD: $\beta = 0.317$, $p = .268$). None reaches significance, but the sign reversal across the we-ness range is notable and consistent with the near-significant interaction term ($\beta_3 = 0.758$, $p = .119$).
+
+This is the only probing table across the entire Step 3a series where the slopes change direction across we-ness levels. Descriptively, the pattern suggests that for couples low in we-ness, perceiving shared NA during the disagreement may trend toward undermining love, while for couples high in we-ness it may trend toward supporting love, perhaps reflecting a validation or mutual understanding mechanism. However, all three slopes are clearly non-significant, the interaction itself does not reach conventional thresholds, and the main effect is essentially zero. The pattern is suggestive but far too imprecise to interpret substantively.
+
+##### Positive interaction
+
 ```{r h32_NA_perc_love_pos}
 #| output-fold: true
 #| output-summary: "H3.2 perceived NA × we-ness → Love (positive)"
@@ -3051,9 +4240,83 @@ h32_NA_perc_love_pos <- lme(
 model_output(h32_NA_perc_love_pos)
 ```
 
+**Intercept** $\beta_0 = 86.63$, 95% CI $[81.77, 91.49]$, $p < .001$
+
+Expected post-interaction love at zero perceived NA similarity and average trait we-ness.
+
+**Perceived NA similarity** $\beta_1 = 0.140$, 95% CI $[-0.070, 0.351]$, $p = .189$
+
+Statistically zero. Perceived NA similarity does not predict love after the positive interaction at average we-ness, consistent with all prior models.
+
+**Trait we-ness** $\beta_2 = 10.546$, 95% CI $[-1.258, 22.349]$, $p = .079$
+
+Marginally non-significant. The coefficient is comparable in magnitude to the actual NA model for the same context ($10.701$, $p = .104$) and the PA models ($8.301$-$11.828$). In the positive interaction, we-ness consistently trends toward predicting more love, reaching significance in some model specifications but not others depending on how variance is partitioned with the similarity predictor.
+
+**Interaction** $\beta_3 = -0.018$, 95% CI $[-0.554, 0.518]$, $p = .947$
+
+Statistically zero and essentially exactly zero. Trait we-ness does not moderate the association between perceived NA similarity and love after the positive interaction. This contrasts with the negative interaction, where the same interaction term was the largest in the Step 3a series ($0.758$, $p = .119$). The context difference suggests that whatever trend toward differential slopes exists for perceived NA similarity, it is specific to the disagreement context.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 9.07$, variance $= 82.22$; residual $SD = 13.66$, variance $= 186.62$. The dyad-level variance decreases from Step 1a ($110.54$), consistent with we-ness absorbing between-dyad variation.
+
+**The model does not support H3.2 for perceived NA similarity predicting love in the positive interaction.** Both the main effect and the moderation are non-significant.
+
+##### Probing positive interaction
+
+```{r h32_NA_perc_love_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived NA × we-ness → Love (positive)"
+
+we_sd_pos <- sd(sc2_pos$cwe_ness, na.rm = TRUE)
+
+slopes_h32_perc_love_pos <- emtrends(
+  h32_NA_perc_love_pos,
+  specs = ~ cwe_ness,
+  var   = "NA_sim_perc",
+  at    = list(cwe_ness = c(-we_sd_pos, 0, we_sd_pos))
+)
+
+slopes_h32_perc_love_pos_df <- as.data.frame(summary(slopes_h32_perc_love_pos, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h32_perc_love_pos <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h32_perc_love_pos_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h32_perc_love_pos_df$NA_sim_perc.trend),
+  `SE`            = sprintf("%.4f", slopes_h32_perc_love_pos_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h32_perc_love_pos_df$lower.CL, slopes_h32_perc_love_pos_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h32_perc_love_pos_df$t.ratio),
+  `p`             = ifelse(slopes_h32_perc_love_pos_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h32_perc_love_pos_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h32_perc_love_pos,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived NA similarity on love at low, average, and high trait we-ness (positive interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived NA similarity on love is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = 0.148$, $p = .348$), average ($\beta = 0.140$, $p = .189$), and high ($+1$ SD: $\beta = 0.133$, $p = .380$). The slopes are virtually identical across we-ness levels, consistent with the near-zero interaction term ($\beta_3 = -0.018$, $p = .947$). This is the flattest slope gradient across all Step 3a probing tables, confirming that we-ness has no differential effect whatsoever on the perceived NA similarity slope in the positive interaction. The contrast with the negative interaction, where the slopes shifted from negative to positive across we-ness levels, reinforces the conclusion that whatever suggestive moderation pattern exists for perceived NA similarity is context-specific and does not generalize to the positive interaction.
+
 #### Closeness
 
-```{r h32_NA_perc_close_neg}
+##### Negative interaction
+
+```{r  h32_NA_perc_close_neg}
 #| output-fold: true
 #| output-summary: "H3.2 perceived NA × we-ness → Closeness (negative)"
 
@@ -3067,6 +4330,86 @@ h32_NA_perc_close_neg <- lme(
 
 model_output(h32_NA_perc_close_neg)
 ```
+
+**Intercept** $\beta_0 = 80.05$, 95% CI $[76.44, 83.65]$, $p < .001$
+
+Expected post-interaction closeness at zero perceived NA similarity and average trait we-ness.
+
+**Perceived NA similarity** $\beta_1 = 0.009$, 95% CI $[-0.312, 0.330]$, $p = .956$
+
+Statistically zero. Perceived NA similarity does not predict closeness after the negative interaction at average we-ness.
+
+**Trait we-ness** $\beta_2 = 18.267$, 95% CI $[10.212, 26.323]$, $p < .001$
+
+Highly significant, and the largest we-ness direct effect across all Step 3a models. Couples higher in trait we-ness report substantially more closeness after the disagreement, at average levels of perceived NA similarity.
+
+**Interaction** $\beta_3 = 1.284$, 95% CI $[0.407, 2.160]$, $p = .005$
+
+**Significant.** This is the only significant moderation across the entire Step 3a series. Trait we-ness moderates the association between perceived NA similarity and closeness after the negative interaction. The direction is positive, consistent with H3.2's prediction ($\beta_3 > 0$): at higher we-ness, the perceived NA similarity slope becomes more positive. However, the interpretation differs from the hypothesized buffering mechanism. H3.2 predicted that we-ness would attenuate a negative similarity effect, making a harmful association less harmful. Here, the main effect is essentially zero at average we-ness, so the moderation does not buffer a negative effect but rather creates a differential effect that is absent at the mean: perceived NA similarity becomes positively associated with closeness at high we-ness and negatively associated at low we-ness. The probing will clarify this pattern.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 12.61$, variance $= 158.96$; residual $SD = 15.43$, variance $= 238.11$. The residual variance decreases notably from Step 1a ($257.79$), indicating that the we-ness interaction term explains meaningful within-dyad variance in closeness.
+
+**This is the only model in the Step 3a series that supports moderation by trait we-ness.** The significant interaction ($p = .005$) indicates that the relational meaning of perceived shared NA during a disagreement depends on the couple's sense of shared coping. The probing results will determine at which levels of we-ness the perceived NA similarity slope is significant and in which direction.
+
+##### Probing negative interaction
+
+```{r h32_NA_perc_close_neg_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived NA × we-ness → Closeness (negative)"
+
+we_sd_neg <- sd(sc2_neg$cwe_ness, na.rm = TRUE)
+
+slopes_h32_perc_close_neg <- emtrends(
+  h32_NA_perc_close_neg,
+  specs = ~ cwe_ness,
+  var   = "NA_sim_perc",
+  at    = list(cwe_ness = c(-we_sd_neg, 0, we_sd_neg))
+)
+
+slopes_h32_perc_close_neg_df <- as.data.frame(summary(slopes_h32_perc_close_neg, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h32_perc_close_neg <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h32_perc_close_neg_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h32_perc_close_neg_df$NA_sim_perc.trend),
+  `SE`            = sprintf("%.4f", slopes_h32_perc_close_neg_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h32_perc_close_neg_df$lower.CL, slopes_h32_perc_close_neg_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h32_perc_close_neg_df$t.ratio),
+  `p`             = ifelse(slopes_h32_perc_close_neg_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h32_perc_close_neg_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h32_perc_close_neg,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived NA similarity on closeness at low, average, and high trait we-ness (negative interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+The significant interaction ($\beta_3 = 1.284$, $p = .005$) is confirmed by the probing, which reveals a crossover pattern. The slope of perceived NA similarity on closeness is significantly **negative** at low we-ness ($-1$ SD: $\beta = -0.520$, $p = .021$), essentially zero at average ($\beta = 0.009$, $p = .956$), and significantly **positive** at high we-ness ($+1$ SD: $\beta = 0.538$, $p = .044$). Both extreme slopes are significant and opposite in sign, with the average slope confirming the null main effect.
+
+This is a genuine crossover interaction: the relational meaning of perceived shared NA during a disagreement reverses depending on a couple's sense of shared coping. For couples low in we-ness, perceiving that one shares negative affect with the partner during the disagreement predicts *less* closeness afterward. For couples high in we-ness, the same perception predicts *more* closeness. The null main effect at average we-ness is not an absence of association but the cancellation of two opposing associations that average out to zero.
+
+The interpretation aligns with a validation mechanism modulated by relational security. For high-we-ness couples, perceiving shared negativity during a disagreement may signal mutual engagement and emotional attunement ("we are in this together"), reinforcing closeness. For low-we-ness couples, the same perception may signal contagion or escalation ("we are both upset"), undermining closeness. The couple's chronic sense of shared coping determines whether perceived shared NA is experienced as connecting or threatening.
+
+This finding is notable for several reasons. It is the only significant moderation in the Step 3a series. It involves perceived rather than actual similarity, suggesting that it is the subjective experience of sharing negative affect, not the objective overlap, that interacts with we-ness. It is specific to closeness (the love model showed a suggestive but non-significant pattern in the same direction, $\beta_3 = 0.758$, $p = .119$) and to the negative interaction (the positive interaction model showed no moderation, $\beta_3 = -0.018$, $p = .947$). The specificity to the disagreement context makes theoretical sense: it is during conflict that the relational meaning of shared negativity is most ambiguous and most likely to depend on the couple's relational resources.
+
+##### Positive interaction
 
 ```{r h32_NA_perc_close_pos}
 #| output-fold: true
@@ -3082,6 +4425,78 @@ h32_NA_perc_close_pos <- lme(
 
 model_output(h32_NA_perc_close_pos)
 ```
+
+**Intercept** $\beta_0 = 86.48$, 95% CI $[82.16, 90.79]$, $p < .001$
+
+Expected post-interaction closeness at zero perceived NA similarity and average trait we-ness.
+
+**Perceived NA similarity** $\beta_1 = 0.045$, 95% CI $[-0.144, 0.233]$, $p = .640$
+
+Statistically zero. Perceived NA similarity does not predict closeness after the positive interaction at average we-ness.
+
+**Trait we-ness** $\beta_2 = 13.309$, 95% CI $[2.720, 23.899]$, $p = .014$
+
+Significant. Couples higher in trait we-ness report more closeness after the positive interaction, consistent with the PA models for the same context.
+
+**Interaction** $\beta_3 = -0.020$, 95% CI $[-0.501, 0.461]$, $p = .935$
+
+Statistically zero and essentially exactly zero. Trait we-ness does not moderate the association between perceived NA similarity and closeness after the positive interaction. This stands in sharp contrast to the negative interaction, where the same interaction was the only significant moderation in the entire Step 3a series ($\beta_3 = 1.284$, $p = .005$). The crossover pattern observed in the disagreement context, where perceived shared NA predicted less closeness at low we-ness and more closeness at high we-ness, is entirely absent in the positive interaction.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 7.25$, variance $= 52.53$; residual $SD = 12.71$, variance $= 161.43$. The dyad-level variance decreases from Step 1a ($80.91$), consistent with the significant we-ness direct effect.
+
+**The model does not support H3.2 for perceived NA similarity predicting closeness in the positive interaction.** The moderation is null, reinforcing the context-specificity of the significant finding in the negative interaction. The crossover interaction between perceived NA similarity and we-ness is unique to the disagreement context, where the relational meaning of shared negativity is most ambiguous. In the positive interaction, perceived shared NA carries no information for closeness regardless of we-ness level.
+
+##### Probing positive interaction
+
+```{r h32_NA_perc_close_pos_probe}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived NA × we-ness → Closeness (positive)"
+
+we_sd_pos <- sd(sc2_pos$cwe_ness, na.rm = TRUE)
+
+slopes_h32_perc_close_pos <- emtrends(
+  h32_NA_perc_close_pos,
+  specs = ~ cwe_ness,
+  var   = "NA_sim_perc",
+  at    = list(cwe_ness = c(-we_sd_pos, 0, we_sd_pos))
+)
+
+slopes_h32_perc_close_pos_df <- as.data.frame(summary(slopes_h32_perc_close_pos, infer = TRUE))
+
+level_labels <- c("Low (−1 SD)", "Average", "High (+1 SD)")
+
+tbl_h32_perc_close_pos <- data.frame(
+  `We-ness level` = level_labels,
+  `We-ness value` = sprintf("%.2f", slopes_h32_perc_close_pos_df$cwe_ness),
+  `Simple slope`  = sprintf("%.4f", slopes_h32_perc_close_pos_df$NA_sim_perc.trend),
+  `SE`            = sprintf("%.4f", slopes_h32_perc_close_pos_df$SE),
+  `95% CI`        = sprintf("[%.4f, %.4f]", slopes_h32_perc_close_pos_df$lower.CL, slopes_h32_perc_close_pos_df$upper.CL),
+  `t`             = sprintf("%.3f", slopes_h32_perc_close_pos_df$t.ratio),
+  `p`             = ifelse(slopes_h32_perc_close_pos_df$p.value < .001, "< .001",
+                           sprintf("%.3f", slopes_h32_perc_close_pos_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h32_perc_close_pos,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived NA similarity on closeness at low, average, and high trait we-ness (positive interaction)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) %>%
+  footnote(
+    general = "Simple slopes estimated at −1 SD, mean, and +1 SD of trait we-ness (grand-mean centered).",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived NA similarity on closeness is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = 0.053$, $p = .708$), average ($\beta = 0.045$, $p = .639$), and high ($+1$ SD: $\beta = 0.036$, $p = .788$). The slopes are virtually identical and uniformly null, consistent with the near-zero interaction term ($\beta_3 = -0.020$, $p = .935$). The contrast with the negative interaction could not be sharper: in the disagreement context, slopes ranged from $-0.520$ to $+0.538$ with both extremes significant; here, the range is $0.036$ to $0.053$ with none approaching significance. This reinforces the conclusion that the crossover moderation by we-ness is specific to the disagreement context, where perceived shared negativity is relationally ambiguous. In the positive interaction, perceived NA similarity is simply uninformative for closeness regardless of we-ness level.
 
 # Step 3b: Context Moderation — Negative vs. Positive Interaction (H3.3–H3.4)
 
