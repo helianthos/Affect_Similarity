@@ -24,7 +24,7 @@ bg_data   <- readRDS(file.path(dir_data_ana, "bg_ana.rds"))
 plot_counter <- 1
 prefix <- "SC2"
 
-# mente carlo number of simulations
+# Monte Carlo number of simulations
 n_sim <- 20000
 ```
 
@@ -385,7 +385,7 @@ The total variance ($242.12$) is the lowest of the four Step 1a models, indicati
 |                                                                         | ICC $= 38.7\%$                                          | ICC $= 36.3\%$                                         |
 +-------------------------------------------------------------------------+---------------------------------------------------------+--------------------------------------------------------+
 
-: *Note.* Actual PA similarity predicting post-interaction evaluations (H1.1). All models include a dyad-level random intercept. ICC reflects the proportion of variance between dyads (i.e., the expected within-dyad partner correlation).
+*Note.* Actual PA similarity predicting post-interaction evaluations (H1.1). All models include a dyad-level random intercept. ICC reflects the proportion of variance between dyads (i.e., the expected within-dyad partner correlation).
 
 So from these results it follows that **negative interactions uniquely reduce within-couple agreement for love, but not for closeness.** Closeness seems to be a more consistently dyadic state; love reports seems to be more context-sensitive and individually filtered, especially after disagreement.
 
@@ -510,6 +510,8 @@ lme_diagnostics(h11_PA_close_pos)
 All four diagnostic panels show the same constellation: some nonlinearity in the LOESS curve driven by sparse low-fitted-value observations, heteroscedasticity from ceiling compression, and left-skewed residuals in the QQ-plot. These patterns are structural consequences of the bounded 0–100 outcome scale combined with high baseline love and closeness in this sample. The closeness models show slightly better residual behaviour than the love models, and the positive interaction models show slightly denser concentration at high fitted values. None of the model diagnostics suggest severe enough violations to make conclusions by default unreliable but the ceiling-driven violations warrant caution for inference.
 
 ## H1.2 – Actual NA Similarity
+
+From here onward, results documenation will be more concise: the interpretive framework for intercepts, slopes, and variance decomposition was established in H1.1 and is not repeated in full for each subsequent model.
 
 ### Love
 
@@ -659,9 +661,9 @@ This is the expected post-interaction closeness when $\bar{S}^{act}_{pdc} = 0$. 
 
 For every one-unit increase in interaction-averaged actual NA similarity, post-interaction closeness increases by about 0.38 points. A 10-unit increase in average NA similarity corresponds to an increase of about 3.8 closeness points. The effect is significant and virtually identical in magnitude to the love outcome in the same context ($\beta_1 = 0.352$, $p = .009$), though estimated with somewhat greater precision (narrower CI, smaller $p$-value).
 
-As with love, the direction is opposite to what H1.2 predicts: greater actual similarity in negative affect during the positive interaction predicts feeling *closer* afterward, not less close. The same interpretive logic applies: in the context of a positive interaction, sharing negative affect may signal emotional attunement or mutual engagement rather than relational strain. The convergence across both outcomes strengthens this interpretation — the positive NA similarity effect in the positive interaction is not outcome-specific but a consistent pattern across both relational evaluations.
+As with love, the direction is opposite to what H1.2 predicts: greater actual similarity in negative affect during the positive interaction predicts feeling *closer* afterward, not less close. The same interpretive logic applies: in the context of a positive interaction, sharing negative affect may signal emotional attunement or mutual engagement rather than relational strain. The convergence across both outcomes strengthens this interpretation: the positive NA similarity effect in the positive interaction is not outcome-specific but a consistent pattern across both relational evaluations.
 
-The contrast with the negative interaction is also notable: in the negative interaction, NA similarity was unrelated to closeness ($\beta_1 = -0.157$, $p = .497$), whereas in the positive interaction the association is clearly positive and significant. This context dependence — a null effect during disagreement but a positive effect during a positive discussion — suggests that the relational meaning of shared negative affect may differ across interaction contexts.
+The contrast with the negative interaction is also notable: in the negative interaction, NA similarity was unrelated to closeness ($\beta_1 = -0.157$, $p = .497$), whereas in the positive interaction the association is clearly positive and significant. This context dependence (a null effect during disagreement but a positive effect during a positive discussion) suggests that the relational meaning of shared negative affect may differ across interaction contexts.
 
 **Random effects and variance decomposition**
 
@@ -696,7 +698,7 @@ The ICC is $80.91 / 235.22 = 0.344$, or about $34\%$. This means roughly one thi
 |                                                                         | ICC $= 41.1\%$                                           | ICC $= 34.4\%$                                         |
 +-------------------------------------------------------------------------+----------------------------------------------------------+--------------------------------------------------------+
 
-: *Note.* Actual NA similarity predicting post-interaction evaluations (H1.2). All models include a dyad-level random intercept. ICC reflects the proportion of variance between dyads (i.e., the expected within-dyad partner correlation).
+*Note.* Actual NA similarity predicting post-interaction evaluations (H1.2). All models include a dyad-level random intercept. ICC reflects the proportion of variance between dyads (i.e., the expected within-dyad partner correlation).
 
 The results show a clear context split. In the negative interaction, actual NA similarity is unrelated to both love and closeness (both $p > .49$), with near-zero slopes that are virtually identical across the two outcomes ($-0.141$ and $-0.157$). In the positive interaction, actual NA similarity significantly predicts both outcomes in the *positive* direction ($\beta = 0.352$ for love, $\beta = 0.383$ for closeness), counter to the hypothesized negative association.
 
@@ -745,6 +747,83 @@ When actual and perceived similarity are entered as simultaneous predictors, the
 
 This collinearity is structurally present in Study Component 1 as well, but it is less consequential there for two reasons. First, SC1 has many repeated ESM beeps per person, yielding a much larger effective sample size; standard errors are smaller to begin with, so the additional inflation from collinearity is proportionally less impactful. Second, the SC1 predictors are decomposed into within-person and between-person components, and the within-person fluctuations in actual and perceived similarity (how much they co-vary from beep to beep around a person's own mean) may be less correlated than the interaction-level averages used in SC2. Aggregating across VMR segments to a single value per interaction compresses variation and can increase the predictor correlation, because segment-level noise that might differentiate the two indices gets averaged out.
 :::
+
+```{r predictor_correlations}
+#| output-fold: true
+#| output-summary: "Correlations between predictors, and VIF"
+
+# Within-context predictor correlations
+r_PA_neg <- cor(sc2_neg$PA_sim_act, sc2_neg$PA_sim_perc, use = "complete.obs")
+r_PA_pos <- cor(sc2_pos$PA_sim_act, sc2_pos$PA_sim_perc, use = "complete.obs")
+r_NA_neg <- cor(sc2_neg$NA_sim_act, sc2_neg$NA_sim_perc, use = "complete.obs")
+r_NA_pos <- cor(sc2_pos$NA_sim_act, sc2_pos$NA_sim_perc, use = "complete.obs")
+
+# VIF and SE inflation
+data.frame(
+  Context = c("PA neg", "PA pos", "NA neg", "NA pos"),
+  r       = round(c(r_PA_neg, r_PA_pos, r_NA_neg, r_NA_pos), 3),
+  VIF     = round(1 / (1 - c(r_PA_neg, r_PA_pos, r_NA_neg, r_NA_pos)^2), 2),
+  SE_inflation = paste0(round((sqrt(1 / (1 - c(r_PA_neg, r_PA_pos, r_NA_neg, r_NA_pos)^2)) - 1) * 100), "%")
+)
+```
+
+To examine whether aggregation across VMR segments was associated with stronger overlap between actual and perceived similarity, we compared segment-level within-person associations to correlations between person-level averages within each interaction context. Segment-level associations were estimated using repeated-measures correlation (`rmcorr`), which captures the within-person association across segments while accounting for the non-independence of repeated observations. Person-level aggregated associations were computed as ordinary correlations between each person’s mean actual and mean perceived similarity within a context. Across all four comparisons, the aggregated correlations were larger than the segment-level within-person correlations: for PA, *r* increased from .465 to .732 in negative interactions and from .541 to .672 in positive interactions; for NA, *r* increased from .461 to .618 in negative interactions and from .363 to .754 in positive interactions. This pattern is consistent with the idea that averaging across segments reduces momentary fluctuations that partly differentiate the two indices, thereby increasing their overlap at the aggregated level.
+
+```{r correlation_inflation_from_aggeragetion}
+#| output-fold: true
+#| output-summary: "Aggregation increases collinearity"
+
+# Segment-level within-person correlations from vmr_data
+rm_PA_neg <- rmcorr(
+  participant = factor(person),
+  measure1 = PA_similarity_act,
+  measure2 = PA_similarity_perc,
+  dataset = subset(vmr_data, topic == "negative")
+)
+
+rm_PA_pos <- rmcorr(
+  participant = factor(person),
+  measure1 = PA_similarity_act,
+  measure2 = PA_similarity_perc,
+  dataset = subset(vmr_data, topic == "positive")
+)
+
+rm_NA_neg <- rmcorr(
+  participant = factor(person),
+  measure1 = NA_similarity_act,
+  measure2 = NA_similarity_perc,
+  dataset = subset(vmr_data, topic == "negative")
+)
+
+rm_NA_pos <- rmcorr(
+  participant = factor(person),
+  measure1 = NA_similarity_act,
+  measure2 = NA_similarity_perc,
+  dataset = subset(vmr_data, topic == "positive")
+)
+
+# Person-level aggregated correlations from the model datasets
+r_PA_neg_agg <- cor(sc2_neg$PA_sim_act, sc2_neg$PA_sim_perc, use = "complete.obs")
+r_PA_pos_agg <- cor(sc2_pos$PA_sim_act, sc2_pos$PA_sim_perc, use = "complete.obs")
+r_NA_neg_agg <- cor(sc2_neg$NA_sim_act, sc2_neg$NA_sim_perc, use = "complete.obs")
+r_NA_pos_agg <- cor(sc2_pos$NA_sim_act, sc2_pos$NA_sim_perc, use = "complete.obs")
+
+aggregation_check <- data.frame(
+  Construct = c("PA", "PA", "NA", "NA"),
+  Topic = c("negative", "positive", "negative", "positive"),
+  r_segment_within = c(rm_PA_neg$r, rm_PA_pos$r, rm_NA_neg$r, rm_NA_pos$r),
+  ci_low_segment = c(rm_PA_neg$CI[1], rm_PA_pos$CI[1], rm_NA_neg$CI[1], rm_NA_pos$CI[1]),
+  ci_high_segment = c(rm_PA_neg$CI[2], rm_PA_pos$CI[2], rm_NA_neg$CI[2], rm_NA_pos$CI[2]),
+  r_aggregated = c(r_PA_neg_agg, r_PA_pos_agg, r_NA_neg_agg, r_NA_pos_agg)
+) %>%
+  mutate(
+    delta_r = r_aggregated - r_segment_within,
+    across(c(r_segment_within, ci_low_segment, ci_high_segment, r_aggregated, delta_r), ~ round(.x, 3))
+  )
+
+aggregation_check
+
+```
 
 ## H1.3 - PA Similarity
 
@@ -802,10 +881,6 @@ h13_PA_love_pos <- lme(
 model_output(h13_PA_love_pos)
 
 ```
-
-Here is the write-up for `h13_PA_love_pos`, to be placed after the closing ```` ``` ```` of the code chunk at line 675:
-
-------------------------------------------------------------------------
 
 **Intercept** $\beta_0 = 85.52$, 95% CI $[82.03, 89.01]$, $p < .001$
 
@@ -915,7 +990,7 @@ Dyad intercept $SD = 9.35$, variance $= 87.44$; residual $SD = 12.38$, variance 
 |                                                                        | Actual similarity: **increased**                              | Actual similarity: **attenuated (substantial)**               |
 +------------------------------------------------------------------------+---------------------------------------------------------------+---------------------------------------------------------------+
 
-: *Note.* Step 1b PA models: actual and perceived PA similarity entered simultaneously predicting post-interaction evaluations (H1.3). Step 1a estimates shown in parentheses for comparison. All models include a dyad-level random intercept.
+*Note.* Step 1b PA models: actual and perceived PA similarity entered simultaneously predicting post-interaction evaluations (H1.3). Step 1a estimates shown in parentheses for comparison. All models include a dyad-level random intercept.
 
 The results split clearly by interaction context. In the **negative interaction**, adding perceived PA similarity has no effect on the actual similarity coefficients, which if anything increase slightly (love: $0.379 \rightarrow 0.444$; closeness: $0.432 \rightarrow 0.456$). Perceived similarity is essentially zero and carries a slightly negative sign in both models. There is no evidence of mediation; the actual affective overlap itself is what predicts post-interaction evaluations.
 
@@ -1087,7 +1162,7 @@ Dyad intercept $SD = 9.18$, variance $= 84.25$; residual $SD = 12.30$, variance 
 |                                                                        | Step 1a null; attenuation **moot**                              | Actual similarity: **increased (suppression)**                |
 +------------------------------------------------------------------------+-----------------------------------------------------------------+---------------------------------------------------------------+
 
-: *Note.* Step 1b NA models: actual and perceived NA similarity entered simultaneously predicting post-interaction evaluations (H1.3). Step 1a estimates shown in parentheses for comparison. All models include a dyad-level random intercept.
+*Note.* Step 1b NA models: actual and perceived NA similarity entered simultaneously predicting post-interaction evaluations (H1.3). Step 1a estimates shown in parentheses for comparison. All models include a dyad-level random intercept.
 
 **H1.3 is not supported for NA similarity in any of the four models.** The results fall into two distinct patterns.
 
@@ -1447,7 +1522,7 @@ The simple slopes of perceived PA similarity on closeness are also non-significa
 |                                                                         | $\beta_3^{act \times perc} = -0.004$, $p = .774$ | $\beta_3^{act \times perc} = 0.003$, $p = .796$ |
 +-------------------------------------------------------------------------+--------------------------------------------------+-------------------------------------------------+
 
-: *Note.* Step 1c PA models: actual and perceived PA similarity (grand-mean centered within context) with interaction term predicting post-interaction evaluations. All models include a dyad-level random intercept.
+*Note.* Step 1c PA models: actual and perceived PA similarity (grand-mean centered within context) with interaction term predicting post-interaction evaluations. All models include a dyad-level random intercept.
 
 The interaction terms are statistically zero in all four models (ranging from $-0.004$ to $+0.003$, all $p > .77$), providing clear evidence that actual and perceived PA similarity do not modulate each other's association with post-interaction evaluations.
 
@@ -1757,23 +1832,23 @@ This probing confirms the distinctive status of this model: actual NA similarity
 
 ### Summary of results
 
-+-------------------------------------------------------------------------+---------------------------------------------------+-------------------------------------------------+
-|                                                                         | Negative Interaction                              | Positive Interaction                            |
-+:========================================================================+:==================================================+:================================================+
-| **Love**                                                                | $\beta_1^{act} = -0.200$, $p = .441$              | $\beta_1^{act} = 0.333$, $p = .063$             |
-|                                                                         |                                                   |                                                 |
-| *('hoe liefdevol voel je je op dit momentten opzichte van je partner')* | $\beta_2^{perc} = 0.096$, $p = .645$              | $\beta_2^{perc} = 0.026$, $p = .856$            |
-|                                                                         |                                                   |                                                 |
-|                                                                         | $\beta_3^{act \times perc} = -0.008$, $p = .673$  | $\beta_3^{act \times perc} = 0.001$, $p = .928$ |
-+-------------------------------------------------------------------------+---------------------------------------------------+-------------------------------------------------+
-| **Closeness**                                                           | $\beta_1^{act} = -0.171$, $p = .527$              | $\beta_1^{act} = 0.531$, $p = .001$             |
-|                                                                         |                                                   |                                                 |
-| *('hoe hecht voel je je op dit moment met je partner')*                 | $\beta_2^{perc} = 0.024$, $p = .903$              | $\beta_2^{perc} = -0.169$, $p = .198$           |
-|                                                                         |                                                   |                                                 |
-|                                                                         | $\beta_3^{act \times perc} = -0.002$, $p = .921$  | $\beta_3^{act \times perc} = 0.005$, $p = .548$ |
-+-------------------------------------------------------------------------+---------------------------------------------------+-------------------------------------------------+
++-------------------------------------------------------------------------+--------------------------------------------------+-------------------------------------------------+
+|                                                                         | Negative Interaction                             | Positive Interaction                            |
++:========================================================================+:=================================================+:================================================+
+| **Love**                                                                | $\beta_1^{act} = -0.200$, $p = .441$             | $\beta_1^{act} = 0.333$, $p = .063$             |
+|                                                                         |                                                  |                                                 |
+| *('hoe liefdevol voel je je op dit momentten opzichte van je partner')* | $\beta_2^{perc} = 0.096$, $p = .645$             | $\beta_2^{perc} = 0.026$, $p = .856$            |
+|                                                                         |                                                  |                                                 |
+|                                                                         | $\beta_3^{act \times perc} = -0.008$, $p = .673$ | $\beta_3^{act \times perc} = 0.001$, $p = .928$ |
++-------------------------------------------------------------------------+--------------------------------------------------+-------------------------------------------------+
+| **Closeness**                                                           | $\beta_1^{act} = -0.171$, $p = .527$             | $\beta_1^{act} = 0.531$, $p = .001$             |
+|                                                                         |                                                  |                                                 |
+| *('hoe hecht voel je je op dit moment met je partner')*                 | $\beta_2^{perc} = 0.024$, $p = .903$             | $\beta_2^{perc} = -0.169$, $p = .198$           |
+|                                                                         |                                                  |                                                 |
+|                                                                         | $\beta_3^{act \times perc} = -0.002$, $p = .921$ | $\beta_3^{act \times perc} = 0.005$, $p = .548$ |
++-------------------------------------------------------------------------+--------------------------------------------------+-------------------------------------------------+
 
-: *Note.* Step 1c NA models: actual and perceived NA similarity (grand-mean centered within context) with interaction term predicting post-interaction evaluations. All models include a dyad-level random intercept.
+*Note.* Step 1c NA models: actual and perceived NA similarity (grand-mean centered within context) with interaction term predicting post-interaction evaluations. All models include a dyad-level random intercept.
 
 The interaction terms are statistically zero in all four models (all $p > .54$), confirming that actual and perceived NA similarity do not modulate each other's association with post-interaction evaluations. This mirrors the Step 1c PA results, where all interaction terms were also null (all $p > .77$). Across all eight Step 1c models (two affect types $\times$ two outcomes $\times$ two contexts), there is no evidence that the two forms of similarity interact.
 
@@ -1887,7 +1962,19 @@ tbl_df <- do.call(rbind, lapply(rows, function(r) {
   )
 }))
 
-kable(tbl_df,
+note_html <- paste0(
+  "<em>Note.</em> ",
+  "Coefficients with <em>*</em> p &lt; .05, <em>**</em> p &lt; .01, ",
+  "<em>***</em> p &lt; .001. Significant coefficients (p &lt; .05) in ",
+  "<strong>bold</strong>. Step 1a includes actual similarity only. ",
+  "Step 1b adds perceived similarity. Step 1c adds the actual &times; ",
+  "perceived interaction (predictors grand-mean centered within context). ",
+  "All models include a dyad-level random intercept. Empty cells indicate ",
+  "that the predictor is not in the model at that step."
+)
+
+tab <- kable(
+  tbl_df,
   format    = "html",
   col.names = c("Outcome", "Affect Similarity", "Predictor",
                 "1a", "1b", "1c", "1a", "1b", "1c"),
@@ -1902,15 +1989,25 @@ kable(tbl_df,
     font_size  = 12
   ) %>%
   add_header_above(c(" " = 3,
-                      "Positive Interaction" = 3,
-                      "Negative Interaction" = 3)) %>%
-  collapse_rows(columns = 1:2, valign = "middle") %>%
-  footnote(
-    general = "Coefficients with * p < .05, ** p < .01, *** p < .001. Significant coefficients (p < .05) in bold. Step 1a includes actual similarity only. Step 1b adds perceived similarity. Step 1c adds the actual × perceived interaction (predictors grand-mean centered within context). All models include a dyad-level random intercept. Empty cells indicate that the predictor is not in the model at that step.",
-    general_title = "Note.",
-    footnote_as_chunk = TRUE,
-    escape = FALSE
-  )
+                     "Positive Interaction" = 3,
+                     "Negative Interaction" = 3)) %>%
+  collapse_rows(columns = 1:2, valign = "middle")
+
+tab_out <- sub(
+  "</table>",
+  paste0(
+    "<tfoot><tr><td colspan=\"9\" ",
+    "style=\"border-top: 0; padding: 8px 0 0 0; font-size: 11px; ",
+    "line-height: 1.35; text-align: left;\">",
+    note_html,
+    "</td></tr></tfoot></table>"
+  ),
+  as.character(tab),
+  fixed = TRUE
+)
+
+attributes(tab_out) <- attributes(tab)
+tab_out
 ```
 
 # Step 2: Mediation by Perceived Similarity (H2.1–H2.2)
@@ -1972,7 +2069,7 @@ The dyad intercept is essentially zero ($SD = 0.0005$, variance $\approx 0$), me
 
 **The a-path is clearly established: actual PA similarity strongly predicts perceived PA similarity in the negative interaction.** Whether this translates into a significant indirect effect depends on the b-path (perceived similarity predicting the outcome in the presence of actual similarity), which from the Step 1b results was non-significant for both love ($-0.081$, $p = .670$) and closeness ($-0.031$, $p = .863$). The strong a-path combined with null b-paths foreshadows null indirect effects for both outcomes.
 
-#### b- and c'-paths (outcome model — love)
+#### b- and c'-paths (outcome model - love)
 
 ```{r h21_PA_out_love_neg}
 #| output-fold: true
@@ -1999,7 +2096,7 @@ Statistically zero. Perceived PA similarity does not predict love after the nega
 
 The direct effect of actual PA similarity on love, controlling for perceived similarity. As discussed in Step 1b, this is slightly larger than the total effect from Step 1a ($c = 0.379$, $p = .020$), indicating no attenuation.
 
-#### b- and c'-paths (outcome model — closeness)
+#### b- and c'-paths (outcome model - closeness)
 
 ```{r h21_PA_out_close_neg}
 #| output-fold: true
@@ -2193,7 +2290,8 @@ edges(p_close)$label_hjust <- "center"
 
 p2 <- plot(p_close) + ggtitle("PA Mediation — Negative Interaction — Closeness")
 
-p1 / p2
+p1
+p2
 ```
 
 #### Mediation summary for love in the negative interaction
@@ -2463,16 +2561,17 @@ edges(p_close)$label_hjust <- "center"
 
 p2 <- plot(p_close) + ggtitle("PA Mediation — Positive Interaction — Closeness")
 
-p1 / p2
+p1
+p2
 ```
 
-#### **Mediation summary for love in the positive interaction**
+#### Mediation summary for love in the positive interaction
 
 The a-path is strong ($\theta_1 = 0.702$, $p < .001$), but the b-path is statistically zero ($\varphi_1 = 0.105$, $p = .538$). The indirect effect ($\theta_1 \times \varphi_1 = 0.702 \times 0.105 = 0.074$) is expected to be non-significant. The modest attenuation of the c'-path relative to the c-path is consistent with the two correlated predictors sharing some variance, but without a significant b-path this does not constitute evidence for mediation.
 
 **H2.1 is not supported for love in the positive interaction.** As in the negative interaction, the mediation pathway is blocked at the b-path.
 
-#### **Mediation summary for closeness in the positive interaction**
+#### Mediation summary for closeness in the positive interaction
 
 The a-path is strong ($\theta_1 = 0.702$, $p < .001$), and the b-path is the largest observed across the PA models ($0.229$), but it remains non-significant ($p = .147$). The indirect effect ($\theta_1 \times \varphi_1 = 0.702 \times 0.229 = 0.161$) will be the largest PA indirect effect tested, but given the non-significant b-path, it is unlikely to reach significance. This is the PA model closest to supporting H2.1, but the evidence does not cross the threshold: the total effect is real (Step 1a), the a-path is strong, yet the b-path fails to establish that perceived similarity is the channel through which actual similarity reaches closeness.
 
@@ -2484,7 +2583,7 @@ The a-path is strong ($\theta_1 = 0.702$, $p < .001$), and the b-path is the lar
 
 #### c-path (total effect)
 
-The c-paths are the Step 1a models: `h11_NA_love_neg` and `h11_NA_close_neg`.
+The c-paths are the Step 1a models: `h12_NA_love_neg` and `h12_NA_close_neg`.
 
 #### a-path (mediator model)
 
@@ -2721,7 +2820,8 @@ edges(p_close)$label_hjust  <- "center"
 
 p2 <- plot(p_close) + ggtitle("NA Mediation — Negative Interaction — Closeness")
 
-p1 / p2
+p1
+p2
 ```
 
 #### Mediation summary for love in the negative interaction
@@ -2881,8 +2981,6 @@ The indirect effect is negative and the largest in absolute magnitude across all
 
 ```{r h22_NA_mediation_diagram_pos}
 #| fig-cap: "NA mediation model — Positive interaction"
-#| fig-width: 8
-#| fig-height: 4
 
 # Extract coefficients and CIs
 a_est  <- fixef(h22_NA_med_pos)["NA_sim_act"]
@@ -2987,7 +3085,8 @@ edges(p_close)$label_hjust  <- "center"
 
 p2 <- plot(p_close) + ggtitle("NA Mediation — Positive Interaction — Closeness")
 
-p1 / p2
+p1
+p2
 ```
 
 #### Mediation summary for love in the positive interaction
@@ -3001,6 +3100,274 @@ The a-path is strong ($\theta_1 = 0.817$, $p < .001$) and the b-path trends nega
 **H2.2 is not supported for closeness in the positive interaction.** The pattern is the opposite of mediation: rather than carrying the actual similarity effect to the outcome, perceived similarity partially counteracts it. Actors who perceive more shared NA (beyond the actual overlap) tend to report slightly less closeness, while the actual overlap itself predicts more closeness. The two channels pull in opposing directions, consistent with the suppression pattern observed throughout Steps 1b and 1c for this specific model.
 
 **H2.2 is not supported for closeness in the positive interaction**, though this model comes closest to revealing a statistically reliable indirect pathway, and the pathway that nearly emerges is suppression rather than mediation. Across all eight NA mediation tests (two outcomes $\times$ two contexts), no indirect effect reaches significance. The a-path is consistently strong, but the b-path never reliably connects perceived similarity to the outcome, blocking mediation at every turn.
+
+## Monte Carlo summary tables
+
+```{r h21_PA_love_MC_table}
+#| output-fold: true
+#| output-summary: "Monte Carlo indirect effects table — PA similarity → Love"
+
+tbl_PA_love <- data.frame(
+  Valence  = c("Positive", "Negative"),
+  Indirect = c(
+    sprintf("%.3f", result_p$point),
+    sprintf("%.3f", result$point)
+  ),
+  MC_CI = c(
+    sprintf("[%.3f, %.3f]", result_p$ci_low, result_p$ci_hi),
+    sprintf("[%.3f, %.3f]", result$ci_low,   result$ci_hi)
+  ),
+  p = c(
+    ifelse(result_p$p < .001, "< .001", sprintf("%.3f", result_p$p)),
+    ifelse(result$p   < .001, "< .001", sprintf("%.3f", result$p))
+  )
+)
+
+colnames(tbl_PA_love) <- c(
+  "Interaction valence", "Indirect effect", "95% MC CI", "p-value"
+)
+
+kable(tbl_PA_love,
+  align    = c("l", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Monte Carlo indirect effects: PA similarity to Love mediation"
+) |>
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) |>
+  footnote(
+    general       = "CIs based on 20,000 Monte Carlo draws.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+```{r h21_PA_close_MC_table}
+#| output-fold: true
+#| output-summary: "Monte Carlo indirect effects table — PA similarity → Closeness"
+
+tbl_PA_close <- data.frame(
+  Valence  = c("Positive", "Negative"),
+  Indirect = c(
+    sprintf("%.3f", result_pc$point),
+    sprintf("%.3f", result_c$point)
+  ),
+  MC_CI = c(
+    sprintf("[%.3f, %.3f]", result_pc$ci_low, result_pc$ci_hi),
+    sprintf("[%.3f, %.3f]", result_c$ci_low,  result_c$ci_hi)
+  ),
+  p = c(
+    ifelse(result_pc$p < .001, "< .001", sprintf("%.3f", result_pc$p)),
+    ifelse(result_c$p  < .001, "< .001", sprintf("%.3f", result_c$p))
+  )
+)
+
+colnames(tbl_PA_close) <- c(
+  "Interaction valence", "Indirect effect", "95% MC CI", "p-value"
+)
+
+kable(tbl_PA_close,
+  align    = c("l", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Monte Carlo indirect effects: PA similarity to Closeness mediation"
+) |>
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) |>
+  footnote(
+    general       = "CIs based on 20,000 Monte Carlo draws.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+```{r h22_NA_love_MC_table}
+#| output-fold: true
+#| output-summary: "Monte Carlo indirect effects table — NA similarity → Love"
+
+tbl_NA_love <- data.frame(
+  Valence  = c("Positive", "Negative"),
+  Indirect = c(
+    sprintf("%.3f", res_NA_love_pos$point),
+    sprintf("%.3f", res_NA_love_neg$point)
+  ),
+  MC_CI = c(
+    sprintf("[%.3f, %.3f]", res_NA_love_pos$ci_low, res_NA_love_pos$ci_hi),
+    sprintf("[%.3f, %.3f]", res_NA_love_neg$ci_low, res_NA_love_neg$ci_hi)
+  ),
+  p = c(
+    ifelse(res_NA_love_pos$p < .001, "< .001", sprintf("%.3f", res_NA_love_pos$p)),
+    ifelse(res_NA_love_neg$p < .001, "< .001", sprintf("%.3f", res_NA_love_neg$p))
+  )
+)
+
+colnames(tbl_NA_love) <- c(
+  "Interaction valence", "Indirect effect", "95% MC CI", "p-value"
+)
+
+kable(tbl_NA_love,
+  align    = c("l", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Monte Carlo indirect effects: NA similarity to Love mediation"
+) |>
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) |>
+  footnote(
+    general       = "CIs based on 20,000 Monte Carlo draws.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+```{r h22_NA_close_MC_table}
+#| output-fold: true
+#| output-summary: "Monte Carlo indirect effects table — NA similarity → Closeness"
+
+tbl_NA_close <- data.frame(
+  Valence  = c("Positive", "Negative"),
+  Indirect = c(
+    sprintf("%.3f", res_NA_close_pos$point),
+    sprintf("%.3f", res_NA_close_neg$point)
+  ),
+  MC_CI = c(
+    sprintf("[%.3f, %.3f]", res_NA_close_pos$ci_low, res_NA_close_pos$ci_hi),
+    sprintf("[%.3f, %.3f]", res_NA_close_neg$ci_low, res_NA_close_neg$ci_hi)
+  ),
+  p = c(
+    ifelse(res_NA_close_pos$p < .001, "< .001", sprintf("%.3f", res_NA_close_pos$p)),
+    ifelse(res_NA_close_neg$p < .001, "< .001", sprintf("%.3f", res_NA_close_neg$p))
+  )
+)
+
+colnames(tbl_NA_close) <- c(
+  "Interaction valence", "Indirect effect", "95% MC CI", "p-value"
+)
+
+kable(tbl_NA_close,
+  align    = c("l", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Monte Carlo indirect effects: NA similarity to Closeness mediation"
+) |>
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  ) |>
+  footnote(
+    general       = "CIs based on 20,000 Monte Carlo draws.",
+    general_title = "Note.",
+    footnote_as_chunk = TRUE
+  )
+```
+
+## Mediation analyses summary
+
+```{r step2_summary_table}
+#| tbl-cap: "Summary of Step 2: Mediation by perceived similarity (H2.1–H2.2)"
+
+# --- Build rows ---
+rows <- list(
+  list("<b>Love/Closeness</b>", "<b>a-path</b>",
+       fmt_cell(h21_PA_med_neg, "PA_sim_act"),
+       fmt_cell(h21_PA_med_pos, "PA_sim_act"),
+       fmt_cell(h22_NA_med_neg, "NA_sim_act"),
+       fmt_cell(h22_NA_med_pos, "NA_sim_act")),
+  list("<b>Love</b>", "<b>b-path</b>",
+       fmt_cell(h21_PA_out_love_neg, "PA_sim_perc"),
+       fmt_cell(h21_PA_out_love_pos, "PA_sim_perc"),
+       fmt_cell(h22_NA_out_love_neg, "NA_sim_perc"),
+       fmt_cell(h22_NA_out_love_pos, "NA_sim_perc")),
+  list("<b>Love</b>", "<b>c-path (indirect)</b>",
+       fmt_mc(result), fmt_mc(result_p),
+       fmt_mc(res_NA_love_neg), fmt_mc(res_NA_love_pos)),
+  list("<b>Love</b>", "<b>c'-path (direct)</b>",
+       fmt_cell(h21_PA_out_love_neg, "PA_sim_act"),
+       fmt_cell(h21_PA_out_love_pos, "PA_sim_act"),
+       fmt_cell(h22_NA_out_love_neg, "NA_sim_act"),
+       fmt_cell(h22_NA_out_love_pos, "NA_sim_act")),
+  list("<b>Closeness</b>", "<b>b-path</b>",
+       fmt_cell(h21_PA_out_close_neg, "PA_sim_perc"),
+       fmt_cell(h21_PA_out_close_pos, "PA_sim_perc"),
+       fmt_cell(h22_NA_out_close_neg, "NA_sim_perc"),
+       fmt_cell(h22_NA_out_close_pos, "NA_sim_perc")),
+  list("<b>Closeness</b>", "<b>c-path (indirect)</b>",
+       fmt_mc(result_c), fmt_mc(result_pc),
+       fmt_mc(res_NA_close_neg), fmt_mc(res_NA_close_pos)),
+  list("<b>Closeness</b>", "<b>c'-path (direct)</b>",
+       fmt_cell(h21_PA_out_close_neg, "PA_sim_act"),
+       fmt_cell(h21_PA_out_close_pos, "PA_sim_act"),
+       fmt_cell(h22_NA_out_close_neg, "NA_sim_act"),
+       fmt_cell(h22_NA_out_close_pos, "NA_sim_act"))
+)
+
+# Assemble into data frame
+tbl_med <- do.call(rbind, lapply(rows, function(r) {
+  data.frame(
+    Outcome  = r[[1]],
+    Path     = r[[2]],
+    PA_neg   = r[[3]],
+    PA_pos   = r[[4]],
+    NA_neg   = r[[5]],
+    NA_pos   = r[[6]],
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+}))
+
+note_html <- paste0(
+  "<em>Note.</em> ",
+  "Coefficients with * p &lt; .05, ** p &lt; .01, ",
+  "*** p &lt; .001. Significant coefficients (p &lt; .05) in ",
+  "<strong>bold</strong>. a-path: actual similarity predicting perceived ",
+  "similarity (shared across outcomes). b-path: perceived similarity ",
+  "predicting outcome controlling for actual similarity. c-path (indirect): ",
+  "product of a-path and b-path, tested via Monte Carlo simulation (20,000 ",
+  "draws). c&prime;-path (direct): direct effect of actual similarity ",
+  "controlling for perceived similarity. All models include a dyad-level ",
+  "random intercept."
+)
+
+tab <- kable(tbl_med,
+  format    = "html",
+  col.names = c("Outcome", "Path", "Negative", "Positive", "Negative", "Positive"),
+  align     = c("l", "l", rep("c", 4)),
+  booktabs  = TRUE,
+  escape    = FALSE
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    position   = "left",
+    font_size  = 12
+  ) %>%
+  add_header_above(c(" " = 2,
+                      "PA Similarity (H2.1)" = 2,
+                      "NA Similarity (H2.2)" = 2)) %>%
+  collapse_rows(columns = 1, valign = "middle")
+
+tab_out <- sub(
+  "</table>",
+  paste0(
+    "<tfoot><tr><td colspan=\"6\" ",
+    "style=\"border-top: 0; padding: 8px 0 0 0; font-size: 11px; ",
+    "line-height: 1.35; text-align: left;\">",
+    note_html,
+    "</td></tr></tfoot></table>"
+  ),
+  as.character(tab),
+  fixed = TRUE
+)
+
+attributes(tab_out) <- attributes(tab)
+tab_out
+```
 
 # Step 3a: Moderation by Trait We-ness (H3.1–H3.2)
 
@@ -3026,7 +3393,7 @@ For PA (H3.1): expected $\beta_3 > 0$ (we-ness amplifies positive effects). For 
 
 ### Actual PA Similarity
 
-#### Love 
+#### Love
 
 ##### Negative interaction
 
@@ -3297,7 +3664,7 @@ kable(tbl_h31_close_neg,
   )
 ```
 
-Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual PA similarity on closeness is significant at low ($-1$ SD: $\beta = 0.567$, $p = .023$) and average ($\beta = 0.386$, $p = .025$) we-ness, but not at high ($+1$ SD: $\beta = 0.204$, $p = .348$) we-ness. The pattern replicates the love results in the same context almost exactly: a descriptive gradient from a significant slope at low we-ness to a non-significant slope at high we-ness, opposite to H3.1's prediction. The non-significant interaction term ($\beta_3 = -0.441$, $p = .250$) confirms that this gradient is not reliably different from zero.
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual PA similarity on closeness is significant at low ($-1$ SD: $\beta = 0.567$, $p = .023$) and average ($\beta = 0.386$, $p = .025$) we-ness, but not at high ($+1$ SD: $\beta = 0.204$, $p = .348$) we-ness. The pattern replicates the love results in the same context almost exactly: a descriptive gradient from a significant slope at low we-ness to a non-significant slope at high we-ness, opposite to H3.1's prediction. The non-significant interaction term ($\beta_3 = -0.441$, $p = .250$) indicates that this gradient is not reliably different from zero.
 
 The consistency across both outcomes in the negative interaction is notable: for both love and closeness, the slopes decrease from roughly $0.50$ at low we-ness to roughly $0.20$ at high we-ness, with significance dropping out at the high end. This convergence across outcomes makes it less likely that the pattern is pure noise, but the interaction terms remain non-significant in both models, so the descriptive trend cannot be treated as evidence for moderation.
 
@@ -3485,7 +3852,7 @@ kable(tbl_h31_perc_love_neg,
   )
 ```
 
-Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived PA similarity on love is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = 0.107$, $p = .580$), average ($\beta = 0.144$, $p = .300$), and high ($+1$ SD: $\beta = 0.180$, $p = .375$). The slopes are nearly flat across we-ness levels, consistent with the null interaction term ($\beta_3 = 0.089$, $p = .797$). Unlike the actual PA similarity probing, where slopes were significant at low and average we-ness and dropped off at high we-ness, here there is no signal at any level. This confirms that the null perceived similarity effect observed throughout Steps 1a-1c is not masked by we-ness: perceived PA similarity is unrelated to post-interaction love in the negative interaction regardless of a couple's sense of shared coping.
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived PA similarity on love is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = 0.107$, $p = .580$), average ($\beta = 0.144$, $p = .300$), and high ($+1$ SD: $\beta = 0.180$, $p = .375$). The slopes are nearly flat across we-ness levels, consistent with the null interaction term ($\beta_3 = 0.089$, $p = .797$). Unlike the actual PA similarity probing, where slopes were significant at low and average we-ness and dropped off at high we-ness, here there is no signal at any level. Perceived PA similarity is unrelated to post-interaction love in the negative interaction at every level of we-ness, consistent with the null effects observed throughout Steps 1a-1c.
 
 ##### Positive interaction
 
@@ -3667,7 +4034,7 @@ kable(tbl_h31_perc_close_neg,
   )
 ```
 
-Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived PA similarity on closeness is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = 0.152$, $p = .420$), average ($\beta = 0.159$, $p = .243$), and high ($+1$ SD: $\beta = 0.167$, $p = .402$). The slopes are virtually identical across we-ness levels, consistent with the near-zero interaction term ($\beta_3 = 0.019$, $p = .955$). The pattern mirrors the love model in the same context: perceived PA similarity is uniformly unrelated to post-interaction evaluations in the negative interaction regardless of we-ness level, with no hint of moderation.
+Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived PA similarity on closeness is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = 0.152$, $p = .420$), average ($\beta = 0.159$, $p = .243$), and high ($+1$ SD: $\beta = 0.167$, $p = .402$). The slopes are virtually identical across we-ness levels, consistent with the near-zero interaction term ($\beta_3 = 0.019$, $p = .955$). The pattern mirrors the love model in the same context: perceived PA similarity is uniformly unrelated to closeness in the negative interaction at every level of we-ness.
 
 ##### Positive interaction
 
@@ -3944,7 +4311,7 @@ kable(tbl_h32_act_love_pos,
 
 Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of actual NA similarity on love is virtually identical across all three levels of we-ness: low ($-1$ SD: $\beta = 0.242$, $p = .170$), average ($\beta = 0.251$, $p = .054$), and high ($+1$ SD: $\beta = 0.260$, $p = .116$). The slopes are flat, consistent with the near-zero interaction term ($\beta_3 = 0.022$, $p = .934$). None reaches conventional significance, though the average slope is marginal ($p = .054$), reflecting the same collinearity-driven attenuation from the Step 1a estimate ($0.352$, $p = .009$) that was observed when other covariates were added in Steps 1b and 1c.
 
-The probing confirms that we-ness has no differential effect on the NA similarity slope. All three slopes are positive and of comparable magnitude, reinforcing the finding from Step 1a that actual NA similarity during the positive interaction is positively (not negatively) associated with love, and that this association does not depend on a couple's sense of shared coping.
+All three slopes are positive and of comparable magnitude, reinforcing the finding from Step 1a that actual NA similarity during the positive interaction is positively (not negatively) associated with love, with the slope detectably nonzero only at average we-ness (\$ p = .054\$).
 
 #### Closeness
 
@@ -4498,9 +4865,470 @@ kable(tbl_h32_perc_close_pos,
 
 Although the interaction is non-significant, the simple slopes are reported for completeness. The slope of perceived NA similarity on closeness is statistically zero at all three levels of we-ness: low ($-1$ SD: $\beta = 0.053$, $p = .708$), average ($\beta = 0.045$, $p = .639$), and high ($+1$ SD: $\beta = 0.036$, $p = .788$). The slopes are virtually identical and uniformly null, consistent with the near-zero interaction term ($\beta_3 = -0.020$, $p = .935$). The contrast with the negative interaction could not be sharper: in the disagreement context, slopes ranged from $-0.520$ to $+0.538$ with both extremes significant; here, the range is $0.036$ to $0.053$ with none approaching significance. This reinforces the conclusion that the crossover moderation by we-ness is specific to the disagreement context, where perceived shared negativity is relationally ambiguous. In the positive interaction, perceived NA similarity is simply uninformative for closeness regardless of we-ness level.
 
-# Step 3b: Context Moderation — Negative vs. Positive Interaction (H3.3–H3.4)
+## Summary for step 3a
 
-We examine whether the similarity–evaluation association differs between the positive and negative interaction contexts. A dummy variable $C_{pdc} = c$ ($c = 0$ negative, $c = 1$ positive) is included in pooled models. Since these models contain two observations per person, both dyad-level and person-level random intercepts are included.
+```{r step3a_summary_table}
+#| tbl-cap: "Summary of Step 3a: We-ness moderation of similarity–evaluation associations (H3.1–H3.2)"
+
+# --- Build rows ---
+rows <- list(
+  # ---- Closeness / PA / Actual ----
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
+       fmt_cell(h31_PA_act_close_neg, "PA_sim_act"),
+       fmt_cell(h31_PA_act_close_pos, "PA_sim_act")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>We-ness</b>",
+       fmt_cell(h31_PA_act_close_neg, "cwe_ness"),
+       fmt_cell(h31_PA_act_close_pos, "cwe_ness")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Sim × We-ness</b>",
+       fmt_cell(h31_PA_act_close_neg, "PA_sim_act:cwe_ness"),
+       fmt_cell(h31_PA_act_close_pos, "PA_sim_act:cwe_ness")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
+       fmt_cell(h31_PA_perc_close_neg, "PA_sim_perc"),
+       fmt_cell(h31_PA_perc_close_pos, "PA_sim_perc")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>We-ness</b>",
+       fmt_cell(h31_PA_perc_close_neg, "cwe_ness"),
+       fmt_cell(h31_PA_perc_close_pos, "cwe_ness")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Sim × We-ness</b>",
+       fmt_cell(h31_PA_perc_close_neg, "PA_sim_perc:cwe_ness"),
+       fmt_cell(h31_PA_perc_close_pos, "PA_sim_perc:cwe_ness")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
+       fmt_cell(h32_NA_act_close_neg, "NA_sim_act"),
+       fmt_cell(h32_NA_act_close_pos, "NA_sim_act")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>We-ness</b>",
+       fmt_cell(h32_NA_act_close_neg, "cwe_ness"),
+       fmt_cell(h32_NA_act_close_pos, "cwe_ness")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Sim × We-ness</b>",
+       fmt_cell(h32_NA_act_close_neg, "NA_sim_act:cwe_ness"),
+       fmt_cell(h32_NA_act_close_pos, "NA_sim_act:cwe_ness")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
+       fmt_cell(h32_NA_perc_close_neg, "NA_sim_perc"),
+       fmt_cell(h32_NA_perc_close_pos, "NA_sim_perc")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>We-ness</b>",
+       fmt_cell(h32_NA_perc_close_neg, "cwe_ness"),
+       fmt_cell(h32_NA_perc_close_pos, "cwe_ness")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Sim × We-ness</b>",
+       fmt_cell(h32_NA_perc_close_neg, "NA_sim_perc:cwe_ness"),
+       fmt_cell(h32_NA_perc_close_pos, "NA_sim_perc:cwe_ness")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
+       fmt_cell(h31_PA_act_love_neg, "PA_sim_act"),
+       fmt_cell(h31_PA_act_love_pos, "PA_sim_act")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>We-ness</b>",
+       fmt_cell(h31_PA_act_love_neg, "cwe_ness"),
+       fmt_cell(h31_PA_act_love_pos, "cwe_ness")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Sim × We-ness</b>",
+       fmt_cell(h31_PA_act_love_neg, "PA_sim_act:cwe_ness"),
+       fmt_cell(h31_PA_act_love_pos, "PA_sim_act:cwe_ness")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
+       fmt_cell(h31_PA_perc_love_neg, "PA_sim_perc"),
+       fmt_cell(h31_PA_perc_love_pos, "PA_sim_perc")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>We-ness</b>",
+       fmt_cell(h31_PA_perc_love_neg, "cwe_ness"),
+       fmt_cell(h31_PA_perc_love_pos, "cwe_ness")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Sim × We-ness</b>",
+       fmt_cell(h31_PA_perc_love_neg, "PA_sim_perc:cwe_ness"),
+       fmt_cell(h31_PA_perc_love_pos, "PA_sim_perc:cwe_ness")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
+       fmt_cell(h32_NA_act_love_neg, "NA_sim_act"),
+       fmt_cell(h32_NA_act_love_pos, "NA_sim_act")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>We-ness</b>",
+       fmt_cell(h32_NA_act_love_neg, "cwe_ness"),
+       fmt_cell(h32_NA_act_love_pos, "cwe_ness")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Sim × We-ness</b>",
+       fmt_cell(h32_NA_act_love_neg, "NA_sim_act:cwe_ness"),
+       fmt_cell(h32_NA_act_love_pos, "NA_sim_act:cwe_ness")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
+       fmt_cell(h32_NA_perc_love_neg, "NA_sim_perc"),
+       fmt_cell(h32_NA_perc_love_pos, "NA_sim_perc")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>We-ness</b>",
+       fmt_cell(h32_NA_perc_love_neg, "cwe_ness"),
+       fmt_cell(h32_NA_perc_love_pos, "cwe_ness")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Sim × We-ness</b>",
+       fmt_cell(h32_NA_perc_love_neg, "NA_sim_perc:cwe_ness"),
+       fmt_cell(h32_NA_perc_love_pos, "NA_sim_perc:cwe_ness"))
+)
+
+tbl_3a <- do.call(rbind, lapply(rows, function(r) {
+  data.frame(
+    Outcome    = r[[1]],
+    Affect     = r[[2]],
+    Similarity = r[[3]],
+    Parameter  = r[[4]],
+    Negative   = r[[5]],
+    Positive   = r[[6]],
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+}))
+
+note_html <- paste0(
+  "<em>Note.</em> ",
+  "Coefficients with * p &lt; .05, ** p &lt; .01, ",
+  "*** p &lt; .001. Significant coefficients (p &lt; .05) in ",
+  "<strong>bold</strong>. Similarity: main effect of similarity at average ",
+  "we-ness. We-ness: main effect of trait we-ness at average similarity. ",
+  "Sim &times; We-ness: interaction term (H3.1 for PA, H3.2 for NA; ",
+  "expected positive). All models include a dyad-level random intercept."
+)
+
+tab <- kable(tbl_3a,
+  format    = "html",
+  col.names = c("Outcome", "Affect", "Similarity", "Parameter",
+                "Negative", "Positive"),
+  align     = c("l", "l", "l", "l", "c", "c"),
+  booktabs  = TRUE,
+  escape    = FALSE
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    position   = "left",
+    font_size  = 12
+  ) %>%
+  add_header_above(c(" " = 4,
+                      "Interaction Context" = 2)) %>%
+  collapse_rows(columns = 1:3, valign = "middle")
+
+tab_out <- sub(
+  "</table>",
+  paste0(
+    "<tfoot><tr><td colspan=\"6\" ",
+    "style=\"border-top: 0; padding: 8px 0 0 0; font-size: 11px; ",
+    "line-height: 1.35; text-align: left;\">",
+    note_html,
+    "</td></tr></tfoot></table>"
+  ),
+  as.character(tab),
+  fixed = TRUE
+)
+
+attributes(tab_out) <- attributes(tab)
+tab_out
+```
+
+Across all 16 Step 3a models, only one moderation by trait we-ness reaches significance: perceived NA similarity $\times$ we-ness predicting closeness in the negative interaction ($\beta_3 = 1.284$, $p = .005$). This crossover interaction reveals that perceiving shared negative affect during a disagreement predicts less closeness for low-we-ness couples but more closeness for high-we-ness couples. The love model in the same context shows a suggestive but non-significant pattern in the same direction ($\beta_3 = 0.758$, $p = .119$). No other interaction term approaches significance.
+
+**H3.1 is not supported:** we-ness does not amplify the positive PA similarity effect for any outcome or context. If anything, the descriptive pattern (visible in the probing tables) trends in the opposite direction, with PA similarity slopes tending to be larger at low we-ness, but no interaction term is significant.
+
+**H3.2 receives partial support**, but only for perceived (not actual) NA similarity, only for closeness (not love), and only in the negative interaction. The hypothesis assumed we-ness would buffer a negative similarity effect, but the mechanism is different: we-ness determines whether perceived shared NA is experienced as connecting or threatening, producing a crossover rather than a buffering pattern.
+
+The most consistent finding across the Step 3a models is the **direct effect of we-ness on post-interaction evaluations**, particularly in the positive interaction context. We-ness significantly predicts higher love and closeness after a positive interaction across multiple model specifications (ranging from $8.3$ to $13.7$ points per unit of we-ness). In the negative interaction, significant we-ness direct effects emerge specifically in the NA models ($14.1$-$18.3$), where the similarity predictor absorbs less between-dyad variance, leaving more for we-ness to capture. These direct effects indicate that trait we-ness is a robust predictor of post-interaction evaluations independently of affect similarity.
+
+# Step 3b: Context Moderation (H3.3–H3.4)
+
+We examine whether the similarity–evaluation association differs between the positive and negative interaction contexts. As specified in the preregistration, we approach this in two complementary ways: first a descriptive comparison of stratified models, then a formal pooled test with context as a moderator.
+
+## Descriptive Comparison (Stratified Models)
+
+The Step 1a models already provide the stratified estimates for actual similarity: the similarity–evaluation coefficients were estimated separately within each interaction context. For perceived similarity, we estimate analogous models substituting perceived for actual similarity within each context, to enable the same descriptive comparison.
+
+### PA Similarity
+
+#### Actual PA Similarity
+
+The Step 1a models (`h11_PA_love_neg`, `h11_PA_love_pos`, `h11_PA_close_neg`, `h11_PA_close_pos`) provide the stratified estimates. The coefficients are summarized below for convenience:
+
++----------------+-----------------------------+-----------------------------+
+| Outcome        | Negative Interaction        | Positive Interaction        |
++================+=============================+=============================+
+| Love           | $\beta = 0.379$, $p = .020$ | $\beta = 0.459$, $p = .007$ |
++----------------+-----------------------------+-----------------------------+
+| Closeness      | $\beta = 0.432$, $p = .015$ | $\beta = 0.376$, $p = .016$ |
++----------------+-----------------------------+-----------------------------+
+
+Both coefficients are significant in both contexts. For love, the slope is somewhat larger in the positive interaction ($0.459$ vs. $0.379$); for closeness, somewhat larger in the negative interaction ($0.432$ vs. $0.376$). The differences are small and not consistent in direction across outcomes. The formal test below will determine whether these differences are statistically reliable.
+
+#### Perceived PA Similarity
+
+```{r desc_PA_perc_love_neg}
+#| output-fold: true
+#| output-summary: "Descriptive: perceived PA → Love (negative)"
+
+desc_PA_perc_love_neg <- lme(
+  fixed = love ~ PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(desc_PA_perc_love_neg)
+```
+
+Perceived PA similarity $\beta_1 = 0.181$, 95% CI $[-0.096, 0.457]$, $p = .198$
+
+Statistically zero. Perceived PA similarity does not predict love after the negative interaction when entered as the sole predictor. This is consistent with the Step 1b results, where perceived PA similarity was also non-significant alongside actual similarity ($-0.081$, $p = .670$). The coefficient here is positive and somewhat larger than in Step 1b, because without actual similarity in the model, perceived similarity captures some of the shared variance between the two indices. But the effect remains non-significant.
+
+```{r desc_PA_perc_love_pos}
+#| output-fold: true
+#| output-summary: "Descriptive: perceived PA → Love (positive)"
+
+desc_PA_perc_love_pos <- lme(
+  fixed = love ~ PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(desc_PA_perc_love_pos)
+```
+
+Perceived PA similarity $\beta_1 = 0.292$, 95% CI $[0.016, 0.567]$, $p = .038$
+
+Significant. Perceived PA similarity predicts love after the positive interaction when entered as the sole predictor. The coefficient is larger and more precisely estimated than in the negative interaction ($0.181$, $p = .198$), and crosses the significance threshold that the negative interaction model did not reach.
+
+Descriptively, the context comparison for perceived PA similarity mirrors the pattern for actual PA similarity (love: $0.379$ negative, $0.459$ positive): the slope is somewhat larger in the positive interaction. However, the perceived similarity slopes are roughly half the magnitude of the actual similarity slopes, and only the positive interaction reaches significance. Whether this descriptive difference between contexts is statistically reliable will be determined by the formal test below.
+
+```{r desc_PA_perc_close_neg}
+#| output-fold: true
+#| output-summary: "Descriptive: perceived PA → Closeness (negative)"
+
+desc_PA_perc_close_neg <- lme(
+  fixed = close ~ PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(desc_PA_perc_close_neg)
+```
+
+Perceived PA similarity $\beta_1 = 0.195$, 95% CI $[-0.079, 0.469]$, $p = .162$
+
+Statistically zero. Perceived PA similarity does not predict closeness after the negative interaction when entered as the sole predictor. The coefficient is nearly identical to the love model in the same context ($0.181$, $p = .198$), confirming that perceived PA similarity is uninformative for both outcomes in the negative interaction.
+
+```{r desc_PA_perc_close_pos}
+#| output-fold: true
+#| output-summary: "Descriptive: perceived PA → Closeness (positive)"
+
+desc_PA_perc_close_pos <- lme(
+  fixed = close ~ PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(desc_PA_perc_close_pos)
+```
+
+Perceived PA similarity $\beta_1 = 0.334$, 95% CI $[0.081, 0.586]$, $p = .010$
+
+Significant, and more precisely estimated than the love model in the same context ($0.292$, $p = .038$). The context comparison mirrors the pattern across all PA models: the slope is larger and significant in the positive interaction ($0.334$) but smaller and non-significant in the negative interaction ($0.195$, $p = .162$). As with love, the perceived similarity slopes are roughly half the magnitude of the actual similarity slopes (closeness: $0.432$ negative, $0.376$ positive), but the context pattern differs: for actual similarity the slopes were similar across contexts, while for perceived similarity only the positive interaction reaches significance. This suggests that perceived PA similarity may be more informative after a positive interaction than after a disagreement, though the formal test will determine whether this descriptive difference is reliable.
+
+The descriptive comparison for perceived PA similarity can now be summarized:
+
++---------------+-----------------------------+-----------------------------+
+| Outcome       | Negative Interaction        | Positive Interaction        |
++===============+=============================+=============================+
+| Love          | $\beta = 0.181$, $p = .198$ | $\beta = 0.292$, $p = .038$ |
++---------------+-----------------------------+-----------------------------+
+| Closeness     | $\beta = 0.195$, $p = .162$ | $\beta = 0.334$, $p = .010$ |
++---------------+-----------------------------+-----------------------------+
+
+In both outcomes, the perceived PA similarity slope is non-significant in the negative interaction and significant in the positive interaction. The magnitude is consistently larger in the positive context. This pattern is opposite to H3.3's prediction that PA similarity would be more beneficial in the negative interaction.
+
+### NA Similarity
+
+#### Actual NA Similarity
+
+The Step 1a models (`h12_NA_love_neg`, `h12_NA_love_pos`, `h12_NA_close_neg`, `h12_NA_close_pos`) provide the stratified estimates:
+
++----------------+------------------------------+-----------------------------+
+| Outcome        | Negative Interaction         | Positive Interaction        |
++================+==============================+=============================+
+| Love           | $\beta = -0.141$, $p = .504$ | $\beta = 0.352$, $p = .009$ |
++----------------+------------------------------+-----------------------------+
+| Closeness      | $\beta = -0.157$, $p = .497$ | $\beta = 0.383$, $p = .002$ |
++----------------+------------------------------+-----------------------------+
+
+The context difference is stark: null effects in the negative interaction but significant positive effects in the positive interaction, for both outcomes. The formal test will determine whether this context difference is statistically reliable.
+
+#### Perceived NA Similarity
+
+```{r desc_NA_perc_love_neg}
+#| output-fold: true
+#| output-summary: "Descriptive: perceived NA → Love (negative)"
+
+desc_NA_perc_love_neg <- lme(
+  fixed = love ~ NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(desc_NA_perc_love_neg)
+```
+
+Perceived NA similarity $\beta_1 = 0.005$, 95% CI $[-0.332, 0.343]$, $p = .975$
+
+Statistically zero and essentially exactly zero. Perceived NA similarity does not predict love after the negative interaction. This mirrors the actual NA similarity result in the same context ($-0.141$, $p = .504$): neither form of NA similarity is informative for love after the disagreement.
+
+```{r desc_NA_perc_love_pos}
+#| output-fold: true
+#| output-summary: "Descriptive: perceived NA → Love (positive)"
+
+desc_NA_perc_love_pos <- lme(
+  fixed = love ~ NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(desc_NA_perc_love_pos)
+```
+
+Perceived NA similarity $\beta_1 = 0.201$, 95% CI $[-0.012, 0.413]$, $p = .064$
+
+Just below conventional significance. The coefficient is positive, consistent with the actual NA similarity result in the same context ($0.352$, $p = .009$), though roughly half the magnitude. The context comparison is stark: essentially zero in the negative interaction ($0.005$, $p = .975$) versus marginally non-significant in the positive interaction ($0.201$, $p = .064$). As with actual NA similarity, the descriptive pattern suggests that shared NA during a positive interaction may carry a positive relational signal, though for perceived similarity the evidence does not reach significance even in the positive context.
+
+```{r desc_NA_perc_close_neg}
+#| output-fold: true
+#| output-summary: "Descriptive: perceived NA → Closeness (negative)"
+
+desc_NA_perc_close_neg <- lme(
+  fixed = close ~ NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(desc_NA_perc_close_neg)
+```
+
+Perceived NA similarity $\beta_1 = -0.040$, 95% CI $[-0.370, 0.290]$, $p = .810$
+
+Statistically zero. Perceived NA similarity does not predict closeness after the negative interaction. As with love in the same context ($0.005$, $p = .975$), perceived NA similarity is uninformative for both outcomes in the negative interaction.
+
+```{r desc_NA_perc_close_pos}
+#| output-fold: true
+#| output-summary: "Descriptive: perceived NA → Closeness (positive)"
+
+desc_NA_perc_close_pos <- lme(
+  fixed = close ~ NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(desc_NA_perc_close_pos)
+```
+
+Perceived NA similarity $\beta_1 = 0.109$, 95% CI $[-0.087, 0.306]$, $p = .273$
+
+Statistically zero. Perceived NA similarity does not predict closeness after the positive interaction when entered as the sole predictor. The coefficient is positive, consistent with the direction of the actual NA similarity effect in the same context ($0.383$, $p = .002$), but much smaller and non-significant.
+
+The descriptive comparison for perceived NA similarity can now be summarized:
+
++---------------+------------------------------+-----------------------------+
+| Outcome       | Negative Interaction         | Positive Interaction        |
++===============+==============================+=============================+
+| Love          | $\beta = 0.005$, $p = .975$  | $\beta = 0.201$, $p = .064$ |
++---------------+------------------------------+-----------------------------+
+| Closeness     | $\beta = -0.040$, $p = .810$ | $\beta = 0.109$, $p = .273$ |
++---------------+------------------------------+-----------------------------+
+
+All four coefficients are non-significant. The context pattern is nonetheless consistent with the actual NA similarity results: slopes are essentially zero in the negative interaction and positive (though non-significant) in the positive interaction. The contrast between contexts is less pronounced than for actual similarity, where the positive interaction slopes were significant for both outcomes. Perceived NA similarity does not reach significance in any context for any outcome when entered as the sole predictor, suggesting that the actual affective overlap rather than its perception is what carries the context-dependent signal observed in Step 1a.
+
+### Summary of descriptive comparison
+
+```{r step3b_descriptive_table}
+#| tbl-cap: "Descriptive comparison: Similarity–evaluation coefficients estimated separately within each interaction context"
+
+# --- Build rows ---
+rows <- list(
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>",
+       fmt_cell(h11_PA_close_neg, "PA_sim_act"),
+       fmt_cell(h11_PA_close_pos, "PA_sim_act")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>",
+       fmt_cell(desc_PA_perc_close_neg, "PA_sim_perc"),
+       fmt_cell(desc_PA_perc_close_pos, "PA_sim_perc")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>",
+       fmt_cell(h12_NA_close_neg, "NA_sim_act"),
+       fmt_cell(h12_NA_close_pos, "NA_sim_act")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>",
+       fmt_cell(desc_NA_perc_close_neg, "NA_sim_perc"),
+       fmt_cell(desc_NA_perc_close_pos, "NA_sim_perc")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>",
+       fmt_cell(h11_PA_love_neg, "PA_sim_act"),
+       fmt_cell(h11_PA_love_pos, "PA_sim_act")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>",
+       fmt_cell(desc_PA_perc_love_neg, "PA_sim_perc"),
+       fmt_cell(desc_PA_perc_love_pos, "PA_sim_perc")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>",
+       fmt_cell(h12_NA_love_neg, "NA_sim_act"),
+       fmt_cell(h12_NA_love_pos, "NA_sim_act")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>",
+       fmt_cell(desc_NA_perc_love_neg, "NA_sim_perc"),
+       fmt_cell(desc_NA_perc_love_pos, "NA_sim_perc"))
+)
+
+tbl_desc <- do.call(rbind, lapply(rows, function(r) {
+  data.frame(
+    Outcome    = r[[1]],
+    Affect     = r[[2]],
+    Similarity = r[[3]],
+    Negative   = r[[4]],
+    Positive   = r[[5]],
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+}))
+
+note_html <- paste0(
+  "<em>Note.</em> ",
+  "Coefficients with * p &lt; .05, ** p &lt; .01, ",
+  "*** p &lt; .001. Significant coefficients (p &lt; .05) in ",
+  "<strong>bold</strong>. Actual similarity coefficients are from Step 1a ",
+  "models. Perceived similarity coefficients are from analogous bivariate ",
+  "models substituting perceived for actual similarity. All models include ",
+  "a dyad-level random intercept and are estimated separately within each ",
+  "interaction context."
+)
+
+tab <- kable(tbl_desc,
+  format    = "html",
+  col.names = c("Outcome", "Affect", "Similarity",
+                "Negative", "Positive"),
+  align     = c("l", "l", "l", "c", "c"),
+  booktabs  = TRUE,
+  escape    = FALSE
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    position   = "left",
+    font_size  = 12
+  ) %>%
+  add_header_above(c(" " = 3,
+                      "Interaction Context" = 2)) %>%
+  collapse_rows(columns = 1:2, valign = "middle")
+
+tab_out <- sub(
+  "</table>",
+  paste0(
+    "<tfoot><tr><td colspan=\"5\" ",
+    "style=\"border-top: 0; padding: 8px 0 0 0; font-size: 11px; ",
+    "line-height: 1.35; text-align: left;\">",
+    note_html,
+    "</td></tr></tfoot></table>"
+  ),
+  as.character(tab),
+  fixed = TRUE
+)
+
+attributes(tab_out) <- attributes(tab)
+tab_out
+```
+
+## Formal Test: Context Moderation
+
+We now test whether the similarity–evaluation association differs between contexts using pooled models with a context dummy. A dummy variable $C_{pdc} = c$ ($c = 0$ negative, $c = 1$ positive) is included in pooled models. Since these models contain two observations per person, both dyad-level and person-level random intercepts are included.
 
 For actual similarity:
 
@@ -4518,11 +5346,11 @@ $\beta_1$ is the similarity–evaluation slope for the negative interaction ($C_
 
 For PA (H3.3): expected $\beta_3 < 0$ (PA similarity more beneficial in negative interaction). For NA (H3.4): expected $\beta_3 < 0$ (NA similarity more harmful in positive interaction).
 
-## H3.3 – PA × Context
+### H3.3 – PA × Context
 
-### Actual PA Similarity
+#### Actual PA Similarity
 
-#### Love
+##### Love
 
 ```{r h33_PA_act_love}
 #| output-fold: true
@@ -4539,32 +5367,54 @@ h33_PA_act_love <- lme(
 model_output(h33_PA_act_love)
 ```
 
+**Intercept** $\beta_0 = 84.91$, 95% CI $[78.39, 91.44]$, $p < .001$
+
+Expected post-interaction love at zero actual PA similarity in the negative interaction (context = 0).
+
+**Actual PA similarity** $\beta_1 = 0.226$, 95% CI $[0.011, 0.441]$, $p = .040$
+
+The similarity slope for the negative interaction. Significant, indicating that actual PA similarity predicts love after the disagreement in the pooled model. The coefficient is somewhat attenuated relative to the stratified Step 1a estimate ($0.379$, $p = .020$), likely because the pooled model partitions variance differently with the nested random intercept structure.
+
+**Context** $\beta_2 = 0.839$, 95% CI $[-5.729, 7.408]$, $p = .801$
+
+Statistically zero. At zero actual PA similarity, there is no difference in love between the negative and positive interaction contexts.
+
+**Interaction** $\beta_3 = 0.184$, 95% CI $[-0.184, 0.552]$, $p = .325$
+
+Statistically zero. The actual PA similarity slope does not differ between the negative and positive interaction contexts. H3.3 predicted $\beta_3 < 0$ (PA similarity more beneficial in the negative interaction), but the point estimate is positive (if anything, the slope is slightly larger in the positive interaction), and the CI comfortably includes zero. The positive interaction slope is $\beta_1 + \beta_3 = 0.226 + 0.184 = 0.410$, comparable to the stratified estimate ($0.459$).
+
+**Random effects**
+
+Dyad intercept $SD = 9.50$; person intercept $SD = 11.66$; residual $SD = 11.15$. The person-level variance ($136.01$) is larger than the dyad-level variance ($90.30$), indicating substantial within-dyad differences between partners in post-interaction love, consistent with the Step 1a findings.
+
+**The formal test does not support H3.3 for actual PA similarity predicting love.** The similarity effect does not differ between interaction contexts.
+
 ```{r h33_PA_act_love_slopes}
 #| output-fold: true
 #| output-summary: "Simple slopes — actual PA × context → Love"
 
 # Simple slopes at negative (context = 0) and positive (context = 1) interaction
-slopes_h33 <- emtrends(
+slopes_h33_act_love <- emtrends(
   h33_PA_act_love,
   specs = ~ context,
   var   = "PA_sim_act",
   at    = list(context = c(0, 1))
 )
 
-slopes_h33_df <- as.data.frame(summary(slopes_h33, infer = TRUE))
+slopes_h33_act_love_df <- as.data.frame(summary(slopes_h33_act_love, infer = TRUE))
 
-tbl_h33 <- data.frame(
+tbl_h33_act_love <- data.frame(
   `Interaction context` = c("Negative (0)", "Positive (1)"),
-  `Simple slope`        = sprintf("%.4f", slopes_h33_df$PA_sim_act.trend),
-  `SE`                  = sprintf("%.4f", slopes_h33_df$SE),
-  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h33_df$lower.CL, slopes_h33_df$upper.CL),
-  `t`                   = sprintf("%.3f", slopes_h33_df$t.ratio),
-  `p`                   = ifelse(slopes_h33_df$p.value < .001, "< .001",
-                                 sprintf("%.3f", slopes_h33_df$p.value)),
+  `Simple slope`        = sprintf("%.4f", slopes_h33_act_love_df$PA_sim_act.trend),
+  `SE`                  = sprintf("%.4f", slopes_h33_act_love_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h33_act_love_df$lower.CL, slopes_h33_act_love_df$upper.CL),
+  `t`                   = sprintf("%.3f", slopes_h33_act_love_df$t.ratio),
+  `p`                   = ifelse(slopes_h33_act_love_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", slopes_h33_act_love_df$p.value)),
   check.names = FALSE
 )
 
-kable(tbl_h33,
+kable(tbl_h33_act_love,
   align    = c("l", "c", "c", "c", "c", "c"),
   booktabs = TRUE,
   caption  = "Simple slopes of actual PA similarity on love in negative and positive interactions (H3.3)"
@@ -4576,7 +5426,9 @@ kable(tbl_h33,
   )
 ```
 
-#### Closeness
+The simple slopes of actual PA similarity on love are significant in both contexts: $0.226$ in the negative interaction ($p = .040$) and $0.410$ in the positive interaction ($p = .001$). Both are positive and significant, confirming that actual PA similarity predicts love regardless of context. The positive interaction slope is nearly twice as large, but the non-significant interaction term ($\beta_3 = 0.184$, $p = .325$) indicates that this difference is not statistically reliable. Descriptively, the pattern is opposite to H3.3's prediction: if anything, PA similarity is more beneficial in the positive interaction, not the negative one.
+
+##### Closeness
 
 ```{r h33_PA_act_close}
 #| output-fold: true
@@ -4593,9 +5445,69 @@ h33_PA_act_close <- lme(
 model_output(h33_PA_act_close)
 ```
 
-### Perceived PA Similarity
+**Intercept** $\beta_0 = 88.80$, 95% CI $[82.49, 95.12]$, $p < .001$
 
-#### Love
+Expected post-interaction closeness at zero actual PA similarity in the negative interaction.
+
+**Actual PA similarity** $\beta_1 = 0.311$, 95% CI $[0.106, 0.517]$, $p = .003$
+
+The similarity slope for the negative interaction. Significant and comparable to the stratified estimate ($0.432$, $p = .015$), with some attenuation in the pooled model.
+
+**Context** $\beta_2 = -2.102$, 95% CI $[-8.387, 4.184]$, $p = .510$
+
+Statistically zero. At zero actual PA similarity, there is no difference in closeness between contexts.
+
+**Interaction** $\beta_3 = -0.063$, 95% CI $[-0.417, 0.291]$, $p = .725$
+
+Statistically zero. The actual PA similarity slope does not differ between contexts. H3.3 predicted $\beta_3 < 0$, and the point estimate is indeed slightly negative, but far from significance. The positive interaction slope is $\beta_1 + \beta_3 = 0.311 - 0.063 = 0.248$, somewhat smaller than the negative interaction slope, but the difference is not reliable. This contrasts with love, where the descriptive pattern went in the opposite direction (larger slope in the positive interaction).
+
+**Random effects**
+
+Dyad intercept $SD = 10.94$; person intercept $SD = 10.05$; residual $SD = 10.52$. The variance components are more evenly distributed across levels than in the love model, with dyad-level variance ($119.67$) slightly exceeding person-level ($101.00$) and residual ($110.62$) variance.
+
+**The formal test does not support H3.3 for actual PA similarity predicting closeness.** The similarity effect does not differ between interaction contexts. Across both outcomes, H3.3 is not supported for actual PA similarity: the interaction terms are non-significant and inconsistent in direction (positive for love, slightly negative for closeness).
+
+```{r h33_PA_act_close_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual PA × context → Closeness"
+
+slopes_h33_act_close <- emtrends(
+  h33_PA_act_close,
+  specs = ~ context,
+  var   = "PA_sim_act",
+  at    = list(context = c(0, 1))
+)
+
+slopes_h33_act_close_df <- as.data.frame(summary(slopes_h33_act_close, infer = TRUE))
+
+tbl_h33_act_close <- data.frame(
+  `Interaction context` = c("Negative (0)", "Positive (1)"),
+  `Simple slope`        = sprintf("%.4f", slopes_h33_act_close_df$PA_sim_act.trend),
+  `SE`                  = sprintf("%.4f", slopes_h33_act_close_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h33_act_close_df$lower.CL, slopes_h33_act_close_df$upper.CL),
+  `t`                   = sprintf("%.3f", slopes_h33_act_close_df$t.ratio),
+  `p`                   = ifelse(slopes_h33_act_close_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", slopes_h33_act_close_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h33_act_close,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on closeness in negative and positive interactions (H3.3)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  )
+```
+
+The simple slopes of actual PA similarity on closeness are significant in both contexts: $0.311$ in the negative interaction ($p = .003$) and $0.248$ in the positive interaction ($p = .042$). As with love, PA similarity predicts the outcome in both contexts. The negative interaction slope is slightly larger, descriptively consistent with H3.3's prediction, but the non-significant interaction term ($\beta_3 = -0.063$, $p = .725$) indicates this difference is not reliable. The slopes are close in magnitude and both significant, suggesting that actual PA similarity operates similarly across contexts for closeness.
+
+#### Perceived PA Similarity
+
+##### Love
 
 ```{r h33_PA_perc_love}
 #| output-fold: true
@@ -4612,7 +5524,67 @@ h33_PA_perc_love <- lme(
 model_output(h33_PA_perc_love)
 ```
 
-#### Closeness
+**Intercept** $\beta_0 = 81.76$, 95% CI $[76.66, 86.87]$, $p < .001$
+
+Expected post-interaction love at zero perceived PA similarity in the negative interaction.
+
+**Perceived PA similarity** $\beta_1 = 0.140$, 95% CI $[-0.057, 0.337]$, $p = .162$
+
+Statistically zero. The perceived PA similarity slope for the negative interaction is non-significant, consistent with the stratified descriptive estimate ($0.181$, $p = .198$).
+
+**Context** $\beta_2 = 1.720$, 95% CI $[-2.921, 6.361]$, $p = .466$
+
+Statistically zero.
+
+**Interaction** $\beta_3 = 0.236$, 95% CI $[-0.117, 0.589]$, $p = .189$
+
+Statistically zero. The perceived PA similarity slope does not differ between contexts. H3.3 predicted $\beta_3 < 0$, but the point estimate is positive. The positive interaction slope is $\beta_1 + \beta_3 = 0.140 + 0.236 = 0.376$, larger than the negative interaction slope, descriptively opposite to H3.3. This is consistent with the descriptive comparison, where perceived PA similarity was significant only in the positive interaction ($0.292$, $p = .038$) and non-significant in the negative interaction ($0.181$, $p = .198$).
+
+**Random effects**
+
+Dyad intercept $SD = 9.54$; person intercept $SD = 11.83$; residual $SD = 11.16$. Comparable to the actual PA similarity model.
+
+**The formal test does not support H3.3 for perceived PA similarity predicting love.** The direction of the (non-significant) context difference is opposite to the hypothesis.
+
+```{r h33_PA_perc_love_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived PA × context → Love"
+
+slopes_h33_perc_love <- emtrends(
+  h33_PA_perc_love,
+  specs = ~ context,
+  var   = "PA_sim_perc",
+  at    = list(context = c(0, 1))
+)
+
+slopes_h33_perc_love_df <- as.data.frame(summary(slopes_h33_perc_love, infer = TRUE))
+
+tbl_h33_perc_love <- data.frame(
+  `Interaction context` = c("Negative (0)", "Positive (1)"),
+  `Simple slope`        = sprintf("%.4f", slopes_h33_perc_love_df$PA_sim_perc.trend),
+  `SE`                  = sprintf("%.4f", slopes_h33_perc_love_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h33_perc_love_df$lower.CL, slopes_h33_perc_love_df$upper.CL),
+  `t`                   = sprintf("%.3f", slopes_h33_perc_love_df$t.ratio),
+  `p`                   = ifelse(slopes_h33_perc_love_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", slopes_h33_perc_love_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h33_perc_love,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on love in negative and positive interactions (H3.3)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  )
+```
+
+The simple slopes of perceived PA similarity on love are non-significant in the negative interaction ($0.140$, $p = .162$) and significant in the positive interaction ($0.376$, $p = .002$). The positive interaction slope is nearly three times the magnitude of the negative interaction slope. Despite this descriptive difference, the interaction term is non-significant ($\beta_3 = 0.236$, $p = .189$), so the context difference cannot be treated as reliable. The pattern is consistent with the descriptive comparison and with the broader finding that perceived PA similarity tends to be more informative in the positive interaction, but the formal test does not support H3.3.
+
+##### Closeness
 
 ```{r h33_PA_perc_close}
 #| output-fold: true
@@ -4629,11 +5601,71 @@ h33_PA_perc_close <- lme(
 model_output(h33_PA_perc_close)
 ```
 
-## H3.4 – NA × Context
+**Intercept** $\beta_0 = 86.38$, 95% CI $[81.46, 91.31]$, $p < .001$
 
-### Actual NA Similarity
+Expected post-interaction closeness at zero perceived PA similarity in the negative interaction.
 
-#### Love
+**Perceived PA similarity** $\beta_1 = 0.284$, 95% CI $[0.099, 0.470]$, $p = .003$
+
+Significant. The perceived PA similarity slope for the negative interaction is significant in the pooled model, despite being non-significant in the stratified estimate ($0.195$, $p = .162$). The pooled model gains power from estimating variance components across both contexts simultaneously, which can sharpen individual slope estimates.
+
+**Context** $\beta_2 = -1.030$, 95% CI $[-5.386, 3.326]$, $p = .642$
+
+Statistically zero.
+
+**Interaction** $\beta_3 = -0.075$, 95% CI $[-0.408, 0.258]$, $p = .657$
+
+Statistically zero. The perceived PA similarity slope does not differ between contexts. The positive interaction slope is $\beta_1 + \beta_3 = 0.284 - 0.075 = 0.209$, slightly smaller than the negative interaction slope. Unlike the love model, where the descriptive pattern favored the positive interaction, here closeness shows a slight (non-significant) advantage for the negative interaction. Neither direction is reliable.
+
+**Random effects**
+
+Dyad intercept $SD = 10.92$; person intercept $SD = 10.32$; residual $SD = 10.42$. Variance is evenly distributed across the three levels.
+
+**The formal test does not support H3.3 for perceived PA similarity predicting closeness.** Across all four H3.3 models (actual/perceived $\times$ love/closeness), no interaction term reaches significance. H3.3 is not supported in SC2.
+
+```{r h33_PA_perc_close_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived PA × context → Closeness"
+
+slopes_h33_perc_close <- emtrends(
+  h33_PA_perc_close,
+  specs = ~ context,
+  var   = "PA_sim_perc",
+  at    = list(context = c(0, 1))
+)
+
+slopes_h33_perc_close_df <- as.data.frame(summary(slopes_h33_perc_close, infer = TRUE))
+
+tbl_h33_perc_close <- data.frame(
+  `Interaction context` = c("Negative (0)", "Positive (1)"),
+  `Simple slope`        = sprintf("%.4f", slopes_h33_perc_close_df$PA_sim_perc.trend),
+  `SE`                  = sprintf("%.4f", slopes_h33_perc_close_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h33_perc_close_df$lower.CL, slopes_h33_perc_close_df$upper.CL),
+  `t`                   = sprintf("%.3f", slopes_h33_perc_close_df$t.ratio),
+  `p`                   = ifelse(slopes_h33_perc_close_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", slopes_h33_perc_close_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h33_perc_close,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on closeness in negative and positive interactions (H3.3)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  )
+```
+
+The simple slopes of perceived PA similarity on closeness are significant in the negative interaction ($0.284$, $p = .003$) and marginally non-significant in the positive interaction ($0.209$, $p = .069$). The negative interaction slope being significant here, despite the stratified estimate being non-significant ($0.195$, $p = .162$), reflects the power gain from the pooled model. The slopes are of comparable magnitude, and the non-significant interaction term ($\beta_3 = -0.075$, $p = .657$) confirms that the context difference is not reliable. This completes the H3.3 series: across all four models and all eight simple slopes, PA similarity (both actual and perceived) consistently predicts post-interaction evaluations in both contexts, with no reliable evidence that the effect differs between the negative and positive interaction.
+
+### H3.4 – NA × Context
+
+#### Actual NA Similarity
+
+##### Love
 
 ```{r h34_NA_act_love}
 #| output-fold: true
@@ -4650,31 +5682,55 @@ h34_NA_act_love <- lme(
 model_output(h34_NA_act_love)
 ```
 
+**Intercept** $\beta_0 = 74.98$, 95% CI $[71.10, 78.87]$, $p < .001$
+
+Expected post-interaction love at zero actual NA similarity in the negative interaction.
+
+**Actual NA similarity** $\beta_1 = -0.424$, 95% CI $[-0.693, -0.154]$, $p = .002$
+
+**Significant and negative.** The similarity slope for the negative interaction is significantly negative in the pooled model, despite being non-significant in the stratified Step 1a estimate ($-0.141$, $p = .504$). This is a notable discrepancy: the pooled model, by estimating variance components across both contexts simultaneously, yields a more precise estimate that reaches significance. The direction is consistent with H1.2's original prediction (more shared NA predicts less love), but only emerges in the pooled model.
+
+**Context** $\beta_2 = 11.623$, 95% CI $[6.137, 17.109]$, $p < .001$
+
+**Significant.** At zero actual NA similarity, love is substantially higher after the positive interaction than after the negative interaction. This is the first significant context main effect across all Step 3b models.
+
+**Interaction** $\beta_3 = 0.547$, 95% CI $[0.204, 0.890]$, $p = .002$
+
+**Significant.** The actual NA similarity slope differs between contexts. The positive interaction slope is $\beta_1 + \beta_3 = -0.424 + 0.547 = 0.123$, which is small and positive, contrasting sharply with the negative interaction slope of $-0.424$. The interaction indicates a qualitative reversal: actual NA similarity is negatively associated with love in the negative interaction but positively (though weakly) associated in the positive interaction.
+
+H3.4 predicted $\beta_3 < 0$ (NA similarity more harmful in the positive interaction). The result is the opposite: $\beta_3 > 0$, meaning NA similarity is more harmful in the negative interaction. The hypothesis assumed a negative main effect that would become more negative in the positive context, but the data show that the negative association is specific to the disagreement context and reverses in the positive context.
+
+**Random effects**
+
+Dyad intercept $SD = 10.02$; person intercept $SD = 11.62$; residual $SD = 11.24$.
+
+**This is the first significant context moderation in the Step 3b series, and only the second significant moderation in SC2 overall (after the we-ness crossover in Step 3a).** The result indicates that the relational meaning of shared NA depends on the interaction context: during a disagreement, sharing negative affect predicts less love, while during a positive interaction the same sharing is benign or slightly beneficial. However, the direction is opposite to H3.4's prediction.
+
 ```{r h34_NA_act_love_slopes}
 #| output-fold: true
 #| output-summary: "Simple slopes — actual NA × context → Love"
 
-slopes_h34 <- emtrends(
+slopes_h34_act_love <- emtrends(
   h34_NA_act_love,
   specs = ~ context,
   var   = "NA_sim_act",
   at    = list(context = c(0, 1))
 )
 
-slopes_h34_df <- as.data.frame(summary(slopes_h34, infer = TRUE))
+slopes_h34_act_love_df <- as.data.frame(summary(slopes_h34_act_love, infer = TRUE))
 
-tbl_h34 <- data.frame(
+tbl_h34_act_love <- data.frame(
   `Interaction context` = c("Negative (0)", "Positive (1)"),
-  `Simple slope`        = sprintf("%.4f", slopes_h34_df$NA_sim_act.trend),
-  `SE`                  = sprintf("%.4f", slopes_h34_df$SE),
-  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h34_df$lower.CL, slopes_h34_df$upper.CL),
-  `t`                   = sprintf("%.3f", slopes_h34_df$t.ratio),
-  `p`                   = ifelse(slopes_h34_df$p.value < .001, "< .001",
-                                 sprintf("%.3f", slopes_h34_df$p.value)),
+  `Simple slope`        = sprintf("%.4f", slopes_h34_act_love_df$NA_sim_act.trend),
+  `SE`                  = sprintf("%.4f", slopes_h34_act_love_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h34_act_love_df$lower.CL, slopes_h34_act_love_df$upper.CL),
+  `t`                   = sprintf("%.3f", slopes_h34_act_love_df$t.ratio),
+  `p`                   = ifelse(slopes_h34_act_love_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", slopes_h34_act_love_df$p.value)),
   check.names = FALSE
 )
 
-kable(tbl_h34,
+kable(tbl_h34_act_love,
   align    = c("l", "c", "c", "c", "c", "c"),
   booktabs = TRUE,
   caption  = "Simple slopes of actual NA similarity on love in negative and positive interactions (H3.4)"
@@ -4686,7 +5742,11 @@ kable(tbl_h34,
   )
 ```
 
-#### Closeness
+The simple slopes confirm the qualitative reversal identified by the significant interaction. Actual NA similarity is significantly negative in the negative interaction ($-0.424$, $p = .002$) and non-significant in the positive interaction ($0.123$, $p = .214$). Sharing negative affect during a disagreement predicts less love afterward, while during a positive interaction the association is absent.
+
+The negative interaction slope ($-0.424$) is notably larger than the stratified Step 1a estimate ($-0.141$, $p = .504$). The discrepancy arises because the pooled model partitions variance more efficiently: the context main effect and the person-level random intercept absorb variance that was pooled into the residual in the stratified model, yielding a more precise (and here, significant) estimate of the context-specific slope. The positive interaction slope ($0.123$) is smaller and non-significant, consistent with the stratified estimate ($0.352$, $p = .009$) being attenuated in the pooled model. The stratified and pooled models thus tell a coherent story but with different emphasis: the stratified models found a null effect in the negative interaction and a significant positive effect in the positive interaction, while the pooled model finds a significant negative effect in the negative interaction and a non-significant positive effect in the positive interaction. Both agree that the two contexts differ.
+
+##### Closeness
 
 ```{r h34_NA_act_close}
 #| output-fold: true
@@ -4703,9 +5763,72 @@ h34_NA_act_close <- lme(
 model_output(h34_NA_act_close)
 ```
 
-### Perceived NA Similarity
+**Intercept** $\beta_0 = 77.51$, 95% CI $[73.66, 81.37]$, $p < .001$
 
-#### Love
+Expected post-interaction closeness at zero actual NA similarity in the negative interaction.
+
+**Actual NA similarity** $\beta_1 = -0.318$, 95% CI $[-0.577, -0.060]$, $p = .016$
+
+Significant and negative. As with love, the negative interaction slope is significant in the pooled model despite being non-significant in the stratified estimate ($-0.157$, $p = .497$). The same power-gain mechanism applies: the pooled model partitions variance more efficiently, yielding a more precise context-specific estimate.
+
+**Context** $\beta_2 = 7.986$, 95% CI $[2.729, 13.244]$, $p = .003$
+
+Significant. At zero actual NA similarity, closeness is higher after the positive interaction than after the negative interaction, consistent with the love model.
+
+**Interaction** $\beta_3 = 0.313$, 95% CI $[-0.016, 0.643]$, $p = .062$
+
+Marginally non-significant. The positive interaction slope is $\beta_1 + \beta_3 = -0.318 + 0.313 = -0.005$, essentially zero. The pattern is descriptively identical to the love model: a significant negative slope in the negative interaction that reverses (or at least disappears) in the positive interaction. The interaction falls just short of conventional significance ($p = .062$), in contrast to the love model where it was clearly significant ($p = .002$). The direction is again opposite to H3.4's prediction ($\beta_3 < 0$): the negative effect is specific to the disagreement context rather than amplified in the positive context.
+
+**Random effects**
+
+Dyad intercept $SD = 11.46$; person intercept $SD = 9.97$; residual $SD = 10.67$. The dyad-level variance ($131.31$) exceeds person-level ($99.38$) and residual ($113.85$) variance, in contrast to the love model where person-level variance dominated.
+
+**The formal test provides marginal evidence for context moderation of actual NA similarity predicting closeness, in the same direction as the significant love result but not reaching conventional significance.** Across both outcomes, the pattern is consistent: actual NA similarity has a negative association with post-interaction evaluations in the disagreement context that weakens or reverses in the positive context. For love this context difference is significant; for closeness it is suggestive but not reliable at $p < .05$.
+
+```{r h34_NA_act_close_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — actual NA × context → Closeness"
+
+slopes_h34_act_close <- emtrends(
+  h34_NA_act_close,
+  specs = ~ context,
+  var   = "NA_sim_act",
+  at    = list(context = c(0, 1))
+)
+
+slopes_h34_act_close_df <- as.data.frame(summary(slopes_h34_act_close, infer = TRUE))
+
+tbl_h34_act_close <- data.frame(
+  `Interaction context` = c("Negative (0)", "Positive (1)"),
+  `Simple slope`        = sprintf("%.4f", slopes_h34_act_close_df$NA_sim_act.trend),
+  `SE`                  = sprintf("%.4f", slopes_h34_act_close_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h34_act_close_df$lower.CL, slopes_h34_act_close_df$upper.CL),
+  `t`                   = sprintf("%.3f", slopes_h34_act_close_df$t.ratio),
+  `p`                   = ifelse(slopes_h34_act_close_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", slopes_h34_act_close_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h34_act_close,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on closeness in negative and positive interactions (H3.4)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  )
+
+```
+
+The simple slopes mirror the love results. Actual NA similarity is significantly negative in the negative interaction ($-0.318$, $p = .016$) and essentially zero in the positive interaction ($-0.005$, $p = .958$). The positive interaction slope is even closer to zero than for love ($0.123$), indicating a complete absence of association rather than a weak positive trend.
+
+The pattern across both outcomes is now clear: actual NA similarity has a context-dependent association with post-interaction evaluations that is significant (love) or marginal (closeness) in the formal test. In the negative interaction, sharing NA predicts lower love and lower closeness; in the positive interaction, the association disappears entirely. The negative interaction slopes ($-0.424$ for love, $-0.318$ for closeness) are larger and more significant than the stratified Step 1a estimates, while the positive interaction slopes ($0.123$ and $-0.005$) are smaller than their stratified counterparts ($0.352$ and $0.383$). This systematic shift reflects the pooled model's different variance partitioning, but the qualitative conclusion is the same: the relational meaning of shared NA depends fundamentally on whether the context is a disagreement or a positive discussion.
+
+#### Perceived NA Similarity
+
+##### Love
 
 ```{r h34_NA_perc_love}
 #| output-fold: true
@@ -4722,7 +5845,67 @@ h34_NA_perc_love <- lme(
 model_output(h34_NA_perc_love)
 ```
 
-#### Closeness
+**Intercept** $\beta_0 = 78.13$, 95% CI $[74.96, 81.30]$, $p < .001$
+
+Expected post-interaction love at zero perceived NA similarity in the negative interaction.
+
+**Perceived NA similarity** $\beta_1 = -0.158$, 95% CI $[-0.394, 0.078]$, $p = .188$
+
+Statistically zero. The perceived NA similarity slope for the negative interaction is non-significant, consistent with the stratified descriptive estimate ($0.005$, $p = .975$). The coefficient is more negative in the pooled model, reflecting the same variance-partitioning shift observed for actual NA similarity.
+
+**Context** $\beta_2 = 7.580$, 95% CI $[3.294, 11.867]$, $p < .001$
+
+Significant. At zero perceived NA similarity, love is higher after the positive interaction, consistent with the actual NA similarity model.
+
+**Interaction** $\beta_3 = 0.251$, 95% CI $[-0.056, 0.558]$, $p = .108$
+
+Statistically zero, though the coefficient is in the same positive direction as the significant actual NA similarity interaction ($0.547$, $p = .002$). The positive interaction slope is $\beta_1 + \beta_3 = -0.158 + 0.251 = 0.093$, small and close to zero. The pattern is descriptively similar to the actual similarity model (negative slope in the negative interaction, near-zero in the positive interaction) but weaker and not reaching significance at any stage.
+
+**Random effects**
+
+Dyad intercept $SD = 9.70$; person intercept $SD = 11.62$; residual $SD = 11.50$.
+
+**The formal test does not support H3.4 for perceived NA similarity predicting love**, though the direction of the interaction is consistent with the significant actual similarity result. The context moderation of NA similarity on love appears to be carried primarily by the actual affective overlap rather than its perception.
+
+```{r h34_NA_perc_love_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived NA × context → Love"
+
+slopes_h34_perc_love <- emtrends(
+  h34_NA_perc_love,
+  specs = ~ context,
+  var   = "NA_sim_perc",
+  at    = list(context = c(0, 1))
+)
+
+slopes_h34_perc_love_df <- as.data.frame(summary(slopes_h34_perc_love, infer = TRUE))
+
+tbl_h34_perc_love <- data.frame(
+  `Interaction context` = c("Negative (0)", "Positive (1)"),
+  `Simple slope`        = sprintf("%.4f", slopes_h34_perc_love_df$NA_sim_perc.trend),
+  `SE`                  = sprintf("%.4f", slopes_h34_perc_love_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h34_perc_love_df$lower.CL, slopes_h34_perc_love_df$upper.CL),
+  `t`                   = sprintf("%.3f", slopes_h34_perc_love_df$t.ratio),
+  `p`                   = ifelse(slopes_h34_perc_love_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", slopes_h34_perc_love_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h34_perc_love,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived NA similarity on love in negative and positive interactions (H3.4)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  )
+```
+
+The simple slopes of perceived NA similarity on love are non-significant in both contexts: $-0.158$ in the negative interaction ($p = .188$) and $0.093$ in the positive interaction ($p = .307$). The direction mirrors the actual similarity pattern (negative in the negative interaction, positive in the positive interaction), but neither slope reaches significance. Perceived NA similarity is uninformative for love in both contexts, and the descriptive sign reversal across contexts is not supported by the non-significant interaction term ($\beta_3 = 0.251$, $p = .108$).
+
+##### Closeness
 
 ```{r h34_NA_perc_close}
 #| output-fold: true
@@ -4737,4 +5920,196 @@ h34_NA_perc_close <- lme(
 )
 
 model_output(h34_NA_perc_close)
+```
+
+**Intercept** $\beta_0 = 79.69$, 95% CI $[76.45, 82.92]$, $p < .001$
+
+Expected post-interaction closeness at zero perceived NA similarity in the negative interaction.
+
+**Perceived NA similarity** $\beta_1 = -0.164$, 95% CI $[-0.384, 0.056]$, $p = .144$
+
+Statistically zero. The perceived NA similarity slope for the negative interaction is non-significant, though the coefficient is more negative than the stratified descriptive estimate ($-0.040$, $p = .810$), reflecting the same variance-partitioning shift observed across the pooled NA models.
+
+**Context** $\beta_2 = 3.521$, 95% CI $[-0.482, 7.525]$, $p = .084$
+
+Marginally non-significant. At zero perceived NA similarity, closeness tends to be higher after the positive interaction, but the effect does not reach significance.
+
+**Interaction** $\beta_3 = 0.038$, 95% CI $[-0.250, 0.325]$, $p = .796$
+
+Statistically zero. The perceived NA similarity slope does not differ between contexts. The positive interaction slope is $\beta_1 + \beta_3 = -0.164 + 0.038 = -0.126$, still negative and non-significant. Unlike the actual similarity models, where the slopes reversed sign across contexts, the perceived similarity slopes are negative in both contexts and non-significant in both.
+
+**Random effects**
+
+Dyad intercept $SD = 11.61$; person intercept $SD = 9.98$; residual $SD = 10.66$.
+
+**The formal test does not support H3.4 for perceived NA similarity predicting closeness.** This completes the H3.4 series. Across the four models, only the actual NA similarity model for love shows a significant context moderation ($p = .002$), with the closeness model showing a marginal trend in the same direction ($p = .062$). Perceived NA similarity shows no context moderation for either outcome. The context-dependent reversal of NA similarity effects is carried by the actual affective overlap, not its perception.
+
+```{r h34_NA_perc_close_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — perceived NA × context → Closeness"
+
+slopes_h34_perc_close <- emtrends(
+  h34_NA_perc_close,
+  specs = ~ context,
+  var   = "NA_sim_perc",
+  at    = list(context = c(0, 1))
+)
+
+slopes_h34_perc_close_df <- as.data.frame(summary(slopes_h34_perc_close, infer = TRUE))
+
+tbl_h34_perc_close <- data.frame(
+  `Interaction context` = c("Negative (0)", "Positive (1)"),
+  `Simple slope`        = sprintf("%.4f", slopes_h34_perc_close_df$NA_sim_perc.trend),
+  `SE`                  = sprintf("%.4f", slopes_h34_perc_close_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]", slopes_h34_perc_close_df$lower.CL, slopes_h34_perc_close_df$upper.CL),
+  `t`                   = sprintf("%.3f", slopes_h34_perc_close_df$t.ratio),
+  `p`                   = ifelse(slopes_h34_perc_close_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", slopes_h34_perc_close_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_h34_perc_close,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived NA similarity on closeness in negative and positive interactions (H3.4)"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position   = "left"
+  )
+```
+
+The simple slopes of perceived NA similarity on closeness are non-significant and nearly identical across contexts: $-0.164$ in the negative interaction ($p = .144$) and $-0.126$ in the positive interaction ($p = .139$). Both are negative and of comparable magnitude, consistent with the near-zero interaction term ($\beta_3 = 0.038$, $p = .796$). Unlike the actual similarity models, where the slopes reversed sign across contexts, perceived NA similarity shows a uniformly negative (though non-significant) trend in both contexts.
+
+This completes the Step 3b formal test series. A summary table of the interaction terms across all eight models:
+
++------------------------------+--------------------------------+--------------------------------+
+|                              | Actual                         | Perceived                      |
++==============================+================================+================================+
+| **H3.3 PA** $\times$ Context |                                |                                |
++------------------------------+--------------------------------+--------------------------------+
+| Love                         | $\beta_3 = 0.184$, $p = .325$  | $\beta_3 = 0.236$, $p = .189$  |
++------------------------------+--------------------------------+--------------------------------+
+| Closeness                    | $\beta_3 = -0.063$, $p = .725$ | $\beta_3 = -0.075$, $p = .657$ |
++------------------------------+--------------------------------+--------------------------------+
+| **H3.4 NA** $\times$ Context |                                |                                |
++------------------------------+--------------------------------+--------------------------------+
+| Love                         | $\beta_3 = 0.547$, $p = .002$  | $\beta_3 = 0.251$, $p = .108$  |
++------------------------------+--------------------------------+--------------------------------+
+| Closeness                    | $\beta_3 = 0.313$, $p = .062$  | $\beta_3 = 0.038$, $p = .796$  |
++------------------------------+--------------------------------+--------------------------------+
+
+H3.3 is not supported: PA similarity effects do not differ between contexts for any outcome or similarity type. H3.4 receives partial support, but in the opposite direction to the hypothesis: actual NA similarity is more negatively associated with evaluations in the negative interaction (not more harmful in the positive interaction as predicted). This context moderation is significant for love ($p = .002$), marginal for closeness ($p = .062$), and absent for perceived similarity.
+
+## Summary for step 3b
+
+```{r step3b_formal_table}
+#| tbl-cap: "Summary of Step 3b formal test: Context moderation of similarity–evaluation associations (H3.3–H3.4)"
+
+# --- Build rows ---
+rows <- list(
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
+       fmt_cell(h33_PA_act_close, "PA_sim_act")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Context</b>",
+       fmt_cell(h33_PA_act_close, "context")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Sim × Context</b>",
+       fmt_cell(h33_PA_act_close, "PA_sim_act:context")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
+       fmt_cell(h33_PA_perc_close, "PA_sim_perc")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Context</b>",
+       fmt_cell(h33_PA_perc_close, "context")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Sim × Context</b>",
+       fmt_cell(h33_PA_perc_close, "PA_sim_perc:context")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
+       fmt_cell(h34_NA_act_close, "NA_sim_act")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Context</b>",
+       fmt_cell(h34_NA_act_close, "context")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Sim × Context</b>",
+       fmt_cell(h34_NA_act_close, "NA_sim_act:context")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
+       fmt_cell(h34_NA_perc_close, "NA_sim_perc")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Context</b>",
+       fmt_cell(h34_NA_perc_close, "context")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Sim × Context</b>",
+       fmt_cell(h34_NA_perc_close, "NA_sim_perc:context")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
+       fmt_cell(h33_PA_act_love, "PA_sim_act")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Context</b>",
+       fmt_cell(h33_PA_act_love, "context")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Sim × Context</b>",
+       fmt_cell(h33_PA_act_love, "PA_sim_act:context")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
+       fmt_cell(h33_PA_perc_love, "PA_sim_perc")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Context</b>",
+       fmt_cell(h33_PA_perc_love, "context")),
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Sim × Context</b>",
+       fmt_cell(h33_PA_perc_love, "PA_sim_perc:context")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
+       fmt_cell(h34_NA_act_love, "NA_sim_act")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Context</b>",
+       fmt_cell(h34_NA_act_love, "context")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Sim × Context</b>",
+       fmt_cell(h34_NA_act_love, "NA_sim_act:context")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
+       fmt_cell(h34_NA_perc_love, "NA_sim_perc")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Context</b>",
+       fmt_cell(h34_NA_perc_love, "context")),
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Sim × Context</b>",
+       fmt_cell(h34_NA_perc_love, "NA_sim_perc:context"))
+)
+
+tbl_3b <- do.call(rbind, lapply(rows, function(r) {
+  data.frame(
+    Outcome    = r[[1]],
+    Affect     = r[[2]],
+    Similarity = r[[3]],
+    Parameter  = r[[4]],
+    Estimate   = r[[5]],
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+}))
+
+note_html <- paste0(
+  "<em>Note.</em> ",
+  "Coefficients with * p &lt; .05, ** p &lt; .01, ",
+  "*** p &lt; .001. Significant coefficients (p &lt; .05) in ",
+  "<strong>bold</strong>. Similarity: slope for the negative interaction ",
+  "(context = 0). Context: difference in intercept between positive and ",
+  "negative interaction. Sim &times; Context: difference in similarity ",
+  "slope between contexts (H3.3 for PA, H3.4 for NA; expected negative). ",
+  "All models include dyad-level and person-level random intercepts."
+)
+
+tab <- kable(tbl_3b,
+  format    = "html",
+  col.names = c("Outcome", "Affect", "Similarity", "Parameter", "Estimate"),
+  align     = c("l", "l", "l", "l", "c"),
+  booktabs  = TRUE,
+  escape    = FALSE
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    position   = "left",
+    font_size  = 12
+  ) %>%
+  collapse_rows(columns = 1:3, valign = "middle")
+
+tab_out <- sub(
+  "</table>",
+  paste0(
+    "<tfoot><tr><td colspan=\"5\" ",
+    "style=\"border-top: 0; padding: 8px 0 0 0; font-size: 11px; ",
+    "line-height: 1.35; text-align: left;\">",
+    note_html,
+    "</td></tr></tfoot></table>"
+  ),
+  as.character(tab),
+  fixed = TRUE
+)
+
+attributes(tab_out) <- attributes(tab)
+tab_out
 ```
