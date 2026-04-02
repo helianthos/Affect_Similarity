@@ -730,6 +730,370 @@ The variance decomposition shows:
 
 The variance patterns closely replicate those from H1.1. For both outcomes, total variance increases substantially from positive to negative contexts, confirming that negative interactions are more broadly destabilizing. The within-dyad variance increases from positive to negative for both outcomes (partners diverge more after disagreement), while the between-dyad variance decreases for love but increases for closeness. This replicates the same scissor effect for love and the uniform expansion for closeness observed in the PA models, which is reassuring: these variance patterns are properties of the outcome distributions and the interaction contexts, not artefacts of the specific predictor entered in the model.
 
+# Exploratory: Main Effects of Perceived Similarity
+
+This exploratory section adds analyses that parallel the preregistered Step 1a models (H1.1–H1.2) from Study Component 2, substituting **perceived similarity** ($\bar{S}^{perc}_{pdc}$) for **actual similarity** ($\bar{S}^{act}_{pdc}$) as the focal predictor. These analyses were not preregistered. The preregistered hypotheses (H1.1–H1.2) concerned the association between *actual* NA and PA similarity and post-interaction love and closeness, in the negative and positive interaction contexts.
+
+The models used mirror the preregistered Step 1a specification, with perceived similarity replacing actual similarity as the sole predictor:
+
+$$
+O_{pdc} = b_{0,d} + \beta_1 \bar{S}^{perc}_{pdc} + \varepsilon_{pdc}
+$$
+
+Random intercept structure: \$ b\_{0,d} = \\beta_0 + v\_{0,d}\$ with \$v\_{0,d} \\sim N(0, \\tau_d\^2)\$: dyad-level random intercept
+
+## Perceived PA Similarity
+
+### Love
+
+#### Negative interaction
+
+```{r exp_PA_love_neg}
+#| output-fold: true
+#| output-summary: "Exploratory: Perceived PA Similarity → Love (negative interaction)"
+
+exp_PA_love_neg <- lme(
+  fixed = love ~ PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(exp_PA_love_neg)
+
+```
+
+**Intercept** $\beta_0 = 82.614$, 95% CI $[75.968, 89.260]$, $p < .001$.
+
+Expected post-interaction love when interaction-averaged perceived PA similarity is zero, within the negative interaction context. The value is comparable to the corresponding H1.1 intercept ($89.05$), though somewhat lower, reflecting that the zero-point of perceived similarity locates a slightly different kind of "average" couple than the zero-point of actual similarity.
+
+**Slope** $\beta_1 = 0.181$, 95% CI $[-0.096, 0.457]$, $p = .198$.
+
+For every one-unit increase in interaction-averaged perceived PA similarity, post-interaction love increases by $0.18$ points, but the effect is small and clearly non-significant. The CI spans both directions and the point estimate is less than half the magnitude of the corresponding actual PA similarity effect in H1.1 ($\beta_1 = 0.379$, $p = .020$). Perceiving more shared PA during the disagreement interaction does not reliably predict higher post-interaction love.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 8.949$, variance $= 80.09$; residual $SD = 18.527$, variance $= 343.25$. Total variance $= 423.34$. ICC $= 80.09 / 423.34 = 0.189$, virtually identical to the H1.1 model ($0.188$), confirming that switching from actual to perceived PA similarity as the predictor does not alter the variance decomposition: about $19\%$ of variability in post-interaction love remains attributable to between-dyad differences.
+
+#### Positive interaction
+
+```{r exp_PA_love_pos}
+#| output-fold: true
+#| output-summary: "Exploratory: Perceived PA Similarity → Love (positive interaction)"
+
+exp_PA_love_pos <- lme(
+  fixed = love ~ PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(exp_PA_love_pos)
+```
+
+**Intercept** $\beta_0 = 83.587$, 95% CI $[80.745, 86.430]$, $p < .001$.
+
+Expected post-interaction love when interaction-averaged perceived PA similarity is zero, within the positive interaction context. The value is close to the H1.1 positive interaction intercept ($85.97$).
+
+**Slope** $\beta_1 = 0.292$, 95% CI $[0.016, 0.567]$, $p = .038$.
+
+For every one-unit increase in interaction-averaged perceived PA similarity, post-interaction love increases by $0.29$ points, a statistically significant though modest effect. The direction is consistent with H1.1 (actual PA similarity: $\beta_1 = 0.459$, $p = .007$), but the magnitude is smaller and the evidence is weaker. Perceiving more shared PA during the positive interaction is associated with higher post-interaction love, though the effect is less pronounced than when actual overlap is the predictor.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 10.362$, variance $= 107.37$; residual $SD = 13.480$, variance $= 181.71$. Total variance $= 289.08$. ICC $= 107.37 / 289.08 = 0.371$, slightly lower than the H1.1 positive interaction model ($0.383$) but substantively comparable: about $37\%$ of variability in post-interaction love is attributable to between-dyad differences after a positive interaction.
+
+### Closeness
+
+#### Negative interaction
+
+```{r exp_PA_close_neg}
+#| output-fold: true
+#| output-summary: "Exploratory: Perceived PA Similarity → Closeness (negative interaction)"
+
+exp_PA_close_neg <- lme(
+  fixed = close ~ PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(exp_PA_close_neg)
+```
+
+**Intercept** $\beta_0 = 84.494$, 95% CI $[77.760, 91.229]$, $p < .001$.
+
+Expected post-interaction closeness when interaction-averaged perceived PA similarity is zero, within the negative interaction context. The value is comparable to the H1.1 closeness intercept in the same context ($92.07$).
+
+**Slope** $\beta_1 = 0.195$, 95% CI $[-0.079, 0.469]$, $p = .162$.
+
+For every one-unit increase in interaction-averaged perceived PA similarity, post-interaction closeness increases by $0.20$ points, but the effect does not reach significance. The point estimate is smaller than the corresponding actual PA similarity effect in H1.1 ($\beta_1 = 0.432$, $p = .015$) and the CI includes zero. Perceived PA similarity does not reliably predict post-interaction closeness after a negative interaction.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 12.786$, variance $= 163.49$; residual $SD = 16.275$, variance $= 264.89$. Total variance $= 428.38$. ICC $= 163.49 / 428.38 = 0.382$, nearly identical to the H1.1 model ($0.387$): roughly $38\%$ of variability in closeness after the negative interaction is between dyads, and this decomposition is unchanged by the switch from actual to perceived similarity.
+
+#### Positive interaction
+
+```{r exp_PA_close_pos}
+#| output-fold: true
+#| output-summary: "Exploratory: Perceived PA Similarity → Closeness (positive interaction)"
+
+exp_PA_close_pos <- lme(
+  fixed = close ~ PA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(exp_PA_close_pos)
+```
+
+**Intercept** $\beta_0 = 85.199$, 95% CI $[82.611, 87.788]$, $p < .001$.
+
+Expected post-interaction closeness when interaction-averaged perceived PA similarity is zero, within the positive interaction context. Close to the H1.1 closeness intercept in the same context.
+
+**Slope** $\beta_1 = 0.334$, 95% CI $[0.081, 0.586]$, $p = .010$.
+
+For every one-unit increase in interaction-averaged perceived PA similarity, post-interaction closeness increases by $0.33$ points — a significant and substantively meaningful effect. The direction mirrors H1.1 ($\beta_1 = 0.377$, $p = .032$) and the magnitude is nearly the same, suggesting that in the positive interaction context, perceived PA similarity and actual PA similarity carry comparable information for predicting post-interaction closeness. This is the strongest perceived PA similarity effect across the four models.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 9.360$, variance $= 87.61$; residual $SD = 12.391$, variance $= 153.54$. Total variance $= 241.15$. ICC $= 87.61 / 241.15 = 0.363$, identical to the H1.1 model ($0.363$): about $36\%$ of variability in post-interaction closeness after a positive interaction is attributable to stable between-dyad differences.
+
+### Summary of results
+
+Across the four perceived PA similarity models, a consistent pattern emerges: effects are null in the negative interaction context and significant in the positive interaction context. In the negative interaction, neither love ($\beta_1 = 0.181$, $p = .198$) nor closeness ($\beta_1 = 0.195$, $p = .162$) are reliably associated with perceived PA similarity. In the positive interaction, both love ($\beta_1 = 0.292$, $p = .038$) and closeness ($\beta_1 = 0.334$, $p = .010$) show significant positive associations. The positive interaction effects are consistent in direction with H1.1 (actual PA similarity), though somewhat attenuated in magnitude, suggesting that while perceived and actual PA similarity are related constructs, the actual affective overlap carries somewhat more predictive weight for post-interaction love, while for closeness the two are roughly equivalent.
+
+```{r exp_PA_summary_table}
+#| output-fold: true
+#| output-summary: "Summary table: Perceived PA Similarity → Love and Closeness"
+
+# Extract fixed effects and variance components from the four models
+extract_row <- function(mod, outcome, context) {
+  vc   <- as.numeric(nlme::VarCorr(mod)[, "Variance"])
+  tau2 <- vc[1]
+  sig2 <- vc[2]
+  icc  <- tau2 / (tau2 + sig2)
+  data.frame(
+    Outcome  = outcome,
+    Context  = context,
+    b0       = fmt_cell(mod, "(Intercept)"),
+    b1       = fmt_cell(mod, "PA_sim_perc"),
+    ICC      = sprintf("%.3f", icc)
+  )
+}
+
+tab_df <- bind_rows(
+  extract_row(exp_PA_love_neg,  "Love",      "Negative"),
+  extract_row(exp_PA_love_pos,  "Love",      "Positive"),
+  extract_row(exp_PA_close_neg, "Closeness", "Negative"),
+  extract_row(exp_PA_close_pos, "Closeness", "Positive")
+)
+
+note_html <- "<em>Note.</em> Exploratory models: perceived PA similarity predicting post-interaction evaluations. All models include a dyad-level random intercept. ICC reflects the proportion of variance between dyads. These analyses were not preregistered."
+
+tab <- kbl(
+  tab_df,
+  col.names = c("Outcome", "Context",
+              "β<sub>0</sub> (intercept)", "β<sub>1</sub> (PA sim perc)", "ICC"),
+  escape    = FALSE,
+  align     = c("l", "l", "r", "r", "r"),
+  caption   = "Exploratory: Perceived PA Similarity Predicting Post-Interaction Evaluations"
+) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = TRUE) |>
+  collapse_rows(columns = 1, valign = "top")
+
+tab_out <- sub(
+  "</table>",
+  paste0('<tfoot><tr><td colspan="5" style="text-align:left;font-size:0.85em;">',
+         note_html, '</td></tr></tfoot></table>'),
+  tab
+)
+attributes(tab_out) <- attributes(tab)
+tab_out
+```
+
+## Perceived NA Similarity
+
+### Love
+
+#### Negative interaction
+
+```{r exp_NA_love_neg}
+#| output-fold: true
+#| output-summary: "Exploratory: Perceived NA Similarity → Love (negative interaction)"
+
+exp_NA_love_neg <- lme(
+  fixed = love ~ NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(exp_NA_love_neg)
+```
+
+**Intercept** $\beta_0 = 78.829$, 95% CI $[75.292, 82.367]$, $p < .001$.
+
+Expected post-interaction love when interaction-averaged perceived NA similarity is zero, within the negative interaction context. The value is virtually identical to the corresponding H1.2 intercept ($77.53$), as expected: the intercept reflects the outcome distribution at the zero-point of the predictor, and perceived and actual NA similarity share a similar metric and distribution.
+
+**Slope** $\beta_1 = 0.005$, 95% CI $[-0.332, 0.343]$, $p = .975$.
+
+The association between perceived NA similarity and post-interaction love in the negative interaction is essentially zero — the smallest effect across all eight models. This mirrors the null finding for actual NA similarity in H1.2 ($\beta_1 = -0.141$, $p = .504$): neither actual nor perceived NA similarity predicts post-interaction love after a disagreement interaction.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 9.528$, variance $= 90.79$; residual $SD = 18.389$, variance $= 338.16$. Total variance $= 428.95$. ICC $= 90.79 / 428.95 = 0.212$, nearly identical to the H1.2 model ($0.213$): about $21\%$ of variability in post-interaction love after the negative interaction is attributable to between-dyad differences.
+
+#### Positive interaction
+
+```{r exp_NA_love_pos}
+#| output-fold: true
+#| output-summary: "Exploratory: Perceived NA Similarity → Love (positive interaction)"
+
+exp_NA_love_pos <- lme(
+  fixed = love ~ NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(exp_NA_love_pos)
+```
+
+**Intercept** $\beta_0 = 87.759$, 95% CI $[82.816, 92.702]$, $p < .001$.
+
+Expected post-interaction love when interaction-averaged perceived NA similarity is zero, within the positive interaction context. The intercept is notably higher than in the negative interaction model ($78.829$), consistent with the general pattern that post-interaction evaluations are higher after a positive discussion.
+
+**Slope** $\beta_1 = 0.201$, 95% CI $[-0.012, 0.413]$, $p = .064$.
+
+For every one-unit increase in interaction-averaged perceived NA similarity, post-interaction love increases by $0.20$ points, but the effect falls just short of conventional significance ($p = .064$). The direction is positive — consistent with the counter-directional actual NA similarity finding in H1.2 ($\beta_1 = 0.352$, $p = .009$) — but the magnitude is smaller and the evidence is weaker. Perceiving more shared NA during the positive interaction shows a marginal tendency toward higher love, though this does not reach significance.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 10.494$, variance $= 110.13$; residual $SD = 13.455$, variance $= 181.05$. Total variance $= 291.18$. ICC $= 110.13 / 291.18 = 0.378$, close to the H1.2 model ($0.385$): about $38\%$ of variability in post-interaction love after the positive interaction is attributable to between-dyad differences.
+
+### Closeness
+
+#### Negative interaction
+
+```{r exp_NA_close_neg}
+#| output-fold: true
+#| output-summary: "Exploratory: Perceived NA Similarity → Closeness (negative interaction)"
+
+exp_NA_close_neg <- lme(
+  fixed = close ~ NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_neg,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(exp_NA_close_neg)
+```
+
+**Intercept** $\beta_0 = 80.212$, 95% CI $[76.429, 83.995]$, $p < .001$.
+
+Expected post-interaction closeness when interaction-averaged perceived NA similarity is zero, within the negative interaction context. The value is similar to the H1.2 closeness intercept in the same context ($78.97$).
+
+**Slope** $\beta_1 = -0.040$, 95% CI $[-0.370, 0.290]$, $p = .810$.
+
+The association between perceived NA similarity and post-interaction closeness in the negative interaction is negligible and non-significant. Like the actual NA similarity finding in H1.2 ($\beta_1 = -0.157$, $p = .497$), there is no evidence that perceiving more shared negative affect during a disagreement predicts lower or higher closeness afterward. The slightly negative point estimate is directionally consistent with H1.2 but far from significant.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 13.296$, variance $= 176.79$; residual $SD = 16.134$, variance $= 260.31$. Total variance $= 437.10$. ICC $= 176.79 / 437.10 = 0.404$, nearly identical to the H1.2 model ($0.411$): about $40\%$ of variability in post-interaction closeness after the negative interaction is between dyads.
+
+#### Positive interaction
+
+```{r exp_NA_close_pos}
+#| output-fold: true
+#| output-summary: "Exploratory: Perceived NA Similarity → Closeness (positive interaction)"
+
+exp_NA_close_pos <- lme(
+  fixed = close ~ NA_sim_perc,
+  random = ~ 1 | dyad,
+  data = sc2_pos,
+  method = "REML",
+  na.action = na.exclude
+)
+
+model_output(exp_NA_close_pos)
+```
+
+**Intercept** $\beta_0 = 87.684$, 95% CI $[83.133, 92.236]$, $p < .001$.
+
+Expected post-interaction closeness when interaction-averaged perceived NA similarity is zero, within the positive interaction context. The value is in the same range as the H1.2 closeness intercept in the positive interaction ($93.91$).
+
+**Slope** $\beta_1 = 0.109$, 95% CI $[-0.087, 0.306]$, $p = .273$.
+
+For every one-unit increase in interaction-averaged perceived NA similarity, post-interaction closeness increases by $0.11$ points, but the effect is small and non-significant. This diverges from the actual NA similarity finding in H1.2 ($\beta_1 = 0.383$, $p = .002$), where actual NA similarity significantly and positively predicted closeness after the positive interaction. Perceived NA similarity does not replicate this pattern: the positive direction is retained but attenuated to non-significance.
+
+**Random effects and variance decomposition**
+
+Dyad intercept $SD = 9.354$, variance $= 87.49$; residual $SD = 12.640$, variance $= 159.77$. Total variance $= 247.26$. ICC $= 87.49 / 247.26 = 0.354$, close to the H1.2 model ($0.344$): about $35\%$ of variability in post-interaction closeness after the positive interaction is between dyads.
+
+### Summary of results
+
+```{r exp_NA_summary_table}
+#| output-fold: true
+#| output-summary: "Summary table: Perceived NA Similarity → Love and Closeness"
+
+extract_row_na <- function(mod, outcome, context) {
+  vc   <- as.numeric(nlme::VarCorr(mod)[, "Variance"])
+  tau2 <- vc[1]
+  sig2 <- vc[2]
+  icc  <- tau2 / (tau2 + sig2)
+  data.frame(
+    Outcome  = outcome,
+    Context  = context,
+    b0       = fmt_cell(mod, "(Intercept)"),
+    b1       = fmt_cell(mod, "NA_sim_perc"),
+    ICC      = sprintf("%.3f", icc)
+  )
+}
+
+tab_na_df <- bind_rows(
+  extract_row_na(exp_NA_love_neg,  "Love",      "Negative"),
+  extract_row_na(exp_NA_love_pos,  "Love",      "Positive"),
+  extract_row_na(exp_NA_close_neg, "Closeness", "Negative"),
+  extract_row_na(exp_NA_close_pos, "Closeness", "Positive")
+)
+
+note_na_html <- "<em>Note.</em> Exploratory models: perceived NA similarity predicting post-interaction evaluations. All models include a dyad-level random intercept. ICC reflects the proportion of variance between dyads. These analyses were not preregistered." 
+
+tab_na <- kbl(
+  tab_na_df,
+  col.names = c("Outcome", "Context",
+              "β<sub>0</sub> (intercept)", "β<sub>1</sub> (PA sim perc)", "ICC"),
+  escape    = FALSE,
+  align     = c("l", "l", "r", "r", "r"),
+  caption   = "Exploratory: Perceived NA Similarity Predicting Post-Interaction Evaluations"
+) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = TRUE) |>
+  collapse_rows(columns = 1, valign = "top")
+
+tab_na_out <- sub(
+  "</table>",
+  paste0('<tfoot><tr><td colspan="5" style="text-align:left;font-size:0.85em;">',
+         note_na_html, '</td></tr></tfoot></table>'),
+  tab_na
+)
+attributes(tab_na_out) <- attributes(tab_na)
+tab_na_out
+```
+
+The perceived NA similarity models show null effects across all four outcome-context combinations. In the negative interaction, perceived NA similarity is unrelated to both love ($\beta_1 = 0.005$, $p = .975$) and closeness ($\beta_1 = -0.040$, $p = .810$), mirroring the null actual NA similarity findings in H1.2. In the positive interaction, the positive-direction tendencies observed for actual NA similarity in H1.2 (both $p < .01$) are attenuated to non-significance for perceived NA similarity: love shows only a marginal trend ($\beta_1 = 0.201$, $p = .064$) and closeness is clearly non-significant ($\beta_1 = 0.109$, $p = .273$). Taken together, the counter-directional positive-interaction effects found for actual NA similarity in H1.2 do not extend to perceived NA similarity, suggesting that the actual affective overlap and not the perception of it drives that pattern.
+
 # Step 1b: Adding Perceived Similarity (H1.3)
 
 $$
