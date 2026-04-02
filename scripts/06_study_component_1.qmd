@@ -4633,3 +4633,1646 @@ When event valence (cC) was introduced as a moderator, it significantly moderate
 In the outcome model, neither the b-path nor the c'-path were moderated by event valence, and no simple slopes for either actual or perceived NA similarity on love reached significance at any level of event valence. Event valence itself continued to independently predict love ($\phi_5 = 2.752$, $p < .001$).
 
 In sum, H3.4 is not supported. The only significant moderation concerned the a-path, and its direction was opposite to the prediction: actual NA similarity was perceived more strongly as similarity in positive moments, not in negative ones. As neither the b-path nor the c'-path moderation were significant, this perceptual effect did not translate into any differential association with love across event valence levels.
+
+# Exploratory: 3b alternative 1 — Extended Event Valence Moderation (cC_expl)
+
+The preregistered event valence index $C_{mpd}$ is based on general positive and negative event items that were only presented when participants were neither with their partner nor in recent contact (see `.callout-important` in Step 3b). This restriction sharply limits the available sample and introduces a selection bias toward partner-absent, contact-free moments.
+
+As an exploratory extension, we construct a broader event valence index $C^{expl}_{mpd}$ that additionally draws on the partner-specific event items (items 11 and 12 in the ESM beeps), which were presented in the complementary branches of the questionnaire (i.e., when at least one of the partner-presence or partner-contact conditions was met). Specifically:
+
+$$
+C^{expl}_{mpd} = \begin{cases}
+  \text{pos_part}_{mpd} - \text{neg_part}_{mpd} & \text{if partner-item branch was taken}\\
+  C_{mpd} = \text{pos_gen}_{mpd} - \text{neg_gen}_{mpd} & \text{if general-item branch was taken and partner items are NA}
+\end{cases}
+$$
+
+Like $C_{mpd}$, the index is person-mean centered:
+
+$$
+cC^{expl}_{mpd} = C^{expl}_{mpd} - \bar{C}^{expl}_{pd}
+$$
+
+so that $cC^{expl}_{mpd} = 0$ reflects a person's own typical event context, positive values index more positive than typical moments, and negative values index more negative than typical moments.
+
+This alternative covers a substantially larger portion of the beep-level data, at the cost of pooling across two conceptually distinct event types (personally experienced non-partner events vs. partner-related events). All models below are formally identical to those in Step 3b, with $cC_{mpd}$ replaced by $cC^{expl}_{mpd}$ throughout.
+
+## PA Similarity × cC_expl
+
+### Actual PA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
++ \beta_3\, cC^{expl}_{mpd}
++ \beta_4 \left(S_{mpd}^{act,within} \times cC^{expl}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e1_h33a}
+#| output-fold: true
+#| output-summary: "Model results e1_h33a"
+
+e1_h33a <- lme(
+  fixed = love ~ PA_similarity_act_w + PA_similarity_act_b +
+                 cC_expl + PA_similarity_act_w:cC_expl,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e1_h33a)
+```
+
+```{r e1_h33a_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e1_h33a"
+
+e1_cc_expl_sd  <- sd(esm_data$cC_expl, na.rm = TRUE)
+e1_resp_levels <- list(cC_expl = c(-e1_cc_expl_sd, 0, e1_cc_expl_sd))
+
+e1_slopes_h33a    <- emtrends(e1_h33a,
+                               specs = ~ cC_expl,
+                               var   = "PA_similarity_act_w",
+                               at    = e1_resp_levels)
+e1_slopes_h33a_df <- as.data.frame(summary(e1_slopes_h33a, infer = TRUE))
+
+tbl_e1_h33a <- data.frame(
+  `Event valence level`   = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `cC_expl`               = sprintf("%.2f", e1_slopes_h33a_df$cC_expl),
+  `Simple slope`          = sprintf("%.4f", e1_slopes_h33a_df$PA_similarity_act_w.trend),
+  `SE`                    = sprintf("%.4f", e1_slopes_h33a_df$SE),
+  `95% CI`                = sprintf("[%.4f, %.4f]",
+                                    e1_slopes_h33a_df$lower.CL,
+                                    e1_slopes_h33a_df$upper.CL),
+  `t`                     = sprintf("%.3f", e1_slopes_h33a_df$t.ratio),
+  `p`                     = ifelse(e1_slopes_h33a_df$p.value < .001, "< .001",
+                                   sprintf("%.3f", e1_slopes_h33a_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e1_h33a,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on love at low, average, and high cC_expl (e1_h33a)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Perceived PA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
++ \beta_3\, cC^{expl}_{mpd}
++ \beta_4 \left(S_{mpd}^{perc,within} \times cC^{expl}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e1_h33p}
+#| output-fold: true
+#| output-summary: "Model results e1_h33p"
+
+e1_h33p <- lme(
+  fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                 cC_expl + PA_similarity_perc_w:cC_expl,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e1_h33p)
+```
+
+```{r e1_h33p_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e1_h33p"
+
+e1_slopes_h33p    <- emtrends(e1_h33p,
+                               specs = ~ cC_expl,
+                               var   = "PA_similarity_perc_w",
+                               at    = e1_resp_levels)
+e1_slopes_h33p_df <- as.data.frame(summary(e1_slopes_h33p, infer = TRUE))
+
+tbl_e1_h33p <- data.frame(
+  `Event valence level`   = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `cC_expl`               = sprintf("%.2f", e1_slopes_h33p_df$cC_expl),
+  `Simple slope`          = sprintf("%.4f", e1_slopes_h33p_df$PA_similarity_perc_w.trend),
+  `SE`                    = sprintf("%.4f", e1_slopes_h33p_df$SE),
+  `95% CI`                = sprintf("[%.4f, %.4f]",
+                                    e1_slopes_h33p_df$lower.CL,
+                                    e1_slopes_h33p_df$upper.CL),
+  `t`                     = sprintf("%.3f", e1_slopes_h33p_df$t.ratio),
+  `p`                     = ifelse(e1_slopes_h33p_df$p.value < .001, "< .001",
+                                   sprintf("%.3f", e1_slopes_h33p_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e1_h33p,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on love at low, average, and high cC_expl (e1_h33p)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Impact on PA mediation
+
+The moderated outcome model tests whether $cC^{expl}_{mpd}$ moderates the b-path and/or the direct c'-path:
+
+$$
+\begin{aligned}
+L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
++ \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
++ \phi_5\, cC^{expl}_{mpd} \\
+&+ \phi_6 \left(S_{mpd}^{perc,within} \times cC^{expl}_{mpd}\right)
++ \phi_7 \left(S_{mpd}^{act,within}   \times cC^{expl}_{mpd}\right)
++ \varepsilon_{mpd}
+\end{aligned}
+$$
+
+```{r e1_h33_outcome_mod}
+#| output-fold: true
+#| output-summary: "Model results e1_h33_outcome_mod"
+
+e1_h33_outcome_mod <- lme(
+  fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                 PA_similarity_act_w  + PA_similarity_act_b  +
+                 cC_expl +
+                 PA_similarity_perc_w:cC_expl +
+                 PA_similarity_act_w:cC_expl,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e1_h33_outcome_mod)
+```
+
+```{r e1_h33_outcome_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e1_h33_outcome_mod"
+
+e1_slopes_out_act  <- emtrends(e1_h33_outcome_mod,
+                                specs = ~ cC_expl,
+                                var   = "PA_similarity_act_w",
+                                at    = e1_resp_levels)
+e1_slopes_out_perc <- emtrends(e1_h33_outcome_mod,
+                                specs = ~ cC_expl,
+                                var   = "PA_similarity_perc_w",
+                                at    = e1_resp_levels)
+
+e1_slopes_out_act_df  <- as.data.frame(summary(e1_slopes_out_act,  infer = TRUE))
+e1_slopes_out_perc_df <- as.data.frame(summary(e1_slopes_out_perc, infer = TRUE))
+
+make_rows_expl <- function(df, trend_col, predictor_label, mod_col) {
+  data.frame(
+    `Predictor`           = predictor_label,
+    `Event valence level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+    `cC_expl`             = sprintf("%.2f", df[[mod_col]]),
+    `Simple slope`        = sprintf("%.4f", df[[trend_col]]),
+    `SE`                  = sprintf("%.4f", df$SE),
+    `95% CI`              = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
+    `t`                   = sprintf("%.3f", df$t.ratio),
+    `p`                   = ifelse(df$p.value < .001, "< .001",
+                                   sprintf("%.3f", df$p.value)),
+    check.names = FALSE
+  )
+}
+
+tbl_e1_out <- rbind(
+  make_rows_expl(e1_slopes_out_act_df,  "PA_similarity_act_w.trend",
+                 "Actual PA similarity",    "cC_expl"),
+  make_rows_expl(e1_slopes_out_perc_df, "PA_similarity_perc_w.trend",
+                 "Perceived PA similarity", "cC_expl")
+)
+
+kable(tbl_e1_out,
+  align    = c("l", "l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual and perceived PA similarity on love at low, average, and high cC_expl (e1_h33_outcome_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  pack_rows("Actual PA similarity",    1, 3) %>%
+  pack_rows("Perceived PA similarity", 4, 6) %>%
+  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+The moderated mediator model tests whether $cC^{expl}_{mpd}$ moderates the a-path:
+
+$$
+S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
++ \theta_3\, cC^{expl}_{mpd}
++ \theta_4 \left(S_{mpd}^{act,within} \times cC^{expl}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e1_h33_mediator_mod}
+#| output-fold: true
+#| output-summary: "Model results e1_h33_mediator_mod"
+
+e1_h33_mediator_mod <- lme(
+  fixed = PA_similarity_perc ~ PA_similarity_act_w + PA_similarity_act_b +
+                               cC_expl +
+                               PA_similarity_act_w:cC_expl,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e1_h33_mediator_mod)
+```
+
+```{r e1_h33_mediator_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e1_h33_mediator_mod"
+
+e1_slopes_med_pa    <- emtrends(e1_h33_mediator_mod,
+                                 specs = ~ cC_expl,
+                                 var   = "PA_similarity_act_w",
+                                 at    = e1_resp_levels)
+e1_slopes_med_pa_df <- as.data.frame(summary(e1_slopes_med_pa, infer = TRUE))
+
+tbl_e1_med_pa <- data.frame(
+  `Event valence level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `cC_expl`             = sprintf("%.2f", e1_slopes_med_pa_df$cC_expl),
+  `Simple slope`        = sprintf("%.4f", e1_slopes_med_pa_df$PA_similarity_act_w.trend),
+  `SE`                  = sprintf("%.4f", e1_slopes_med_pa_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]",
+                                  e1_slopes_med_pa_df$lower.CL,
+                                  e1_slopes_med_pa_df$upper.CL),
+  `t`                   = sprintf("%.3f", e1_slopes_med_pa_df$t.ratio),
+  `p`                   = ifelse(e1_slopes_med_pa_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", e1_slopes_med_pa_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e1_med_pa,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on perceived PA similarity at low, average, and high cC_expl (e1_h33_mediator_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+## NA Similarity × cC_expl
+
+### Actual NA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
++ \beta_3\, cC^{expl}_{mpd}
++ \beta_4 \left(S_{mpd}^{act,within} \times cC^{expl}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e1_h34a}
+#| output-fold: true
+#| output-summary: "Model results e1_h34a"
+
+e1_h34a <- lme(
+  fixed = love ~ NA_similarity_act_w + NA_similarity_act_b +
+                 cC_expl + NA_similarity_act_w:cC_expl,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e1_h34a)
+```
+
+```{r e1_h34a_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e1_h34a"
+
+e1_slopes_h34a    <- emtrends(e1_h34a,
+                               specs = ~ cC_expl,
+                               var   = "NA_similarity_act_w",
+                               at    = e1_resp_levels)
+e1_slopes_h34a_df <- as.data.frame(summary(e1_slopes_h34a, infer = TRUE))
+
+tbl_e1_h34a <- data.frame(
+  `Event valence level`   = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `cC_expl`               = sprintf("%.2f", e1_slopes_h34a_df$cC_expl),
+  `Simple slope`          = sprintf("%.4f", e1_slopes_h34a_df$NA_similarity_act_w.trend),
+  `SE`                    = sprintf("%.4f", e1_slopes_h34a_df$SE),
+  `95% CI`                = sprintf("[%.4f, %.4f]",
+                                    e1_slopes_h34a_df$lower.CL,
+                                    e1_slopes_h34a_df$upper.CL),
+  `t`                     = sprintf("%.3f", e1_slopes_h34a_df$t.ratio),
+  `p`                     = ifelse(e1_slopes_h34a_df$p.value < .001, "< .001",
+                                   sprintf("%.3f", e1_slopes_h34a_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e1_h34a,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on love at low, average, and high cC_expl (e1_h34a)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Perceived NA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
++ \beta_3\, cC^{expl}_{mpd}
++ \beta_4 \left(S_{mpd}^{perc,within} \times cC^{expl}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e1_h34p}
+#| output-fold: true
+#| output-summary: "Model results e1_h34p"
+
+e1_h34p <- lme(
+  fixed = love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                 cC_expl + NA_similarity_perc_w:cC_expl,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e1_h34p)
+```
+
+```{r e1_h34p_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e1_h34p"
+
+e1_slopes_h34p    <- emtrends(e1_h34p,
+                               specs = ~ cC_expl,
+                               var   = "NA_similarity_perc_w",
+                               at    = e1_resp_levels)
+e1_slopes_h34p_df <- as.data.frame(summary(e1_slopes_h34p, infer = TRUE))
+
+tbl_e1_h34p <- data.frame(
+  `Event valence level`   = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `cC_expl`               = sprintf("%.2f", e1_slopes_h34p_df$cC_expl),
+  `Simple slope`          = sprintf("%.4f", e1_slopes_h34p_df$NA_similarity_perc_w.trend),
+  `SE`                    = sprintf("%.4f", e1_slopes_h34p_df$SE),
+  `95% CI`                = sprintf("[%.4f, %.4f]",
+                                    e1_slopes_h34p_df$lower.CL,
+                                    e1_slopes_h34p_df$upper.CL),
+  `t`                     = sprintf("%.3f", e1_slopes_h34p_df$t.ratio),
+  `p`                     = ifelse(e1_slopes_h34p_df$p.value < .001, "< .001",
+                                   sprintf("%.3f", e1_slopes_h34p_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e1_h34p,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived NA similarity on love at low, average, and high cC_expl (e1_h34p)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Impact on NA mediation
+
+$$
+\begin{aligned}
+L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
++ \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
++ \phi_5\, cC^{expl}_{mpd} \\
+&+ \phi_6 \left(S_{mpd}^{perc,within} \times cC^{expl}_{mpd}\right)
++ \phi_7 \left(S_{mpd}^{act,within}   \times cC^{expl}_{mpd}\right)
++ \varepsilon_{mpd}
+\end{aligned}
+$$
+
+```{r e1_h34_outcome_mod}
+#| output-fold: true
+#| output-summary: "Model results e1_h34_outcome_mod"
+
+e1_h34_outcome_mod <- lme(
+  fixed = love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                 NA_similarity_act_w  + NA_similarity_act_b  +
+                 cC_expl +
+                 NA_similarity_perc_w:cC_expl +
+                 NA_similarity_act_w:cC_expl,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e1_h34_outcome_mod)
+```
+
+```{r e1_h34_outcome_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e1_h34_outcome_mod"
+
+e1_slopes_out_na_act  <- emtrends(e1_h34_outcome_mod,
+                                   specs = ~ cC_expl,
+                                   var   = "NA_similarity_act_w",
+                                   at    = e1_resp_levels)
+e1_slopes_out_na_perc <- emtrends(e1_h34_outcome_mod,
+                                   specs = ~ cC_expl,
+                                   var   = "NA_similarity_perc_w",
+                                   at    = e1_resp_levels)
+
+e1_slopes_out_na_act_df  <- as.data.frame(summary(e1_slopes_out_na_act,  infer = TRUE))
+e1_slopes_out_na_perc_df <- as.data.frame(summary(e1_slopes_out_na_perc, infer = TRUE))
+
+tbl_e1_out_na <- rbind(
+  make_rows_expl(e1_slopes_out_na_act_df,  "NA_similarity_act_w.trend",
+                 "Actual NA similarity",    "cC_expl"),
+  make_rows_expl(e1_slopes_out_na_perc_df, "NA_similarity_perc_w.trend",
+                 "Perceived NA similarity", "cC_expl")
+)
+
+kable(tbl_e1_out_na,
+  align    = c("l", "l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual and perceived NA similarity on love at low, average, and high cC_expl (e1_h34_outcome_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  pack_rows("Actual NA similarity",    1, 3) %>%
+  pack_rows("Perceived NA similarity", 4, 6) %>%
+  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+$$
+S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
++ \theta_3\, cC^{expl}_{mpd}
++ \theta_4 \left(S_{mpd}^{act,within} \times cC^{expl}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e1_h34_mediator_mod}
+#| output-fold: true
+#| output-summary: "Model results e1_h34_mediator_mod"
+
+e1_h34_mediator_mod <- lme(
+  fixed = NA_similarity_perc ~ NA_similarity_act_w + NA_similarity_act_b +
+                               cC_expl +
+                               NA_similarity_act_w:cC_expl,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e1_h34_mediator_mod)
+```
+
+```{r e1_h34_mediator_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e1_h34_mediator_mod"
+
+e1_slopes_med_na    <- emtrends(e1_h34_mediator_mod,
+                                 specs = ~ cC_expl,
+                                 var   = "NA_similarity_act_w",
+                                 at    = e1_resp_levels)
+e1_slopes_med_na_df <- as.data.frame(summary(e1_slopes_med_na, infer = TRUE))
+
+tbl_e1_med_na <- data.frame(
+  `Event valence level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+  `cC_expl`             = sprintf("%.2f", e1_slopes_med_na_df$cC_expl),
+  `Simple slope`        = sprintf("%.4f", e1_slopes_med_na_df$NA_similarity_act_w.trend),
+  `SE`                  = sprintf("%.4f", e1_slopes_med_na_df$SE),
+  `95% CI`              = sprintf("[%.4f, %.4f]",
+                                  e1_slopes_med_na_df$lower.CL,
+                                  e1_slopes_med_na_df$upper.CL),
+  `t`                   = sprintf("%.3f", e1_slopes_med_na_df$t.ratio),
+  `p`                   = ifelse(e1_slopes_med_na_df$p.value < .001, "< .001",
+                                 sprintf("%.3f", e1_slopes_med_na_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e1_med_na,
+  align    = c("l", "c", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on perceived NA similarity at low, average, and high cC_expl (e1_h34_mediator_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+------------------------------------------------------------------------
+
+# Exploratory: 3b alternative 2 — Negative Event Dummy (C_expl_neg)
+
+Rather than treating event valence as a continuous moderator, this section uses a binary indicator of whether a negative event occurred at all. The variable $D^{neg}_{mpd}$ is coded as:
+
+$$
+D^{neg}_{mpd} = \begin{cases}
+  1 & \text{if neg_gen}_{mpd} \geq 2 \;\text{or}\; \text{neg_part}_{mpd} \geq 2
+      \quad \text{(something negative happened, even if only a little)}\\
+  0 & \text{otherwise (nothing negative happened)}
+\end{cases}
+$$
+
+The variable pools across both flowchart branches: if the general event item is available, it determines the code; if it is `NA`, the partner event item is used instead. This produces a broader "was anything negative present?" contrast that does not require assuming the linear scaling of the continuous $C_{mpd}$ index.
+
+Because $D^{neg}_{mpd}$ is a dummy (0 = no negative event, 1 = negative event occurred), no centering is applied; the coefficient on the main effect of $D^{neg}_{mpd}$ is interpreted as the difference in the outcome between moments with and without a negative event, holding similarity constant. The interaction $S^{act,within}_{mpd} \times D^{neg}_{mpd}$ tests whether the similarity–love association differs between negative-event and no-negative-event moments. Probing is done at the two values of the dummy ($D^{neg} = 0$ and $D^{neg} = 1$) rather than at $\pm 1\,\text{SD}$.
+
+## PA Similarity × C_expl_neg
+
+### Actual PA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
++ \beta_3\, D^{neg}_{mpd}
++ \beta_4 \left(S_{mpd}^{act,within} \times D^{neg}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e2_h33a}
+#| output-fold: true
+#| output-summary: "Model results e2_h33a"
+
+e2_h33a <- lme(
+  fixed = love ~ PA_similarity_act_w + PA_similarity_act_b +
+                 C_expl_neg + PA_similarity_act_w:C_expl_neg,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e2_h33a)
+```
+
+```{r e2_h33a_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e2_h33a"
+
+e2_dummy_levels <- list(C_expl_neg = c(0, 1))
+
+e2_slopes_h33a    <- emtrends(e2_h33a,
+                               specs = ~ C_expl_neg,
+                               var   = "PA_similarity_act_w",
+                               at    = e2_dummy_levels)
+e2_slopes_h33a_df <- as.data.frame(summary(e2_slopes_h33a, infer = TRUE))
+
+tbl_e2_h33a <- data.frame(
+  `Negative event`  = c("No (0)", "Yes (1)"),
+  `Simple slope`    = sprintf("%.4f", e2_slopes_h33a_df$PA_similarity_act_w.trend),
+  `SE`              = sprintf("%.4f", e2_slopes_h33a_df$SE),
+  `95% CI`          = sprintf("[%.4f, %.4f]",
+                               e2_slopes_h33a_df$lower.CL,
+                               e2_slopes_h33a_df$upper.CL),
+  `t`               = sprintf("%.3f", e2_slopes_h33a_df$t.ratio),
+  `p`               = ifelse(e2_slopes_h33a_df$p.value < .001, "< .001",
+                              sprintf("%.3f", e2_slopes_h33a_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e2_h33a,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on love by negative event occurrence (e2_h33a)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Perceived PA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
++ \beta_3\, D^{neg}_{mpd}
++ \beta_4 \left(S_{mpd}^{perc,within} \times D^{neg}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e2_h33p}
+#| output-fold: true
+#| output-summary: "Model results e2_h33p"
+
+e2_h33p <- lme(
+  fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                 C_expl_neg + PA_similarity_perc_w:C_expl_neg,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e2_h33p)
+```
+
+```{r e2_h33p_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e2_h33p"
+
+e2_slopes_h33p    <- emtrends(e2_h33p,
+                               specs = ~ C_expl_neg,
+                               var   = "PA_similarity_perc_w",
+                               at    = e2_dummy_levels)
+e2_slopes_h33p_df <- as.data.frame(summary(e2_slopes_h33p, infer = TRUE))
+
+tbl_e2_h33p <- data.frame(
+  `Negative event`  = c("No (0)", "Yes (1)"),
+  `Simple slope`    = sprintf("%.4f", e2_slopes_h33p_df$PA_similarity_perc_w.trend),
+  `SE`              = sprintf("%.4f", e2_slopes_h33p_df$SE),
+  `95% CI`          = sprintf("[%.4f, %.4f]",
+                               e2_slopes_h33p_df$lower.CL,
+                               e2_slopes_h33p_df$upper.CL),
+  `t`               = sprintf("%.3f", e2_slopes_h33p_df$t.ratio),
+  `p`               = ifelse(e2_slopes_h33p_df$p.value < .001, "< .001",
+                              sprintf("%.3f", e2_slopes_h33p_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e2_h33p,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on love by negative event occurrence (e2_h33p)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Impact on PA mediation
+
+$$
+\begin{aligned}
+L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
++ \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
++ \phi_5\, D^{neg}_{mpd} \\
+&+ \phi_6 \left(S_{mpd}^{perc,within} \times D^{neg}_{mpd}\right)
++ \phi_7 \left(S_{mpd}^{act,within}   \times D^{neg}_{mpd}\right)
++ \varepsilon_{mpd}
+\end{aligned}
+$$
+
+```{r e2_h33_outcome_mod}
+#| output-fold: true
+#| output-summary: "Model results e2_h33_outcome_mod"
+
+e2_h33_outcome_mod <- lme(
+  fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                 PA_similarity_act_w  + PA_similarity_act_b  +
+                 C_expl_neg +
+                 PA_similarity_perc_w:C_expl_neg +
+                 PA_similarity_act_w:C_expl_neg,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e2_h33_outcome_mod)
+```
+
+```{r e2_h33_outcome_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e2_h33_outcome_mod"
+
+e2_slopes_out_act  <- emtrends(e2_h33_outcome_mod,
+                                specs = ~ C_expl_neg,
+                                var   = "PA_similarity_act_w",
+                                at    = e2_dummy_levels)
+e2_slopes_out_perc <- emtrends(e2_h33_outcome_mod,
+                                specs = ~ C_expl_neg,
+                                var   = "PA_similarity_perc_w",
+                                at    = e2_dummy_levels)
+
+e2_slopes_out_act_df  <- as.data.frame(summary(e2_slopes_out_act,  infer = TRUE))
+e2_slopes_out_perc_df <- as.data.frame(summary(e2_slopes_out_perc, infer = TRUE))
+
+make_rows_dummy <- function(df, trend_col, predictor_label) {
+  data.frame(
+    `Predictor`      = predictor_label,
+    `Negative event` = c("No (0)", "Yes (1)"),
+    `Simple slope`   = sprintf("%.4f", df[[trend_col]]),
+    `SE`             = sprintf("%.4f", df$SE),
+    `95% CI`         = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
+    `t`              = sprintf("%.3f", df$t.ratio),
+    `p`              = ifelse(df$p.value < .001, "< .001",
+                              sprintf("%.3f", df$p.value)),
+    check.names = FALSE
+  )
+}
+
+tbl_e2_out <- rbind(
+  make_rows_dummy(e2_slopes_out_act_df,  "PA_similarity_act_w.trend",
+                  "Actual PA similarity"),
+  make_rows_dummy(e2_slopes_out_perc_df, "PA_similarity_perc_w.trend",
+                  "Perceived PA similarity")
+)
+
+kable(tbl_e2_out,
+  align    = c("l", "l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual and perceived PA similarity on love by negative event occurrence (e2_h33_outcome_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  pack_rows("Actual PA similarity",    1, 2) %>%
+  pack_rows("Perceived PA similarity", 3, 4) %>%
+  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+$$
+S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
++ \theta_3\, D^{neg}_{mpd}
++ \theta_4 \left(S_{mpd}^{act,within} \times D^{neg}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e2_h33_mediator_mod}
+#| output-fold: true
+#| output-summary: "Model results e2_h33_mediator_mod"
+
+e2_h33_mediator_mod <- lme(
+  fixed = PA_similarity_perc ~ PA_similarity_act_w + PA_similarity_act_b +
+                               C_expl_neg +
+                               PA_similarity_act_w:C_expl_neg,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e2_h33_mediator_mod)
+```
+
+```{r e2_h33_mediator_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e2_h33_mediator_mod"
+
+e2_slopes_med_pa    <- emtrends(e2_h33_mediator_mod,
+                                 specs = ~ C_expl_neg,
+                                 var   = "PA_similarity_act_w",
+                                 at    = e2_dummy_levels)
+e2_slopes_med_pa_df <- as.data.frame(summary(e2_slopes_med_pa, infer = TRUE))
+
+tbl_e2_med_pa <- data.frame(
+  `Negative event` = c("No (0)", "Yes (1)"),
+  `Simple slope`   = sprintf("%.4f", e2_slopes_med_pa_df$PA_similarity_act_w.trend),
+  `SE`             = sprintf("%.4f", e2_slopes_med_pa_df$SE),
+  `95% CI`         = sprintf("[%.4f, %.4f]",
+                              e2_slopes_med_pa_df$lower.CL,
+                              e2_slopes_med_pa_df$upper.CL),
+  `t`              = sprintf("%.3f", e2_slopes_med_pa_df$t.ratio),
+  `p`              = ifelse(e2_slopes_med_pa_df$p.value < .001, "< .001",
+                             sprintf("%.3f", e2_slopes_med_pa_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e2_med_pa,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on perceived PA similarity by negative event occurrence (e2_h33_mediator_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+## NA Similarity × C_expl_neg
+
+### Actual NA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
++ \beta_3\, D^{neg}_{mpd}
++ \beta_4 \left(S_{mpd}^{act,within} \times D^{neg}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e2_h34a}
+#| output-fold: true
+#| output-summary: "Model results e2_h34a"
+
+e2_h34a <- lme(
+  fixed = love ~ NA_similarity_act_w + NA_similarity_act_b +
+                 C_expl_neg + NA_similarity_act_w:C_expl_neg,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e2_h34a)
+```
+
+```{r e2_h34a_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e2_h34a"
+
+e2_slopes_h34a    <- emtrends(e2_h34a,
+                               specs = ~ C_expl_neg,
+                               var   = "NA_similarity_act_w",
+                               at    = e2_dummy_levels)
+e2_slopes_h34a_df <- as.data.frame(summary(e2_slopes_h34a, infer = TRUE))
+
+tbl_e2_h34a <- data.frame(
+  `Negative event`  = c("No (0)", "Yes (1)"),
+  `Simple slope`    = sprintf("%.4f", e2_slopes_h34a_df$NA_similarity_act_w.trend),
+  `SE`              = sprintf("%.4f", e2_slopes_h34a_df$SE),
+  `95% CI`          = sprintf("[%.4f, %.4f]",
+                               e2_slopes_h34a_df$lower.CL,
+                               e2_slopes_h34a_df$upper.CL),
+  `t`               = sprintf("%.3f", e2_slopes_h34a_df$t.ratio),
+  `p`               = ifelse(e2_slopes_h34a_df$p.value < .001, "< .001",
+                              sprintf("%.3f", e2_slopes_h34a_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e2_h34a,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on love by negative event occurrence (e2_h34a)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Perceived NA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
++ \beta_3\, D^{neg}_{mpd}
++ \beta_4 \left(S_{mpd}^{perc,within} \times D^{neg}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e2_h34p}
+#| output-fold: true
+#| output-summary: "Model results e2_h34p"
+
+e2_h34p <- lme(
+  fixed = love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                 C_expl_neg + NA_similarity_perc_w:C_expl_neg,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e2_h34p)
+```
+
+```{r e2_h34p_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e2_h34p"
+
+e2_slopes_h34p    <- emtrends(e2_h34p,
+                               specs = ~ C_expl_neg,
+                               var   = "NA_similarity_perc_w",
+                               at    = e2_dummy_levels)
+e2_slopes_h34p_df <- as.data.frame(summary(e2_slopes_h34p, infer = TRUE))
+
+tbl_e2_h34p <- data.frame(
+  `Negative event`  = c("No (0)", "Yes (1)"),
+  `Simple slope`    = sprintf("%.4f", e2_slopes_h34p_df$NA_similarity_perc_w.trend),
+  `SE`              = sprintf("%.4f", e2_slopes_h34p_df$SE),
+  `95% CI`          = sprintf("[%.4f, %.4f]",
+                               e2_slopes_h34p_df$lower.CL,
+                               e2_slopes_h34p_df$upper.CL),
+  `t`               = sprintf("%.3f", e2_slopes_h34p_df$t.ratio),
+  `p`               = ifelse(e2_slopes_h34p_df$p.value < .001, "< .001",
+                              sprintf("%.3f", e2_slopes_h34p_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e2_h34p,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived NA similarity on love by negative event occurrence (e2_h34p)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Impact on NA mediation
+
+$$
+\begin{aligned}
+L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
++ \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
++ \phi_5\, D^{neg}_{mpd} \\
+&+ \phi_6 \left(S_{mpd}^{perc,within} \times D^{neg}_{mpd}\right)
++ \phi_7 \left(S_{mpd}^{act,within}   \times D^{neg}_{mpd}\right)
++ \varepsilon_{mpd}
+\end{aligned}
+$$
+
+```{r e2_h34_outcome_mod}
+#| output-fold: true
+#| output-summary: "Model results e2_h34_outcome_mod"
+
+e2_h34_outcome_mod <- lme(
+  fixed = love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                 NA_similarity_act_w  + NA_similarity_act_b  +
+                 C_expl_neg +
+                 NA_similarity_perc_w:C_expl_neg +
+                 NA_similarity_act_w:C_expl_neg,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e2_h34_outcome_mod)
+```
+
+```{r e2_h34_outcome_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e2_h34_outcome_mod"
+
+e2_slopes_out_na_act  <- emtrends(e2_h34_outcome_mod,
+                                   specs = ~ C_expl_neg,
+                                   var   = "NA_similarity_act_w",
+                                   at    = e2_dummy_levels)
+e2_slopes_out_na_perc <- emtrends(e2_h34_outcome_mod,
+                                   specs = ~ C_expl_neg,
+                                   var   = "NA_similarity_perc_w",
+                                   at    = e2_dummy_levels)
+
+e2_slopes_out_na_act_df  <- as.data.frame(summary(e2_slopes_out_na_act,  infer = TRUE))
+e2_slopes_out_na_perc_df <- as.data.frame(summary(e2_slopes_out_na_perc, infer = TRUE))
+
+tbl_e2_out_na <- rbind(
+  make_rows_dummy(e2_slopes_out_na_act_df,  "NA_similarity_act_w.trend",
+                  "Actual NA similarity"),
+  make_rows_dummy(e2_slopes_out_na_perc_df, "NA_similarity_perc_w.trend",
+                  "Perceived NA similarity")
+)
+
+kable(tbl_e2_out_na,
+  align    = c("l", "l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual and perceived NA similarity on love by negative event occurrence (e2_h34_outcome_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  pack_rows("Actual NA similarity",    1, 2) %>%
+  pack_rows("Perceived NA similarity", 3, 4) %>%
+  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+$$
+S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
++ \theta_3\, D^{neg}_{mpd}
++ \theta_4 \left(S_{mpd}^{act,within} \times D^{neg}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e2_h34_mediator_mod}
+#| output-fold: true
+#| output-summary: "Model results e2_h34_mediator_mod"
+
+e2_h34_mediator_mod <- lme(
+  fixed = NA_similarity_perc ~ NA_similarity_act_w + NA_similarity_act_b +
+                               C_expl_neg +
+                               NA_similarity_act_w:C_expl_neg,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e2_h34_mediator_mod)
+```
+
+```{r e2_h34_mediator_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e2_h34_mediator_mod"
+
+e2_slopes_med_na    <- emtrends(e2_h34_mediator_mod,
+                                 specs = ~ C_expl_neg,
+                                 var   = "NA_similarity_act_w",
+                                 at    = e2_dummy_levels)
+e2_slopes_med_na_df <- as.data.frame(summary(e2_slopes_med_na, infer = TRUE))
+
+tbl_e2_med_na <- data.frame(
+  `Negative event` = c("No (0)", "Yes (1)"),
+  `Simple slope`   = sprintf("%.4f", e2_slopes_med_na_df$NA_similarity_act_w.trend),
+  `SE`             = sprintf("%.4f", e2_slopes_med_na_df$SE),
+  `95% CI`         = sprintf("[%.4f, %.4f]",
+                              e2_slopes_med_na_df$lower.CL,
+                              e2_slopes_med_na_df$upper.CL),
+  `t`              = sprintf("%.3f", e2_slopes_med_na_df$t.ratio),
+  `p`              = ifelse(e2_slopes_med_na_df$p.value < .001, "< .001",
+                             sprintf("%.3f", e2_slopes_med_na_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e2_med_na,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on perceived NA similarity by negative event occurrence (e2_h34_mediator_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+# Exploratory: 3b alternative 3 — Positive Event Dummy (C_expl_pos)
+
+This section mirrors Alternative 2, but uses a binary indicator of whether a *positive* event occurred. The variable $D^{pos}_{mpd}$ is coded as:
+
+$$
+D^{pos}_{mpd} = \begin{cases}
+  1 & \text{if pos_gen}_{mpd} \geq 2 \;\text{or}\; \text{pos_part}_{mpd} \geq 2
+      \quad \text{(something positive happened, even if only a little)}\\
+  0 & \text{otherwise (nothing positive happened)}
+\end{cases}
+$$
+
+The motivation for examining $D^{pos}_{mpd}$ separately is that positive and negative events may have asymmetric effects on the similarity–love association. Whereas the preregistered hypothesis (H3.3/H3.4) was formulated in terms of the net valence of the context, decomposing presence/absence of each event type independently allows us to identify whether it is the presence of a positive event, the absence of a negative event, or the balance between them that drives any observed moderation.
+
+As with Alternative 2, the coefficient on $D^{pos}_{mpd}$ is interpretable as the mean difference in love between positive-event and no-positive-event moments (holding similarity constant), and the interaction tests whether the similarity–love association is stronger or weaker when something positive has occurred. Probing is done at $D^{pos} = 0$ and $D^{pos} = 1$.
+
+## PA Similarity × C_expl_pos
+
+### Actual PA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
++ \beta_3\, D^{pos}_{mpd}
++ \beta_4 \left(S_{mpd}^{act,within} \times D^{pos}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e3_h33a}
+#| output-fold: true
+#| output-summary: "Model results e3_h33a"
+
+e3_h33a <- lme(
+  fixed = love ~ PA_similarity_act_w + PA_similarity_act_b +
+                 C_expl_pos + PA_similarity_act_w:C_expl_pos,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e3_h33a)
+```
+
+```{r e3_h33a_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e3_h33a"
+
+e3_dummy_levels <- list(C_expl_pos = c(0, 1))
+
+e3_slopes_h33a    <- emtrends(e3_h33a,
+                               specs = ~ C_expl_pos,
+                               var   = "PA_similarity_act_w",
+                               at    = e3_dummy_levels)
+e3_slopes_h33a_df <- as.data.frame(summary(e3_slopes_h33a, infer = TRUE))
+
+tbl_e3_h33a <- data.frame(
+  `Positive event`  = c("No (0)", "Yes (1)"),
+  `Simple slope`    = sprintf("%.4f", e3_slopes_h33a_df$PA_similarity_act_w.trend),
+  `SE`              = sprintf("%.4f", e3_slopes_h33a_df$SE),
+  `95% CI`          = sprintf("[%.4f, %.4f]",
+                               e3_slopes_h33a_df$lower.CL,
+                               e3_slopes_h33a_df$upper.CL),
+  `t`               = sprintf("%.3f", e3_slopes_h33a_df$t.ratio),
+  `p`               = ifelse(e3_slopes_h33a_df$p.value < .001, "< .001",
+                              sprintf("%.3f", e3_slopes_h33a_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e3_h33a,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on love by positive event occurrence (e3_h33a)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Perceived PA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
++ \beta_3\, D^{pos}_{mpd}
++ \beta_4 \left(S_{mpd}^{perc,within} \times D^{pos}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e3_h33p}
+#| output-fold: true
+#| output-summary: "Model results e3_h33p"
+
+e3_h33p <- lme(
+  fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                 C_expl_pos + PA_similarity_perc_w:C_expl_pos,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e3_h33p)
+```
+
+```{r e3_h33p_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e3_h33p"
+
+e3_slopes_h33p    <- emtrends(e3_h33p,
+                               specs = ~ C_expl_pos,
+                               var   = "PA_similarity_perc_w",
+                               at    = e3_dummy_levels)
+e3_slopes_h33p_df <- as.data.frame(summary(e3_slopes_h33p, infer = TRUE))
+
+tbl_e3_h33p <- data.frame(
+  `Positive event`  = c("No (0)", "Yes (1)"),
+  `Simple slope`    = sprintf("%.4f", e3_slopes_h33p_df$PA_similarity_perc_w.trend),
+  `SE`              = sprintf("%.4f", e3_slopes_h33p_df$SE),
+  `95% CI`          = sprintf("[%.4f, %.4f]",
+                               e3_slopes_h33p_df$lower.CL,
+                               e3_slopes_h33p_df$upper.CL),
+  `t`               = sprintf("%.3f", e3_slopes_h33p_df$t.ratio),
+  `p`               = ifelse(e3_slopes_h33p_df$p.value < .001, "< .001",
+                              sprintf("%.3f", e3_slopes_h33p_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e3_h33p,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived PA similarity on love by positive event occurrence (e3_h33p)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Impact on PA mediation
+
+$$
+\begin{aligned}
+L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
++ \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
++ \phi_5\, D^{pos}_{mpd} \\
+&+ \phi_6 \left(S_{mpd}^{perc,within} \times D^{pos}_{mpd}\right)
++ \phi_7 \left(S_{mpd}^{act,within}   \times D^{pos}_{mpd}\right)
++ \varepsilon_{mpd}
+\end{aligned}
+$$
+
+```{r e3_h33_outcome_mod}
+#| output-fold: true
+#| output-summary: "Model results e3_h33_outcome_mod"
+
+e3_h33_outcome_mod <- lme(
+  fixed = love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                 PA_similarity_act_w  + PA_similarity_act_b  +
+                 C_expl_pos +
+                 PA_similarity_perc_w:C_expl_pos +
+                 PA_similarity_act_w:C_expl_pos,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e3_h33_outcome_mod)
+```
+
+```{r e3_h33_outcome_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e3_h33_outcome_mod"
+
+e3_slopes_out_act  <- emtrends(e3_h33_outcome_mod,
+                                specs = ~ C_expl_pos,
+                                var   = "PA_similarity_act_w",
+                                at    = e3_dummy_levels)
+e3_slopes_out_perc <- emtrends(e3_h33_outcome_mod,
+                                specs = ~ C_expl_pos,
+                                var   = "PA_similarity_perc_w",
+                                at    = e3_dummy_levels)
+
+e3_slopes_out_act_df  <- as.data.frame(summary(e3_slopes_out_act,  infer = TRUE))
+e3_slopes_out_perc_df <- as.data.frame(summary(e3_slopes_out_perc, infer = TRUE))
+
+make_rows_pos <- function(df, trend_col, predictor_label) {
+  data.frame(
+    `Predictor`      = predictor_label,
+    `Positive event` = c("No (0)", "Yes (1)"),
+    `Simple slope`   = sprintf("%.4f", df[[trend_col]]),
+    `SE`             = sprintf("%.4f", df$SE),
+    `95% CI`         = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
+    `t`              = sprintf("%.3f", df$t.ratio),
+    `p`              = ifelse(df$p.value < .001, "< .001",
+                              sprintf("%.3f", df$p.value)),
+    check.names = FALSE
+  )
+}
+
+tbl_e3_out <- rbind(
+  make_rows_pos(e3_slopes_out_act_df,  "PA_similarity_act_w.trend",
+                "Actual PA similarity"),
+  make_rows_pos(e3_slopes_out_perc_df, "PA_similarity_perc_w.trend",
+                "Perceived PA similarity")
+)
+
+kable(tbl_e3_out,
+  align    = c("l", "l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual and perceived PA similarity on love by positive event occurrence (e3_h33_outcome_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  pack_rows("Actual PA similarity",    1, 2) %>%
+  pack_rows("Perceived PA similarity", 3, 4) %>%
+  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+$$
+S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
++ \theta_3\, D^{pos}_{mpd}
++ \theta_4 \left(S_{mpd}^{act,within} \times D^{pos}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e3_h33_mediator_mod}
+#| output-fold: true
+#| output-summary: "Model results e3_h33_mediator_mod"
+
+e3_h33_mediator_mod <- lme(
+  fixed = PA_similarity_perc ~ PA_similarity_act_w + PA_similarity_act_b +
+                               C_expl_pos +
+                               PA_similarity_act_w:C_expl_pos,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e3_h33_mediator_mod)
+```
+
+```{r e3_h33_mediator_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e3_h33_mediator_mod"
+
+e3_slopes_med_pa    <- emtrends(e3_h33_mediator_mod,
+                                 specs = ~ C_expl_pos,
+                                 var   = "PA_similarity_act_w",
+                                 at    = e3_dummy_levels)
+e3_slopes_med_pa_df <- as.data.frame(summary(e3_slopes_med_pa, infer = TRUE))
+
+tbl_e3_med_pa <- data.frame(
+  `Positive event` = c("No (0)", "Yes (1)"),
+  `Simple slope`   = sprintf("%.4f", e3_slopes_med_pa_df$PA_similarity_act_w.trend),
+  `SE`             = sprintf("%.4f", e3_slopes_med_pa_df$SE),
+  `95% CI`         = sprintf("[%.4f, %.4f]",
+                              e3_slopes_med_pa_df$lower.CL,
+                              e3_slopes_med_pa_df$upper.CL),
+  `t`              = sprintf("%.3f", e3_slopes_med_pa_df$t.ratio),
+  `p`              = ifelse(e3_slopes_med_pa_df$p.value < .001, "< .001",
+                             sprintf("%.3f", e3_slopes_med_pa_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e3_med_pa,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual PA similarity on perceived PA similarity by positive event occurrence (e3_h33_mediator_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+------------------------------------------------------------------------
+
+## NA Similarity × C_expl_pos
+
+### Actual NA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
++ \beta_3\, D^{pos}_{mpd}
++ \beta_4 \left(S_{mpd}^{act,within} \times D^{pos}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e3_h34a}
+#| output-fold: true
+#| output-summary: "Model results e3_h34a"
+
+e3_h34a <- lme(
+  fixed = love ~ NA_similarity_act_w + NA_similarity_act_b +
+                 C_expl_pos + NA_similarity_act_w:C_expl_pos,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e3_h34a)
+```
+
+```{r e3_h34a_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e3_h34a"
+
+e3_slopes_h34a    <- emtrends(e3_h34a,
+                               specs = ~ C_expl_pos,
+                               var   = "NA_similarity_act_w",
+                               at    = e3_dummy_levels)
+e3_slopes_h34a_df <- as.data.frame(summary(e3_slopes_h34a, infer = TRUE))
+
+tbl_e3_h34a <- data.frame(
+  `Positive event`  = c("No (0)", "Yes (1)"),
+  `Simple slope`    = sprintf("%.4f", e3_slopes_h34a_df$NA_similarity_act_w.trend),
+  `SE`              = sprintf("%.4f", e3_slopes_h34a_df$SE),
+  `95% CI`          = sprintf("[%.4f, %.4f]",
+                               e3_slopes_h34a_df$lower.CL,
+                               e3_slopes_h34a_df$upper.CL),
+  `t`               = sprintf("%.3f", e3_slopes_h34a_df$t.ratio),
+  `p`               = ifelse(e3_slopes_h34a_df$p.value < .001, "< .001",
+                              sprintf("%.3f", e3_slopes_h34a_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e3_h34a,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on love by positive event occurrence (e3_h34a)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Perceived NA similarity
+
+$$
+L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
++ \beta_3\, D^{pos}_{mpd}
++ \beta_4 \left(S_{mpd}^{perc,within} \times D^{pos}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e3_h34p}
+#| output-fold: true
+#| output-summary: "Model results e3_h34p"
+
+e3_h34p <- lme(
+  fixed = love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                 C_expl_pos + NA_similarity_perc_w:C_expl_pos,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e3_h34p)
+```
+
+```{r e3_h34p_probing}
+#| output-fold: true
+#| output-summary: "Simple slopes — e3_h34p"
+
+e3_slopes_h34p    <- emtrends(e3_h34p,
+                               specs = ~ C_expl_pos,
+                               var   = "NA_similarity_perc_w",
+                               at    = e3_dummy_levels)
+e3_slopes_h34p_df <- as.data.frame(summary(e3_slopes_h34p, infer = TRUE))
+
+tbl_e3_h34p <- data.frame(
+  `Positive event`  = c("No (0)", "Yes (1)"),
+  `Simple slope`    = sprintf("%.4f", e3_slopes_h34p_df$NA_similarity_perc_w.trend),
+  `SE`              = sprintf("%.4f", e3_slopes_h34p_df$SE),
+  `95% CI`          = sprintf("[%.4f, %.4f]",
+                               e3_slopes_h34p_df$lower.CL,
+                               e3_slopes_h34p_df$upper.CL),
+  `t`               = sprintf("%.3f", e3_slopes_h34p_df$t.ratio),
+  `p`               = ifelse(e3_slopes_h34p_df$p.value < .001, "< .001",
+                              sprintf("%.3f", e3_slopes_h34p_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e3_h34p,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of perceived NA similarity on love by positive event occurrence (e3_h34p)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+### Impact on NA mediation
+
+$$
+\begin{aligned}
+L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
++ \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
++ \phi_5\, D^{pos}_{mpd} \\
+&+ \phi_6 \left(S_{mpd}^{perc,within} \times D^{pos}_{mpd}\right)
++ \phi_7 \left(S_{mpd}^{act,within}   \times D^{pos}_{mpd}\right)
++ \varepsilon_{mpd}
+\end{aligned}
+$$
+
+```{r e3_h34_outcome_mod}
+#| output-fold: true
+#| output-summary: "Model results e3_h34_outcome_mod"
+
+e3_h34_outcome_mod <- lme(
+  fixed = love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                 NA_similarity_act_w  + NA_similarity_act_b  +
+                 C_expl_pos +
+                 NA_similarity_perc_w:C_expl_pos +
+                 NA_similarity_act_w:C_expl_pos,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e3_h34_outcome_mod)
+```
+
+```{r e3_h34_outcome_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e3_h34_outcome_mod"
+
+e3_slopes_out_na_act  <- emtrends(e3_h34_outcome_mod,
+                                   specs = ~ C_expl_pos,
+                                   var   = "NA_similarity_act_w",
+                                   at    = e3_dummy_levels)
+e3_slopes_out_na_perc <- emtrends(e3_h34_outcome_mod,
+                                   specs = ~ C_expl_pos,
+                                   var   = "NA_similarity_perc_w",
+                                   at    = e3_dummy_levels)
+
+e3_slopes_out_na_act_df  <- as.data.frame(summary(e3_slopes_out_na_act,  infer = TRUE))
+e3_slopes_out_na_perc_df <- as.data.frame(summary(e3_slopes_out_na_perc, infer = TRUE))
+
+tbl_e3_out_na <- rbind(
+  make_rows_pos(e3_slopes_out_na_act_df,  "NA_similarity_act_w.trend",
+                "Actual NA similarity"),
+  make_rows_pos(e3_slopes_out_na_perc_df, "NA_similarity_perc_w.trend",
+                "Perceived NA similarity")
+)
+
+kable(tbl_e3_out_na,
+  align    = c("l", "l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual and perceived NA similarity on love by positive event occurrence (e3_h34_outcome_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  pack_rows("Actual NA similarity",    1, 2) %>%
+  pack_rows("Perceived NA similarity", 3, 4) %>%
+  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+$$
+S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
++ \theta_3\, D^{pos}_{mpd}
++ \theta_4 \left(S_{mpd}^{act,within} \times D^{pos}_{mpd}\right)
++ \varepsilon_{mpd}
+$$
+
+```{r e3_h34_mediator_mod}
+#| output-fold: true
+#| output-summary: "Model results e3_h34_mediator_mod"
+
+e3_h34_mediator_mod <- lme(
+  fixed = NA_similarity_perc ~ NA_similarity_act_w + NA_similarity_act_b +
+                               C_expl_pos +
+                               NA_similarity_act_w:C_expl_pos,
+  random      = ~ 1 | dyad/person,
+  correlation = corCAR1(form = ~ time | dyad/person),
+  data        = esm_data,
+  method      = "REML",
+  na.action   = na.exclude,
+  control     = lmeControl(opt = "nlminb")
+)
+
+model_output(e3_h34_mediator_mod)
+```
+
+```{r e3_h34_mediator_mod_slopes}
+#| output-fold: true
+#| output-summary: "Simple slopes — e3_h34_mediator_mod"
+
+e3_slopes_med_na    <- emtrends(e3_h34_mediator_mod,
+                                 specs = ~ C_expl_pos,
+                                 var   = "NA_similarity_act_w",
+                                 at    = e3_dummy_levels)
+e3_slopes_med_na_df <- as.data.frame(summary(e3_slopes_med_na, infer = TRUE))
+
+tbl_e3_med_na <- data.frame(
+  `Positive event` = c("No (0)", "Yes (1)"),
+  `Simple slope`   = sprintf("%.4f", e3_slopes_med_na_df$NA_similarity_act_w.trend),
+  `SE`             = sprintf("%.4f", e3_slopes_med_na_df$SE),
+  `95% CI`         = sprintf("[%.4f, %.4f]",
+                              e3_slopes_med_na_df$lower.CL,
+                              e3_slopes_med_na_df$upper.CL),
+  `t`              = sprintf("%.3f", e3_slopes_med_na_df$t.ratio),
+  `p`              = ifelse(e3_slopes_med_na_df$p.value < .001, "< .001",
+                             sprintf("%.3f", e3_slopes_med_na_df$p.value)),
+  check.names = FALSE
+)
+
+kable(tbl_e3_med_na,
+  align    = c("l", "c", "c", "c", "c", "c"),
+  booktabs = TRUE,
+  caption  = "Simple slopes of actual NA similarity on perceived NA similarity by positive event occurrence (e3_h34_mediator_mod)"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left") %>%
+  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+           general_title = "Note.", footnote_as_chunk = TRUE)
+```
