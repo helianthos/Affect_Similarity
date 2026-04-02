@@ -1878,7 +1878,7 @@ rows <- list(
        "",
        fmt_cell(h13_PA_close_neg, "PA_sim_perc"),
        fmt_cell(im_PA_close_neg,  "PA_sim_perc_gmc")),
-  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Act × Perc</b>",
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual × Perceived</b>",
        "", "",
        fmt_cell(im_PA_close_pos, "PA_sim_act_gmc:PA_sim_perc_gmc"),
        "", "",
@@ -1898,7 +1898,7 @@ rows <- list(
        "",
        fmt_cell(h13_NA_close_neg, "NA_sim_perc"),
        fmt_cell(im_NA_close_neg,  "NA_sim_perc_gmc")),
-  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Act × Perc</b>",
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual × Perceived</b>",
        "", "",
        fmt_cell(im_NA_close_pos, "NA_sim_act_gmc:NA_sim_perc_gmc"),
        "", "",
@@ -1918,7 +1918,7 @@ rows <- list(
        "",
        fmt_cell(h13_PA_love_neg, "PA_sim_perc"),
        fmt_cell(im_PA_love_neg,  "PA_sim_perc_gmc")),
-  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Act × Perc</b>",
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual × Perceived</b>",
        "", "",
        fmt_cell(im_PA_love_pos, "PA_sim_act_gmc:PA_sim_perc_gmc"),
        "", "",
@@ -1938,7 +1938,7 @@ rows <- list(
        "",
        fmt_cell(h13_NA_love_neg, "NA_sim_perc"),
        fmt_cell(im_NA_love_neg,  "NA_sim_perc_gmc")),
-  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Act × Perc</b>",
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual × Perceived</b>",
        "", "",
        fmt_cell(im_NA_love_pos, "NA_sim_act_gmc:NA_sim_perc_gmc"),
        "", "",
@@ -1991,9 +1991,17 @@ tab <- kable(
   add_header_above(c(" " = 3,
                      "Positive Interaction" = 3,
                      "Negative Interaction" = 3)) %>%
+  row_spec(4, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(7, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(10, extra_css = "border-top: 1px solid #aaa !important;") %>%
   collapse_rows(columns = 1:2, valign = "middle")
 
-tab_out <- sub(
+tab_out <- paste0(
+  '<style>
+    table.table > thead > tr:last-child > th {
+      border-bottom: 1px solid #aaa !important;
+    }
+  </style>',sub(
   "</table>",
   paste0(
     "<tfoot><tr><td colspan=\"9\" ",
@@ -2004,6 +2012,7 @@ tab_out <- sub(
   ),
   as.character(tab),
   fixed = TRUE
+)
 )
 
 attributes(tab_out) <- attributes(tab)
@@ -3336,7 +3345,7 @@ note_html <- paste0(
 
 tab <- kable(tbl_med,
   format    = "html",
-  col.names = c("Outcome", "Path", "Negative", "Positive", "Negative", "Positive"),
+  col.names = c("Outcome", "Path", "Negative Interaction", "Positive Interaction", "Negative Interaction", "Positive Interaction"),
   align     = c("l", "l", rep("c", 4)),
   booktabs  = TRUE,
   escape    = FALSE
@@ -3348,11 +3357,18 @@ tab <- kable(tbl_med,
     font_size  = 12
   ) %>%
   add_header_above(c(" " = 2,
-                      "PA Similarity (H2.1)" = 2,
-                      "NA Similarity (H2.2)" = 2)) %>%
+                     "PA Similarity (H2.1)" = 2,
+                     "NA Similarity (H2.2)" = 2)) %>%
+  row_spec(1, extra_css = "border-bottom: 1px solid #aaa !important;") %>%
+  row_spec(5, extra_css = "border-top: 1px solid #aaa !important;") %>%
   collapse_rows(columns = 1, valign = "middle")
 
-tab_out <- sub(
+tab_out <-  paste0(
+  '<style>
+    table.table > thead > tr:last-child > th {
+      border-bottom: 1px solid #aaa !important;
+    }
+  </style>',sub(
   "</table>",
   paste0(
     "<tfoot><tr><td colspan=\"6\" ",
@@ -3363,6 +3379,7 @@ tab_out <- sub(
   ),
   as.character(tab),
   fixed = TRUE
+)
 )
 
 attributes(tab_out) <- attributes(tab)
@@ -4879,7 +4896,7 @@ rows <- list(
   list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>We-ness</b>",
        fmt_cell(h31_PA_act_close_neg, "cwe_ness"),
        fmt_cell(h31_PA_act_close_pos, "cwe_ness")),
-  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Sim × We-ness</b>",
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity × We-ness</b>",
        fmt_cell(h31_PA_act_close_neg, "PA_sim_act:cwe_ness"),
        fmt_cell(h31_PA_act_close_pos, "PA_sim_act:cwe_ness")),
   list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
@@ -4888,7 +4905,7 @@ rows <- list(
   list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>We-ness</b>",
        fmt_cell(h31_PA_perc_close_neg, "cwe_ness"),
        fmt_cell(h31_PA_perc_close_pos, "cwe_ness")),
-  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Sim × We-ness</b>",
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity × We-ness</b>",
        fmt_cell(h31_PA_perc_close_neg, "PA_sim_perc:cwe_ness"),
        fmt_cell(h31_PA_perc_close_pos, "PA_sim_perc:cwe_ness")),
   list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
@@ -4897,7 +4914,7 @@ rows <- list(
   list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>We-ness</b>",
        fmt_cell(h32_NA_act_close_neg, "cwe_ness"),
        fmt_cell(h32_NA_act_close_pos, "cwe_ness")),
-  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Sim × We-ness</b>",
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity × We-ness</b>",
        fmt_cell(h32_NA_act_close_neg, "NA_sim_act:cwe_ness"),
        fmt_cell(h32_NA_act_close_pos, "NA_sim_act:cwe_ness")),
   list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
@@ -4906,7 +4923,7 @@ rows <- list(
   list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>We-ness</b>",
        fmt_cell(h32_NA_perc_close_neg, "cwe_ness"),
        fmt_cell(h32_NA_perc_close_pos, "cwe_ness")),
-  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Sim × We-ness</b>",
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity × We-ness</b>",
        fmt_cell(h32_NA_perc_close_neg, "NA_sim_perc:cwe_ness"),
        fmt_cell(h32_NA_perc_close_pos, "NA_sim_perc:cwe_ness")),
   list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
@@ -4915,7 +4932,7 @@ rows <- list(
   list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>We-ness</b>",
        fmt_cell(h31_PA_act_love_neg, "cwe_ness"),
        fmt_cell(h31_PA_act_love_pos, "cwe_ness")),
-  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Sim × We-ness</b>",
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity × We-ness</b>",
        fmt_cell(h31_PA_act_love_neg, "PA_sim_act:cwe_ness"),
        fmt_cell(h31_PA_act_love_pos, "PA_sim_act:cwe_ness")),
   list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
@@ -4924,7 +4941,7 @@ rows <- list(
   list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>We-ness</b>",
        fmt_cell(h31_PA_perc_love_neg, "cwe_ness"),
        fmt_cell(h31_PA_perc_love_pos, "cwe_ness")),
-  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Sim × We-ness</b>",
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity × We-ness</b>",
        fmt_cell(h31_PA_perc_love_neg, "PA_sim_perc:cwe_ness"),
        fmt_cell(h31_PA_perc_love_pos, "PA_sim_perc:cwe_ness")),
   list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
@@ -4933,7 +4950,7 @@ rows <- list(
   list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>We-ness</b>",
        fmt_cell(h32_NA_act_love_neg, "cwe_ness"),
        fmt_cell(h32_NA_act_love_pos, "cwe_ness")),
-  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Sim × We-ness</b>",
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity × We-ness</b>",
        fmt_cell(h32_NA_act_love_neg, "NA_sim_act:cwe_ness"),
        fmt_cell(h32_NA_act_love_pos, "NA_sim_act:cwe_ness")),
   list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
@@ -4942,7 +4959,7 @@ rows <- list(
   list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>We-ness</b>",
        fmt_cell(h32_NA_perc_love_neg, "cwe_ness"),
        fmt_cell(h32_NA_perc_love_pos, "cwe_ness")),
-  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Sim × We-ness</b>",
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity × We-ness</b>",
        fmt_cell(h32_NA_perc_love_neg, "NA_sim_perc:cwe_ness"),
        fmt_cell(h32_NA_perc_love_pos, "NA_sim_perc:cwe_ness"))
 )
@@ -4953,8 +4970,8 @@ tbl_3a <- do.call(rbind, lapply(rows, function(r) {
     Affect     = r[[2]],
     Similarity = r[[3]],
     Parameter  = r[[4]],
-    Negative   = r[[5]],
     Positive   = r[[6]],
+    Negative   = r[[5]],
     check.names = FALSE,
     stringsAsFactors = FALSE
   )
@@ -4973,7 +4990,7 @@ note_html <- paste0(
 tab <- kable(tbl_3a,
   format    = "html",
   col.names = c("Outcome", "Affect", "Similarity", "Parameter",
-                "Negative", "Positive"),
+                "Positive Interaction", "Negative Interaction"),
   align     = c("l", "l", "l", "l", "c", "c"),
   booktabs  = TRUE,
   escape    = FALSE
@@ -4985,10 +5002,22 @@ tab <- kable(tbl_3a,
     font_size  = 12
   ) %>%
   add_header_above(c(" " = 4,
-                      "Interaction Context" = 2)) %>%
+                      "Interaction Valence" = 2)) %>%
+  row_spec(4, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(7, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(10, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(13, extra_css = "border-top: 2px solid #bbb !important;") %>%
+  row_spec(16, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(19, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(22, extra_css = "border-top: 1px solid #aaa !important;") %>%
   collapse_rows(columns = 1:3, valign = "middle")
 
-tab_out <- sub(
+tab_out <- paste0(
+  '<style>
+    table.table > thead > tr:last-child > th {
+      border-bottom: 2px solid #bbb !important;
+    }
+  </style>',sub(
   "</table>",
   paste0(
     "<tfoot><tr><td colspan=\"6\" ",
@@ -4999,6 +5028,7 @@ tab_out <- sub(
   ),
   as.character(tab),
   fixed = TRUE
+)
 )
 
 attributes(tab_out) <- attributes(tab)
@@ -5242,18 +5272,6 @@ All four coefficients are non-significant. The context pattern is nonetheless co
 
 # --- Build rows ---
 rows <- list(
-  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>",
-       fmt_cell(h11_PA_close_neg, "PA_sim_act"),
-       fmt_cell(h11_PA_close_pos, "PA_sim_act")),
-  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>",
-       fmt_cell(desc_PA_perc_close_neg, "PA_sim_perc"),
-       fmt_cell(desc_PA_perc_close_pos, "PA_sim_perc")),
-  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>",
-       fmt_cell(h12_NA_close_neg, "NA_sim_act"),
-       fmt_cell(h12_NA_close_pos, "NA_sim_act")),
-  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>",
-       fmt_cell(desc_NA_perc_close_neg, "NA_sim_perc"),
-       fmt_cell(desc_NA_perc_close_pos, "NA_sim_perc")),
   list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>",
        fmt_cell(h11_PA_love_neg, "PA_sim_act"),
        fmt_cell(h11_PA_love_pos, "PA_sim_act")),
@@ -5265,7 +5283,19 @@ rows <- list(
        fmt_cell(h12_NA_love_pos, "NA_sim_act")),
   list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>",
        fmt_cell(desc_NA_perc_love_neg, "NA_sim_perc"),
-       fmt_cell(desc_NA_perc_love_pos, "NA_sim_perc"))
+       fmt_cell(desc_NA_perc_love_pos, "NA_sim_perc")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>",
+       fmt_cell(h11_PA_close_neg, "PA_sim_act"),
+       fmt_cell(h11_PA_close_pos, "PA_sim_act")),
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>",
+       fmt_cell(desc_PA_perc_close_neg, "PA_sim_perc"),
+       fmt_cell(desc_PA_perc_close_pos, "PA_sim_perc")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>",
+       fmt_cell(h12_NA_close_neg, "NA_sim_act"),
+       fmt_cell(h12_NA_close_pos, "NA_sim_act")),
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>",
+       fmt_cell(desc_NA_perc_close_neg, "NA_sim_perc"),
+       fmt_cell(desc_NA_perc_close_pos, "NA_sim_perc"))
 )
 
 tbl_desc <- do.call(rbind, lapply(rows, function(r) {
@@ -5273,8 +5303,8 @@ tbl_desc <- do.call(rbind, lapply(rows, function(r) {
     Outcome    = r[[1]],
     Affect     = r[[2]],
     Similarity = r[[3]],
-    Negative   = r[[4]],
     Positive   = r[[5]],
+    Negative   = r[[4]],
     check.names = FALSE,
     stringsAsFactors = FALSE
   )
@@ -5294,7 +5324,7 @@ note_html <- paste0(
 tab <- kable(tbl_desc,
   format    = "html",
   col.names = c("Outcome", "Affect", "Similarity",
-                "Negative", "Positive"),
+                "Positive", "Negative"),
   align     = c("l", "l", "l", "c", "c"),
   booktabs  = TRUE,
   escape    = FALSE
@@ -5306,27 +5336,37 @@ tab <- kable(tbl_desc,
     font_size  = 12
   ) %>%
   add_header_above(c(" " = 3,
-                      "Interaction Context" = 2)) %>%
+                      "Interaction Valence" = 2)) %>%
+  row_spec(3, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(5, extra_css = "border-top: 2px solid #bbb !important;") %>%
+  row_spec(7, extra_css = "border-top: 1px solid #aaa !important;") %>%
   collapse_rows(columns = 1:2, valign = "middle")
 
-tab_out <- sub(
-  "</table>",
-  paste0(
-    "<tfoot><tr><td colspan=\"5\" ",
-    "style=\"border-top: 0; padding: 8px 0 0 0; font-size: 11px; ",
-    "line-height: 1.35; text-align: left;\">",
-    note_html,
-    "</td></tr></tfoot></table>"
-  ),
-  as.character(tab),
-  fixed = TRUE
+tab_out <- paste0(
+  '<style>
+    table.table > thead > tr:last-child > th {
+      border-bottom: 2px solid #bbb !important;
+    }
+  </style>',
+  sub(
+    "</table>",
+    paste0(
+      "<tfoot><tr><td colspan=\"5\" ",
+      "style=\"border-top: 0; padding: 8px 0 0 0; font-size: 11px; ",
+      "line-height: 1.35; text-align: left;\">",
+      note_html,
+      "</td></tr></tfoot></table>"
+    ),
+    as.character(tab),
+    fixed = TRUE
+  )
 )
 
 attributes(tab_out) <- attributes(tab)
 tab_out
 ```
 
-## Formal Test: Context Moderation
+## Formal Test: Interaction Valence Moderation
 
 We now test whether the similarity–evaluation association differs between contexts using pooled models with a context dummy. A dummy variable $C_{pdc} = c$ ($c = 0$ negative, $c = 1$ positive) is included in pooled models. Since these models contain two observations per person, both dyad-level and person-level random intercepts are included.
 
@@ -6005,57 +6045,57 @@ H3.3 is not supported: PA similarity effects do not differ between contexts for 
 ## Summary for step 3b
 
 ```{r step3b_formal_table}
-#| tbl-cap: "Summary of Step 3b formal test: Context moderation of similarity–evaluation associations (H3.3–H3.4)"
+#| tbl-cap: "Summary of Step 3b formal test: Interaction valence moderation of similarity–evaluation associations (H3.3–H3.4)"
 
 # --- Build rows ---
 rows <- list(
   list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
        fmt_cell(h33_PA_act_close, "PA_sim_act")),
-  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Context</b>",
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Interaction Valence</b>",
        fmt_cell(h33_PA_act_close, "context")),
-  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Sim × Context</b>",
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity × Interaction Valence</b>",
        fmt_cell(h33_PA_act_close, "PA_sim_act:context")),
   list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
        fmt_cell(h33_PA_perc_close, "PA_sim_perc")),
-  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Context</b>",
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Interaction Valence</b>",
        fmt_cell(h33_PA_perc_close, "context")),
-  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Sim × Context</b>",
+  list("<b>Closeness</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity × Interaction Valence</b>",
        fmt_cell(h33_PA_perc_close, "PA_sim_perc:context")),
   list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
        fmt_cell(h34_NA_act_close, "NA_sim_act")),
-  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Context</b>",
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Interaction Valence</b>",
        fmt_cell(h34_NA_act_close, "context")),
-  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Sim × Context</b>",
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity × Interaction Valence</b>",
        fmt_cell(h34_NA_act_close, "NA_sim_act:context")),
   list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
        fmt_cell(h34_NA_perc_close, "NA_sim_perc")),
-  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Context</b>",
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Interaction Valence</b>",
        fmt_cell(h34_NA_perc_close, "context")),
-  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Sim × Context</b>",
+  list("<b>Closeness</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity × Interaction Valence</b>",
        fmt_cell(h34_NA_perc_close, "NA_sim_perc:context")),
   list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
        fmt_cell(h33_PA_act_love, "PA_sim_act")),
-  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Context</b>",
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Interaction Valence</b>",
        fmt_cell(h33_PA_act_love, "context")),
-  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Sim × Context</b>",
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Actual</b>", "<b>Similarity × Interaction Valence</b>",
        fmt_cell(h33_PA_act_love, "PA_sim_act:context")),
   list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
        fmt_cell(h33_PA_perc_love, "PA_sim_perc")),
-  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Context</b>",
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Interaction Valence</b>",
        fmt_cell(h33_PA_perc_love, "context")),
-  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Sim × Context</b>",
+  list("<b>Love</b>", "<b>PA Similarity</b>", "<b>Perceived</b>", "<b>Similarity × Interaction Valence</b>",
        fmt_cell(h33_PA_perc_love, "PA_sim_perc:context")),
   list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity</b>",
        fmt_cell(h34_NA_act_love, "NA_sim_act")),
-  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Context</b>",
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Interaction Valence</b>",
        fmt_cell(h34_NA_act_love, "context")),
-  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Sim × Context</b>",
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Actual</b>", "<b>Similarity × Interaction Valence</b>",
        fmt_cell(h34_NA_act_love, "NA_sim_act:context")),
   list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity</b>",
        fmt_cell(h34_NA_perc_love, "NA_sim_perc")),
-  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Context</b>",
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Interaction Valence</b>",
        fmt_cell(h34_NA_perc_love, "context")),
-  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Sim × Context</b>",
+  list("<b>Love</b>", "<b>NA Similarity</b>", "<b>Perceived</b>", "<b>Similarity × Interaction Valence</b>",
        fmt_cell(h34_NA_perc_love, "NA_sim_perc:context"))
 )
 
@@ -6095,19 +6135,33 @@ tab <- kable(tbl_3b,
     position   = "left",
     font_size  = 12
   ) %>%
+  row_spec(4, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(7, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(10, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(13, extra_css = "border-top: 2px solid #bbb !important;") %>%
+  row_spec(16, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(19, extra_css = "border-top: 1px solid #aaa !important;") %>%
+  row_spec(22, extra_css = "border-top: 1px solid #aaa !important;") %>%
   collapse_rows(columns = 1:3, valign = "middle")
 
-tab_out <- sub(
-  "</table>",
-  paste0(
-    "<tfoot><tr><td colspan=\"5\" ",
-    "style=\"border-top: 0; padding: 8px 0 0 0; font-size: 11px; ",
-    "line-height: 1.35; text-align: left;\">",
-    note_html,
-    "</td></tr></tfoot></table>"
-  ),
-  as.character(tab),
-  fixed = TRUE
+tab_out <- paste0(
+  '<style>
+    table.table > thead > tr > th {
+      border-bottom: 2px solid #bbb !important;
+    }
+  </style>',
+  sub(
+    "</table>",
+    paste0(
+      "<tfoot><tr><td colspan=\"5\" ",
+      "style=\"border-top: 0; padding: 8px 0 0 0; font-size: 11px; ",
+      "line-height: 1.35; text-align: left;\">",
+      note_html,
+      "</td></tr></tfoot></table>"
+    ),
+    as.character(tab),
+    fixed = TRUE
+  )
 )
 
 attributes(tab_out) <- attributes(tab)
