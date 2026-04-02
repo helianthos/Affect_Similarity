@@ -74,6 +74,8 @@ esm_map <- c(
   perc_resp= perc_resp,
   neg_gen  = neg_gen,
   pos_gen  = pos_gen,
+  neg_part = neg_part,
+  pos_part = pos_part,
   ts_start = ts_start,   # timestamps needed for AR(1) residual structure
   ts_stop  = ts_stop  
 )

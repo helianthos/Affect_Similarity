@@ -158,7 +158,42 @@ esm_data <- esm_data %>%
   ) %>%
   ungroup()
 
-# 9. Create a day_index column, restarting per person ----
+# 9. Create extended event valence columns ----
+
+# 9a. C_expl: pos_part - neg_part, falling back to C (pos_gen - neg_gen) where NA ----
+#     Logic: the ESM beep logic routes respondents to either the general items (24/25,
+#     i.e., pos_gen/neg_gen, when items 9 AND 10 pass) or the partner items (11/12,
+#     i.e., neg_part/pos_part, otherwise). Only one branch yields non-NA values per
+#     row, so replacing NAs in pos_part - neg_part with C pools across branches.
+esm_data <- esm_data %>%
+  mutate(
+    C_expl = ifelse(is.na(pos_part - neg_part), C, pos_part - neg_part)
+  ) %>%
+  group_by(person) %>%
+  mutate(
+    cC_expl = C_expl - mean(C_expl, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# 9b. C_expl_pos / C_expl_neg: binary flags pooling across flowchart branches ----
+#     "Something happened" = item value >= 2 (i.e., "A bit" or "Very much"; 1 = "No").
+#     Priority follows the ESM beep logic: use pos_gen/neg_gen if available (non-NA),
+#     otherwise fall back to pos_part/neg_part.
+esm_data <- esm_data %>%
+  mutate(
+    C_expl_pos = case_when(
+      !is.na(pos_gen)  ~ as.integer(pos_gen  >= 2),
+      !is.na(pos_part) ~ as.integer(pos_part >= 2),
+      TRUE             ~ NA_integer_
+    ),
+    C_expl_neg = case_when(
+      !is.na(neg_gen)  ~ as.integer(neg_gen  >= 2),
+      !is.na(neg_part) ~ as.integer(neg_part >= 2),
+      TRUE             ~ NA_integer_
+    )
+  )
+
+# 10. Create a day_index column, restarting per person ----
 esm_data <- esm_data %>%
   mutate(
     date_only = as.Date(ts_start) # extract date part 
@@ -171,7 +206,7 @@ esm_data <- esm_data %>%
   ungroup() %>%
   select(-date_only)
 
-# 10. Timestamp to time in minutes for CAR(1) residual structure in multilevel models ----
+# 11. Timestamp to time in minutes for CAR(1) residual structure in multilevel models ----
 esm_data <- esm_data %>%
   mutate(
     ts_mid   = ts_start + (ts_stop - ts_start)/2
@@ -184,7 +219,7 @@ esm_data <- esm_data %>%
   ungroup() %>%
   select(-ts_mid, -ts_start, -ts_stop)
 
-# 11. Save ----
+# 12. Save ----
 saveRDS(esm_data, file.path(dir_data_ana, "esm_ana.rds"))
 cat(sprintf("ESM data extended with centralized affect measures and similarity measures saved to %s\n", 
             file.path(dir_data_red, "esm_ana.rds")))
