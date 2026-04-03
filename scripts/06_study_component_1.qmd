@@ -4724,6 +4724,8 @@ kable(tbl_e1_h33a,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
+The interaction between actual PA similarity and extended event valence was significant ($\beta_4 = -0.049$, 95% CI $[-0.060, -0.038]$, $p < .001$), indicating that the positive within-person association between actual PA similarity and love was weaker in more positive-than-typical event contexts. Simple slopes were significant at all three probing values: at low event valence ($cC^{expl} = -0.71$) the slope was $0.112$ ($p < .001$), at the average ($cC^{expl} = 0$) it was $0.077$ ($p < .001$), and at high event valence ($cC^{expl} = 0.71$) it was $0.043$ ($p < .001$). T**he pattern mirrors the preregistered H3.3 expectation (mismatch effect): actual PA similarity will be most beneficial in negative (or less positive) moments.**
+
 ### Perceived PA similarity
 
 $$
@@ -4785,6 +4787,8 @@ kable(tbl_e1_h33p,
   footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
+
+For perceived PA similarity, the interaction with extended event valence was also significant ($\beta_4 = -0.037$, 95% CI $[-0.047, -0.026]$, $p < .001$). Simple slopes were positive and significant at all three levels of $cC^{expl}$: $0.148$ at low ($p < .001$), $0.122$ at average ($p < .001$), and $0.096$ at high event valence ($p < .001$). All slopes remain clearly positive, indicating that perceived PA similarity robustly predicts love regardless of event valence. The moderation suggests that positive event contexts slightly reduce the boost that perceived PA similarity gives to love, though perceived similarity retains predictive relevance throughout. **This mirrors the hypotheses (H3.3) that perceived PA similarity will be most beneficial in negative (or less positive) moments.**
 
 ### Impact on PA mediation
 
@@ -4873,7 +4877,7 @@ kable(tbl_e1_out,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
-The moderated mediator model tests whether $cC^{expl}_{mpd}$ moderates the a-path:
+The moderated outcome model tests whether $cC^{expl}_{mpd}$ moderates the a-path:
 
 $$
 S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
@@ -4934,6 +4938,123 @@ kable(tbl_e1_med_pa,
                 full_width = FALSE, position = "left") %>%
   footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+In the moderated outcome model, the direct c'-path moderation ($\phi_7 = -0.038$, 95% CI $[-0.053, -0.023]$, $p < .001$) was significant, while the b-path moderation was not ($\phi_6 = -0.009$, 95% CI $[-0.024, 0.006]$, $p = .254$). Simple slopes for actual PA similarity (c'-path) were positive at low event valence ($0.044$, $p < .001$) and average ($0.017$, $p = .002$) but non-significant at high valence ($-0.010$, $p = .210$), indicating that the direct effect of actual PA similarity on love diminishes and disappears as the event context becomes more positive. Perceived PA similarity slopes (b-path) were significant and nearly constant across valence levels ($0.121$, $0.114$, $0.108$; all $p < .001$), confirming no b-path moderation.
+
+The a-path moderation was also significant ($\theta_4 = -0.046$, 95% CI $[-0.061, -0.030]$, $p < .001$): actual PA similarity translated more strongly into perceived PA similarity when the event context was negative. Simple slopes for the a-path were $0.565$ at low, $0.533$ at average, and $0.501$ at high event valence (all $p < .001$). The pattern with the extended index is thus consistent with the preregistered H3.3 result, with the additional finding that the direct c'-path is also moderated here: positive event contexts attenuate not just the perceptual translation of actual similarity but also its residual direct effect on love.
+
+```{r e1_h33_mediation_diagram}
+#| output-fold: true
+#| output-summary: "PA Mediation moderated by cC_expl"
+
+nodes_mod <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual PA\nSimilarity", "Perceived PA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+layout_mod <- get_layout(
+  "X", NA,  "M",
+  NA,  NA,  "Y",
+  rows = 2
+)
+
+edges_mod <- data.frame(
+  from        = c("X",  "M",  "X"),
+  to          = c("M",  "Y",  "Y"),
+  label       = c(
+    "a: 0.533***",
+    "b: 0.114***",
+    "c\u2019: 0.017**"
+  ),
+  linetype    = c(1, 1, 1),
+  colour      = c("black", "black", "black"),
+  curvature   = c(NA, NA, NA),
+  label_hjust = rep("center", 3)
+)
+
+p_mod <- prepare_graph(
+  nodes       = nodes_mod,
+  edges       = edges_mod,
+  layout      = layout_mod,
+  spacing_x   = 2,
+  spacing_y   = 3,
+  rect_width  = 0.8,
+  rect_height = 0.5
+)
+
+edges(p_mod)$linetype     <- edges_mod$linetype
+edges(p_mod)$colour       <- edges_mod$colour
+edges(p_mod)$label_colour <- edges_mod$colour
+edges(p_mod)$label_hjust  <- "center"
+
+nd <- nodes(p_mod)
+get_node <- function(name) nd[nd$name == name, c("x", "y")]
+x_X <- get_node("X")
+x_M <- get_node("M")
+x_Y <- get_node("Y")
+
+# Midpoint of a-path (X -> M)
+mid_a_x <- (x_X$x + x_M$x) / 2
+mid_a_y <- (x_X$y + x_M$y) / 2
+
+# Midpoint of c'-path (X -> Y)
+mid_c_x <- (x_X$x + x_Y$x) / 2
+mid_c_y <- (x_X$y + x_Y$y) / 2
+
+arrow_length <- 1.2
+
+# Moderator arrow positions
+w_a_x <- mid_a_x
+w_a_y <- mid_a_y + arrow_length
+
+w_c_x <- mid_c_x
+w_c_y <- mid_c_y - arrow_length
+
+plot(p_mod) +
+  # Moderator arrow to a-path
+  geom_segment(
+    data = data.frame(x = w_a_x, y = w_a_y - 0.05,
+                      xend = mid_a_x, yend = mid_a_y + 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator arrow to c'-path
+  geom_segment(
+    data = data.frame(x = w_c_x, y = w_c_y + 0.05,
+                      xend = mid_c_x, yend = mid_c_y - 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Label above a-path arrow
+  annotate("text",
+    x = w_a_x, y = w_a_y + 0.2,
+    label = "Event Valence\n(alternative 1)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Label below c'-path arrow
+  annotate("text",
+    x = w_c_x, y = w_c_y - 0.2,
+    label = "Event Valence\n(alternative 1)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Interaction coefficient on a-path
+  annotate("text",
+    x = w_a_x + 0.15, y = (w_a_y + mid_a_y) / 2,
+    label = "\u03B84 = -0.046***",
+    hjust = 0, colour = "black"
+  ) +
+  # Interaction coefficient on c'-path
+  annotate("text",
+    x = w_c_x - 0.65, y = (w_c_y + mid_c_y) / 2,
+    label = "\u03C67 = -0.038***",
+    hjust = 0, colour = "black"
+  ) +
+  ggtitle("Within-person mediation moderated by extended event valence \u2014 PA Similarity") +
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84) and c\u2019-path (\u03C67). b-path moderation non-significant.")
 ```
 
 ## NA Similarity × cC_expl
@@ -5000,6 +5121,8 @@ kable(tbl_e1_h34a,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
+With the extended valence index, the interaction between actual NA similarity and event valence was significant ($\beta_4 = 0.055$, 95% CI $[0.039, 0.071]$, $p < .001$), in the direction opposite to the preregistered H3.4 hypothesis (which was: Actual NA similarity will be most detrimental in positive (or less negative) moments). The negative association between actual NA similarity and love was strongest in negative event contexts and attenuated as events became more positive: simple slopes were $-0.132$ at low valence ($p < .001$), $-0.093$ at average ($p < .001$), and $-0.054$ at high valence ($p < .001$). All three slopes remained significantly negative. This pattern is the opposite of what the mismatch hypothesis predicted but is consistent with an amplification account in which negative events intensify the affective load of shared negativity.
+
 ### Perceived NA similarity
 
 $$
@@ -5061,6 +5184,8 @@ kable(tbl_e1_h34p,
   footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
+
+The same pattern emerged for perceived NA similarity: the interaction was significant ($\beta_4 = 0.053$, 95% CI $[0.038, 0.068]$, $p < .001$), with the negative association between perceived NA similarity and love strongest at low event valence ($-0.136$, $p < .001$) and progressively attenuated at average ($-0.098$, $p < .001$) and high valence ($-0.061$, $p < .001$). All slopes remained significantly negative, and the direction of moderation again contradicts the mismatch hypothesis: perceiving oneself as similarly negative to one's partner is most detrimental to love precisely in already-negative event contexts, not in positive ones.
 
 ### Impact on NA mediation
 
@@ -5193,7 +5318,144 @@ kable(tbl_e1_med_na,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
-------------------------------------------------------------------------
+In the moderated outcome model, both the c'-path moderation ($\phi_7 = 0.039$, 95% CI $[0.019, 0.058]$, $p < .001$) and the b-path moderation ($\phi_6 = 0.021$, 95% CI $[0.002, 0.040]$, $p = .030$) were significant. The c'-path (direct effect of actual NA similarity, controlling perceived) weakened as event valence increased: slopes of $-0.085$, $-0.058$, and $-0.031$ (all $p \leq .015$) at low, average, and high valence. The b-path (effect of perceived NA similarity on love, controlling actual) similarly attenuated: $-0.096$, $-0.081$, $-0.066$ (all $p < .001$). The a-path moderation was also significant ($\theta_4 = -0.044$, 95% CI $[-0.060, -0.028]$, $p < .001$): the association from actual to perceived NA similarity was stronger in negative contexts (slopes: $0.469$, $0.438$, $0.407$; all $p < .001$). Together, the pattern indicates that both the perceptual and the direct pathways from NA similarity to love are amplified in negative event contexts, consistent with an affective congruence account in which negative environments heighten the salience of shared negativity.
+
+```{r e1_h34_mediation_diagram}
+#| output-fold: true
+#| output-summary: "NA Mediation moderated by cC_expl"
+
+nodes_mod <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual NA\nSimilarity", "Perceived NA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+layout_mod <- get_layout(
+  "X", NA,  "M",
+  NA,  NA,  "Y",
+  rows = 2
+)
+
+edges_mod <- data.frame(
+  from        = c("X",  "M",  "X"),
+  to          = c("M",  "Y",  "Y"),
+  label       = c(
+    "a: 0.438***",
+    "b: -0.081***",
+    "c\u2019: -0.058***"
+  ),
+  linetype    = c(1, 1, 1),
+  colour      = c("black", "black", "black"),
+  curvature   = c(NA, NA, NA),
+  label_hjust = rep("center", 3)
+)
+
+p_mod <- prepare_graph(
+  nodes       = nodes_mod,
+  edges       = edges_mod,
+  layout      = layout_mod,
+  spacing_x   = 2,
+  spacing_y   = 3,
+  rect_width  = 0.8,
+  rect_height = 0.5
+)
+
+edges(p_mod)$linetype     <- edges_mod$linetype
+edges(p_mod)$colour       <- edges_mod$colour
+edges(p_mod)$label_colour <- edges_mod$colour
+edges(p_mod)$label_hjust  <- "center"
+
+nd <- nodes(p_mod)
+get_node <- function(name) nd[nd$name == name, c("x", "y")]
+x_X <- get_node("X")
+x_M <- get_node("M")
+x_Y <- get_node("Y")
+
+# Midpoints
+mid_a_x <- (x_X$x + x_M$x) / 2
+mid_a_y <- (x_X$y + x_M$y) / 2
+
+mid_b_x <- (x_M$x + x_Y$x) / 2
+mid_b_y <- (x_M$y + x_Y$y) / 2
+
+mid_c_x <- (x_X$x + x_Y$x) / 2
+mid_c_y <- (x_X$y + x_Y$y) / 2
+
+arrow_length <- 1.2
+
+w_a_x <- mid_a_x
+w_a_y <- mid_a_y + arrow_length
+
+w_b_x <- mid_b_x + arrow_length
+w_b_y <- mid_b_y
+
+w_c_x <- mid_c_x
+w_c_y <- mid_c_y - arrow_length
+
+plot(p_mod) +
+  # Moderator arrow to a-path (significant)
+  geom_segment(
+    data = data.frame(x = w_a_x, y = w_a_y - 0.05,
+                      xend = mid_a_x, yend = mid_a_y + 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator arrow to b-path (significant)
+  geom_segment(
+    data = data.frame(x = w_b_x - 0.05, y = w_b_y,
+                      xend = mid_b_x + 0.35, yend = mid_b_y),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator arrow to c'-path (significant)
+  geom_segment(
+    data = data.frame(x = w_c_x, y = w_c_y + 0.05,
+                      xend = mid_c_x, yend = mid_c_y - 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator label — a-path
+  annotate("text",
+    x = w_a_x, y = w_a_y + 0.2,
+    label = "Event Valence\n(alternative 1)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Moderator label — b-path
+  annotate("text",
+    x = w_b_x - 0.50, y = w_b_y + 0.3,
+    label = "Event Valence\n(alternative 1)",
+    hjust = 0, fontface = "plain"
+  ) +
+  # Moderator label — c'-path
+  annotate("text",
+    x = w_c_x, y = w_c_y - 0.2,
+    label = "Event Valence\n(alternative 1)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Interaction coefficient — a-path (right of arrow)
+  annotate("text",
+    x = w_a_x + 0.15, y = (w_a_y + mid_a_y) / 2,
+    label = "\u03B84 = -0.044***",
+    hjust = 0, colour = "black"
+  ) +
+  # Interaction coefficient — b-path (below arrow)
+  annotate("text",
+    x = (w_b_x + mid_b_x) / 2, y = w_b_y - 0.2,
+    label = "\u03C66 = +0.021*",
+    hjust = 0.5, colour = "black"
+  ) +
+  # Interaction coefficient — c'-path (left of arrow)
+  annotate("text",
+    x = w_c_x - 0.65, y = (w_c_y + mid_c_y) / 2,
+    label = "\u03C67 = +0.039***",
+    hjust = 0, colour = "black"
+  ) +
+  ggtitle("Within-person mediation moderated by extended event valence \u2014 NA Similarity") +
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84), b-path (\u03C66), and c\u2019-path (\u03C67).")
+```
 
 # Exploratory: 3b alternative 2 — Negative Event Dummy (C_expl_neg)
 
@@ -5276,6 +5538,8 @@ kable(tbl_e2_h33a,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
+The interaction between actual PA similarity and negative event occurrence was significant ($\beta_4 = 0.128$, 95% CI $[0.101, 0.155]$, $p < .001$), indicating that the positive within-person association between actual PA similarity and love was substantially stronger on moments when a negative event had occurred. Simple slopes were significant in both conditions: $0.081$ when no negative event occurred ($p < .001$) and $0.209$ when a negative event occurred ($p < .001$). This pattern is again counter to the mismatch hypothesis for PA: shared positive affect appears especially rewarding — not less — in the context of a negative event, perhaps because it represents a form of co-regulation or emotional rescue during difficult moments.
+
 ### Perceived PA similarity
 
 $$
@@ -5336,6 +5600,8 @@ kable(tbl_e2_h33p,
   footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
+
+Perceived PA similarity showed the same pattern: the interaction was significant ($\beta_4 = 0.118$, 95% CI $[0.092, 0.144]$, $p < .001$), with simple slopes of $0.131$ ($p < .001$) on no-negative-event moments and $0.249$ ($p < .001$) on negative-event moments. Perceiving oneself as similarly positive to one's partner is thus doubly rewarding when a negative event has occurred, consistent with the notion that perceived co-positivity is interpreted as partner responsiveness or solidarity in challenging moments.
 
 ### Impact on PA mediation
 
@@ -5481,6 +5747,146 @@ kable(tbl_e2_med_pa,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
+Both c'- and b-path moderations were significant in the outcome model. The c'-path (actual PA similarity → love, controlling perceived) was $0.017$ ($p = .005$) on no-negative-event moments and $0.075$ ($p < .001$) on negative-event moments ($\phi_7 = 0.058$, 95% CI $[0.023, 0.093]$, $p = .001$). The b-path (perceived PA similarity → love, controlling actual) was $0.123$ ($p < .001$) on no-negative-event moments and $0.207$ ($p < .001$) on negative-event moments ($\phi_6 = 0.084$, 95% CI $[0.048, 0.121]$, $p < .001$). The a-path moderation was also significant ($\theta_4 = 0.118$, 95% CI $[0.081, 0.156]$, $p < .001$): actual PA similarity translated more strongly into perceived PA similarity on negative-event moments (slope: $0.655$) than on no-negative-event moments (slope: $0.536$). In sum, negative events amplify all three paths in the PA mediation chain: actual similarity is more easily perceived as similarity, perceived similarity predicts love more strongly, and actual similarity retains a larger direct effect on love.
+
+```{r e2_h33_mediation_diagram}
+#| output-fold: true
+#| output-summary: "PA Mediation moderated by C_expl_neg"
+
+nodes_mod <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual PA\nSimilarity", "Perceived PA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+layout_mod <- get_layout(
+  "X", NA,  "M",
+  NA,  NA,  "Y",
+  rows = 2
+)
+
+edges_mod <- data.frame(
+  from        = c("X",  "M",  "X"),
+  to          = c("M",  "Y",  "Y"),
+  label       = c(
+    "a: 0.536***",
+    "b: 0.123***",
+    "c\u2019: 0.017**"
+  ),
+  linetype    = c(1, 1, 1),
+  colour      = c("black", "black", "black"),
+  curvature   = c(NA, NA, NA),
+  label_hjust = rep("center", 3)
+)
+
+p_mod <- prepare_graph(
+  nodes       = nodes_mod,
+  edges       = edges_mod,
+  layout      = layout_mod,
+  spacing_x   = 2,
+  spacing_y   = 3,
+  rect_width  = 0.8,
+  rect_height = 0.5
+)
+
+edges(p_mod)$linetype     <- edges_mod$linetype
+edges(p_mod)$colour       <- edges_mod$colour
+edges(p_mod)$label_colour <- edges_mod$colour
+edges(p_mod)$label_hjust  <- "center"
+
+nd <- nodes(p_mod)
+get_node <- function(name) nd[nd$name == name, c("x", "y")]
+x_X <- get_node("X")
+x_M <- get_node("M")
+x_Y <- get_node("Y")
+
+# Midpoints
+mid_a_x <- (x_X$x + x_M$x) / 2
+mid_a_y <- (x_X$y + x_M$y) / 2
+
+mid_b_x <- (x_M$x + x_Y$x) / 2
+mid_b_y <- (x_M$y + x_Y$y) / 2
+
+mid_c_x <- (x_X$x + x_Y$x) / 2
+mid_c_y <- (x_X$y + x_Y$y) / 2
+
+arrow_length <- 1.2
+
+w_a_x <- mid_a_x
+w_a_y <- mid_a_y + arrow_length
+
+w_b_x <- mid_b_x + arrow_length
+w_b_y <- mid_b_y
+
+w_c_x <- mid_c_x
+w_c_y <- mid_c_y - arrow_length
+
+plot(p_mod) +
+  # Moderator arrow to a-path (significant)
+  geom_segment(
+    data = data.frame(x = w_a_x, y = w_a_y - 0.05,
+                      xend = mid_a_x, yend = mid_a_y + 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator arrow to b-path (significant)
+  geom_segment(
+    data = data.frame(x = w_b_x - 0.05, y = w_b_y,
+                      xend = mid_b_x + 0.35, yend = mid_b_y),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator arrow to c'-path (significant)
+  geom_segment(
+    data = data.frame(x = w_c_x, y = w_c_y + 0.05,
+                      xend = mid_c_x, yend = mid_c_y - 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator label — a-path
+  annotate("text",
+    x = w_a_x, y = w_a_y + 0.2,
+    label = "Negative Event\n(alternative 2)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Moderator label — b-path
+  annotate("text",
+    x = w_b_x - 0.50, y = w_b_y + 0.3,
+    label = "Negative Event\n(alternative 2)",
+    hjust = 0, fontface = "plain"
+  ) +
+  # Moderator label — c'-path
+  annotate("text",
+    x = w_c_x, y = w_c_y - 0.2,
+    label = "Negative Event\n(alternative 2)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Interaction coefficient — a-path (right of arrow)
+  annotate("text",
+    x = w_a_x + 0.15, y = (w_a_y + mid_a_y) / 2,
+    label = "\u03B84 = +0.118***",
+    hjust = 0, colour = "black"
+  ) +
+  # Interaction coefficient — b-path (below arrow)
+  annotate("text",
+    x = (w_b_x + mid_b_x) / 2, y = w_b_y - 0.2,
+    label = "\u03C66 = +0.084***",
+    hjust = 0.5, colour = "black"
+  ) +
+  # Interaction coefficient — c'-path (left of arrow)
+  annotate("text",
+    x = w_c_x - 0.65, y = (w_c_y + mid_c_y) / 2,
+    label = "\u03C67 = +0.058***",
+    hjust = 0, colour = "black"
+  ) +
+  ggtitle("Within-person mediation moderated by negative event occurrence \u2014 PA Similarity") +
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84), b-path (\u03C66), and c\u2019-path (\u03C67).")
+
+```
+
 ## NA Similarity × C_expl_neg
 
 ### Actual NA similarity
@@ -5544,6 +5950,8 @@ kable(tbl_e2_h34a,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
+The interaction between actual NA similarity and negative event occurrence was significant ($\beta_4 = -0.127$, 95% CI $[-0.160, -0.093]$, $p < .001$). The negative association between actual NA similarity and love was significantly stronger when a negative event had occurred ($-0.215$, $p < .001$) than when it had not ($-0.088$, $p < .001$). Consistent with the continuous $cC^{expl}$ results above, negative events amplify the detrimental effect of shared negativity on love rather than attenuating it, again contradicting the mismatch hypothesis.
+
 ### Perceived NA similarity
 
 $$
@@ -5604,6 +6012,8 @@ kable(tbl_e2_h34p,
   footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
+
+The interaction for perceived NA similarity was also significant ($\beta_4 = -0.147$, 95% CI $[-0.178, -0.115]$, $p < .001$), with a stronger negative simple slope on negative-event moments ($-0.238$, $p < .001$) than on no-negative-event moments ($-0.092$, $p < .001$). The pattern is symmetric with actual NA similarity, suggesting that both actual and perceived shared negativity become substantially more aversive for love in the presence of a negative event.
 
 ### Impact on NA mediation
 
@@ -5735,6 +6145,146 @@ kable(tbl_e2_med_na,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
+In the moderated outcome model, both the c'-path and b-path moderations were significant. The c'-path (actual NA similarity → love, controlling perceived) was $-0.057$ ($p < .001$) on no-negative-event moments and $-0.124$ ($p < .001$) on negative-event moments ($\phi_7 = -0.067$, 95% CI $[-0.106, -0.028]$, $p < .001$). The b-path (perceived NA similarity → love, controlling actual) was $-0.076$ ($p < .001$) and $-0.172$ ($p < .001$) respectively ($\phi_6 = -0.096$, 95% CI $[-0.135, -0.057]$, $p < .001$). The a-path moderation was significant ($\theta_4 = 0.105$, 95% CI $[0.072, 0.139]$, $p < .001$): actual NA similarity translated more strongly into perceived NA similarity on negative-event moments (slope: $0.527$) than on no-negative-event moments (slope: $0.422$). The convergent picture across all paths is that negative events amplify the entire NA mediation chain: they enhance the perceptual accuracy of shared negativity, strengthen its affective impact on love through perceived similarity, and increase the residual direct effect of actual NA similarity.
+
+```{r e2_h34_mediation_diagram}
+#| output-fold: true
+#| output-summary: "NA Mediation moderated by C_expl_neg"
+
+nodes_mod <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual NA\nSimilarity", "Perceived NA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+layout_mod <- get_layout(
+  "X", NA,  "M",
+  NA,  NA,  "Y",
+  rows = 2
+)
+
+edges_mod <- data.frame(
+  from        = c("X",  "M",  "X"),
+  to          = c("M",  "Y",  "Y"),
+  label       = c(
+    "a: 0.421***",
+    "b: -0.076***",
+    "c\u2019: -0.057***"
+  ),
+  linetype    = c(1, 1, 1),
+  colour      = c("black", "black", "black"),
+  curvature   = c(NA, NA, NA),
+  label_hjust = rep("center", 3)
+)
+
+p_mod <- prepare_graph(
+  nodes       = nodes_mod,
+  edges       = edges_mod,
+  layout      = layout_mod,
+  spacing_x   = 2,
+  spacing_y   = 3,
+  rect_width  = 0.8,
+  rect_height = 0.5
+)
+
+edges(p_mod)$linetype     <- edges_mod$linetype
+edges(p_mod)$colour       <- edges_mod$colour
+edges(p_mod)$label_colour <- edges_mod$colour
+edges(p_mod)$label_hjust  <- "center"
+
+nd <- nodes(p_mod)
+get_node <- function(name) nd[nd$name == name, c("x", "y")]
+x_X <- get_node("X")
+x_M <- get_node("M")
+x_Y <- get_node("Y")
+
+# Midpoints
+mid_a_x <- (x_X$x + x_M$x) / 2
+mid_a_y <- (x_X$y + x_M$y) / 2
+
+mid_b_x <- (x_M$x + x_Y$x) / 2
+mid_b_y <- (x_M$y + x_Y$y) / 2
+
+mid_c_x <- (x_X$x + x_Y$x) / 2
+mid_c_y <- (x_X$y + x_Y$y) / 2
+
+arrow_length <- 1.2
+
+w_a_x <- mid_a_x
+w_a_y <- mid_a_y + arrow_length
+
+w_b_x <- mid_b_x + arrow_length
+w_b_y <- mid_b_y
+
+w_c_x <- mid_c_x
+w_c_y <- mid_c_y - arrow_length
+
+plot(p_mod) +
+  # Moderator arrow to a-path (significant)
+  geom_segment(
+    data = data.frame(x = w_a_x, y = w_a_y - 0.05,
+                      xend = mid_a_x, yend = mid_a_y + 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator arrow to b-path (significant)
+  geom_segment(
+    data = data.frame(x = w_b_x - 0.05, y = w_b_y,
+                      xend = mid_b_x + 0.35, yend = mid_b_y),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator arrow to c'-path (significant)
+  geom_segment(
+    data = data.frame(x = w_c_x, y = w_c_y + 0.05,
+                      xend = mid_c_x, yend = mid_c_y - 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator label — a-path
+  annotate("text",
+    x = w_a_x, y = w_a_y + 0.2,
+    label = "Negative Event\n(alternative 2)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Moderator label — b-path
+  annotate("text",
+    x = w_b_x - 0.50, y = w_b_y + 0.3,
+    label = "Negative Event\n(alternative 2)",
+    hjust = 0, fontface = "plain"
+  ) +
+  # Moderator label — c'-path
+  annotate("text",
+    x = w_c_x, y = w_c_y - 0.2,
+    label = "Negative Event\n(alternative 2)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Interaction coefficient — a-path (right of arrow)
+  annotate("text",
+    x = w_a_x + 0.15, y = (w_a_y + mid_a_y) / 2,
+    label = "\u03B84 = +0.105***",
+    hjust = 0, colour = "black"
+  ) +
+  # Interaction coefficient — b-path (below arrow)
+  annotate("text",
+    x = (w_b_x + mid_b_x) / 2, y = w_b_y - 0.2,
+    label = "\u03C66 = -0.096***",
+    hjust = 0.5, colour = "black"
+  ) +
+  # Interaction coefficient — c'-path (left of arrow)
+  annotate("text",
+    x = w_c_x - 0.65, y = (w_c_y + mid_c_y) / 2,
+    label = "\u03C67 = -0.067***",
+    hjust = 0, colour = "black"
+  ) +
+  ggtitle("Within-person mediation moderated by negative event occurrence \u2014 NA Similarity") +
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84), b-path (\u03C66), and c\u2019-path (\u03C67).")
+
+```
+
 # Exploratory: 3b alternative 3 — Positive Event Dummy (C_expl_pos)
 
 This section mirrors Alternative 2, but uses a binary indicator of whether a *positive* event occurred. The variable $D^{pos}_{mpd}$ is coded as:
@@ -5816,6 +6366,8 @@ kable(tbl_e3_h33a,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
+The interaction between actual PA similarity and positive event occurrence was significant ($\beta_4 = -0.036$, 95% CI $[-0.055, -0.018]$, $p < .001$), indicating that the positive within-person association between actual PA similarity and love was weaker on moments when something positive had occurred. Simple slopes were significant in both conditions: $0.119$ when no positive event occurred ($p < .001$) and $0.083$ when a positive event occurred ($p < .001$). Although the direction of moderation aligns with the mismatch hypothesis for PA — shared positive affect matters less in already-positive contexts — the effect is modest and both slopes remain clearly positive. Notably, the direction here is the reverse of what was observed for the negative event dummy (Alternative 2), where actual PA similarity was *more* predictive in negative contexts: taken together, these two results are consistent with a ceiling account in which the contribution of actual PA similarity to love is partially redundant when a positive event is already present.
+
 ### Perceived PA similarity
 
 $$
@@ -5877,6 +6429,8 @@ kable(tbl_e3_h33p,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
+For perceived PA similarity, the interaction with positive event occurrence was non-significant ($\beta_4 = -0.004$, 95% CI $[-0.022, 0.014]$, $p = .677$). Simple slopes were $0.152$ ($p < .001$) and $0.148$ ($p < .001$) in the absence and presence of a positive event, respectively — virtually identical. Whether or not a positive event has occurred does not moderate the association between perceiving shared positivity with one's partner and feeling love in that moment.
+
 ### Impact on PA mediation
 
 $$
@@ -5927,25 +6481,11 @@ e3_slopes_out_perc <- emtrends(e3_h33_outcome_mod,
 e3_slopes_out_act_df  <- as.data.frame(summary(e3_slopes_out_act,  infer = TRUE))
 e3_slopes_out_perc_df <- as.data.frame(summary(e3_slopes_out_perc, infer = TRUE))
 
-make_rows_pos <- function(df, trend_col, predictor_label) {
-  data.frame(
-    `Predictor`      = predictor_label,
-    `Positive event` = c("No (0)", "Yes (1)"),
-    `Simple slope`   = sprintf("%.4f", df[[trend_col]]),
-    `SE`             = sprintf("%.4f", df$SE),
-    `95% CI`         = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
-    `t`              = sprintf("%.3f", df$t.ratio),
-    `p`              = ifelse(df$p.value < .001, "< .001",
-                              sprintf("%.3f", df$p.value)),
-    check.names = FALSE
-  )
-}
-
 tbl_e3_out <- rbind(
-  make_rows_pos(e3_slopes_out_act_df,  "PA_similarity_act_w.trend",
-                "Actual PA similarity"),
-  make_rows_pos(e3_slopes_out_perc_df, "PA_similarity_perc_w.trend",
-                "Perceived PA similarity")
+  make_rows_dummy(e3_slopes_out_act_df,  "PA_similarity_act_w.trend",
+                  "Actual PA similarity"),
+  make_rows_dummy(e3_slopes_out_perc_df, "PA_similarity_perc_w.trend",
+                  "Perceived PA similarity")
 )
 
 kable(tbl_e3_out,
@@ -6021,7 +6561,118 @@ kable(tbl_e3_med_pa,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
-------------------------------------------------------------------------
+In the moderated outcome model, the c'-path moderation was significant ($\phi_7 = -0.043$, 95% CI $[-0.065, -0.021]$, $p < .001$): the direct effect of actual PA similarity on love (controlling perceived) was $0.049$ ($p < .001$) on no-positive-event moments but dropped to a non-significant $0.006$ ($p = .480$) on positive-event moments. The b-path moderation was non-significant ($\phi_6 = 0.017$, 95% CI $[-0.007, 0.041]$, $p = .160$): the perceived PA similarity → love association was $0.128$ and $0.145$ (both $p < .001$) in the respective conditions. The a-path was significantly moderated ($\theta_4 = -0.027$, 95% CI $[-0.052, -0.002]$, $p = .033$): actual PA similarity translated more strongly into perceived similarity on no-positive-event moments ($0.568$, $p < .001$) than on positive-event moments ($0.541$, $p < .001$), though both slopes were very large and the moderation is small in absolute terms. The key finding is that the direct c'-path of actual PA similarity is fully absorbed by the occurrence of a positive event, while the perceptual b-path is unaffected.
+
+```{r e3_h33_mediation_diagram}
+#| output-fold: true
+#| output-summary: "PA Mediation moderated by C_expl_pos"
+
+nodes_mod <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual PA\nSimilarity", "Perceived PA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+layout_mod <- get_layout(
+  "X", NA,  "M",
+  NA,  NA,  "Y",
+  rows = 2
+)
+
+edges_mod <- data.frame(
+  from        = c("X",  "M",  "X"),
+  to          = c("M",  "Y",  "Y"),
+  label       = c(
+    "a: 0.568***",
+    "b: 0.128***",
+    "c\u2019: 0.049***"
+  ),
+  linetype    = c(1, 1, 1),
+  colour      = c("black", "black", "black"),
+  curvature   = c(NA, NA, NA),
+  label_hjust = rep("center", 3)
+)
+
+p_mod <- prepare_graph(
+  nodes       = nodes_mod,
+  edges       = edges_mod,
+  layout      = layout_mod,
+  spacing_x   = 2,
+  spacing_y   = 3,
+  rect_width  = 0.8,
+  rect_height = 0.5
+)
+
+edges(p_mod)$linetype     <- edges_mod$linetype
+edges(p_mod)$colour       <- edges_mod$colour
+edges(p_mod)$label_colour <- edges_mod$colour
+edges(p_mod)$label_hjust  <- "center"
+
+nd <- nodes(p_mod)
+get_node <- function(name) nd[nd$name == name, c("x", "y")]
+x_X <- get_node("X")
+x_M <- get_node("M")
+x_Y <- get_node("Y")
+
+# Midpoints
+mid_a_x <- (x_X$x + x_M$x) / 2
+mid_a_y <- (x_X$y + x_M$y) / 2
+
+mid_c_x <- (x_X$x + x_Y$x) / 2
+mid_c_y <- (x_X$y + x_Y$y) / 2
+
+arrow_length <- 1.2
+
+w_a_x <- mid_a_x
+w_a_y <- mid_a_y + arrow_length
+
+w_c_x <- mid_c_x
+w_c_y <- mid_c_y - arrow_length
+
+plot(p_mod) +
+  # Moderator arrow to a-path (significant)
+  geom_segment(
+    data = data.frame(x = w_a_x, y = w_a_y - 0.05,
+                      xend = mid_a_x, yend = mid_a_y + 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator arrow to c'-path (significant)
+  geom_segment(
+    data = data.frame(x = w_c_x, y = w_c_y + 0.05,
+                      xend = mid_c_x, yend = mid_c_y - 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator label — a-path
+  annotate("text",
+    x = w_a_x, y = w_a_y + 0.2,
+    label = "Positive Event\n(alternative 3)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Moderator label — c'-path
+  annotate("text",
+    x = w_c_x, y = w_c_y - 0.2,
+    label = "Positive Event\n(alternative 3)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Interaction coefficient — a-path (right of arrow)
+  annotate("text",
+    x = w_a_x + 0.15, y = (w_a_y + mid_a_y) / 2,
+    label = "\u03B84 = -0.027*",
+    hjust = 0, colour = "black"
+  ) +
+  # Interaction coefficient — c'-path (left of arrow)
+  annotate("text",
+    x = w_c_x - 0.65, y = (w_c_y + mid_c_y) / 2,
+    label = "\u03C67 = -0.043***",
+    hjust = 0, colour = "black"
+  ) +
+  ggtitle("Within-person mediation moderated by positive event occurrence \u2014 PA Similarity") +
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84) and c\u2019-path (\u03C67). b-path moderation non-significant.")
+```
 
 ## NA Similarity × C_expl_pos
 
@@ -6086,6 +6737,8 @@ kable(tbl_e3_h34a,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
+The interaction between actual NA similarity and positive event occurrence was significant ($\beta_4 = 0.039$, 95% CI $[0.009, 0.070]$, $p = .011$), indicating that the negative association between actual NA similarity and love was attenuated when a positive event occurred. Simple slopes were significantly negative in both conditions: $-0.159$ ($p < .001$) on no-positive-event moments and $-0.120$ ($p < .001$) on positive-event moments. This directional pattern is consistent with the mismatch hypothesis: shared negativity is less detrimental to love when a positive event is present, perhaps because the positive event provides an alternative affective backdrop that buffers the impact of shared negative affect.
+
 ### Perceived NA similarity
 
 $$
@@ -6147,6 +6800,8 @@ kable(tbl_e3_h34p,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
+For perceived NA similarity, the interaction with positive event occurrence was non-significant ($\beta_4 = 0.010$, 95% CI $[-0.018, 0.039]$, $p = .467$). Simple slopes were $-0.158$ ($p < .001$) and $-0.148$ ($p < .001$) in the absence and presence of a positive event, respectively. Whether or not something positive occurred does not meaningfully moderate the association between perceiving shared negativity with one's partner and reporting less love. In contrast to actual NA similarity, the perceptual route is insensitive to positive event occurrence.
+
 ### Impact on NA mediation
 
 $$
@@ -6198,10 +6853,10 @@ e3_slopes_out_na_act_df  <- as.data.frame(summary(e3_slopes_out_na_act,  infer =
 e3_slopes_out_na_perc_df <- as.data.frame(summary(e3_slopes_out_na_perc, infer = TRUE))
 
 tbl_e3_out_na <- rbind(
-  make_rows_pos(e3_slopes_out_na_act_df,  "NA_similarity_act_w.trend",
-                "Actual NA similarity"),
-  make_rows_pos(e3_slopes_out_na_perc_df, "NA_similarity_perc_w.trend",
-                "Perceived NA similarity")
+  make_rows_dummy(e3_slopes_out_na_act_df,  "NA_similarity_act_w.trend",
+                  "Actual NA similarity"),
+  make_rows_dummy(e3_slopes_out_na_perc_df, "NA_similarity_perc_w.trend",
+                  "Perceived NA similarity")
 )
 
 kable(tbl_e3_out_na,
@@ -6275,4 +6930,117 @@ kable(tbl_e3_med_na,
                 full_width = FALSE, position = "left") %>%
   footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
+```
+
+In the moderated outcome model, the c'-path moderation was significant ($\phi_7 = 0.039$, 95% CI $[0.005, 0.073]$, $p = .023$): the direct effect of actual NA similarity on love (controlling perceived) was $-0.106$ ($p < .001$) on no-positive-event moments and a smaller $-0.067$ ($p < .001$) on positive-event moments, indicating a partial buffering of the direct path by positive events. The b-path moderation was non-significant ($\phi_6 = -0.009$, 95% CI $[-0.042, 0.025]$, $p = .609$), with slopes of $-0.114$ and $-0.122$ (both $p < .001$): positive event occurrence does not affect how perceived NA similarity translates into love. The a-path moderation was significant ($\theta_4 = -0.035$, 95% CI $[-0.066, -0.005]$, $p = .023$): actual NA similarity translated less strongly into perceived NA similarity on positive-event moments ($0.449$, $p < .001$) than on no-positive-event moments ($0.484$, $p < .001$). The overall pattern is that positive events slightly buffer both the perceptual a-path and the direct c'-path from actual NA similarity, while leaving the b-path (perceived NA similarity → love) unaffected.
+
+```{r e3_h34_mediation_diagram}
+#| output-fold: true
+#| output-summary: "NA Mediation moderated by C_expl_pos"
+
+nodes_mod <- data.frame(
+  name  = c("X", "M", "Y"),
+  label = c("Actual NA\nSimilarity", "Perceived NA\nSimilarity", "Love"),
+  shape = c("rect", "rect", "rect")
+)
+
+layout_mod <- get_layout(
+  "X", NA,  "M",
+  NA,  NA,  "Y",
+  rows = 2
+)
+
+edges_mod <- data.frame(
+  from        = c("X",  "M",  "X"),
+  to          = c("M",  "Y",  "Y"),
+  label       = c(
+    "a: 0.484***",
+    "b: -0.114***",
+    "c\u2019: -0.106***"
+  ),
+  linetype    = c(1, 1, 1),
+  colour      = c("black", "black", "black"),
+  curvature   = c(NA, NA, NA),
+  label_hjust = rep("center", 3)
+)
+
+p_mod <- prepare_graph(
+  nodes       = nodes_mod,
+  edges       = edges_mod,
+  layout      = layout_mod,
+  spacing_x   = 2,
+  spacing_y   = 3,
+  rect_width  = 0.8,
+  rect_height = 0.5
+)
+
+edges(p_mod)$linetype     <- edges_mod$linetype
+edges(p_mod)$colour       <- edges_mod$colour
+edges(p_mod)$label_colour <- edges_mod$colour
+edges(p_mod)$label_hjust  <- "center"
+
+nd <- nodes(p_mod)
+get_node <- function(name) nd[nd$name == name, c("x", "y")]
+x_X <- get_node("X")
+x_M <- get_node("M")
+x_Y <- get_node("Y")
+
+# Midpoints
+mid_a_x <- (x_X$x + x_M$x) / 2
+mid_a_y <- (x_X$y + x_M$y) / 2
+
+mid_c_x <- (x_X$x + x_Y$x) / 2
+mid_c_y <- (x_X$y + x_Y$y) / 2
+
+arrow_length <- 1.2
+
+w_a_x <- mid_a_x
+w_a_y <- mid_a_y + arrow_length
+
+w_c_x <- mid_c_x
+w_c_y <- mid_c_y - arrow_length
+
+plot(p_mod) +
+  # Moderator arrow to a-path (significant)
+  geom_segment(
+    data = data.frame(x = w_a_x, y = w_a_y - 0.05,
+                      xend = mid_a_x, yend = mid_a_y + 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator arrow to c'-path (significant)
+  geom_segment(
+    data = data.frame(x = w_c_x, y = w_c_y + 0.05,
+                      xend = mid_c_x, yend = mid_c_y - 0.15),
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow    = arrow(length = unit(0.2, "cm"), type = "closed"),
+    linetype = "dashed", colour = "black"
+  ) +
+  # Moderator label — a-path
+  annotate("text",
+    x = w_a_x, y = w_a_y + 0.2,
+    label = "Positive Event\n(alternative 3)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Moderator label — c'-path
+  annotate("text",
+    x = w_c_x, y = w_c_y - 0.2,
+    label = "Positive Event\n(alternative 3)",
+    hjust = 0.5, fontface = "plain"
+  ) +
+  # Interaction coefficient — a-path (right of arrow)
+  annotate("text",
+    x = w_a_x + 0.15, y = (w_a_y + mid_a_y) / 2,
+    label = "\u03B84 = -0.035*",
+    hjust = 0, colour = "black"
+  ) +
+  # Interaction coefficient — c'-path (left of arrow)
+  annotate("text",
+    x = w_c_x - 0.65, y = (w_c_y + mid_c_y) / 2,
+    label = "\u03C67 = +0.039*",
+    hjust = 0, colour = "black"
+  ) +
+  ggtitle("Within-person mediation moderated by positive event occurrence \u2014 NA Similarity") +
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84) and c\u2019-path (\u03C67). b-path moderation non-significant.")
 ```
