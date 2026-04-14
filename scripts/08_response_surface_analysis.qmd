@@ -231,57 +231,212 @@ rsa_params <- function(model) {
 plot_rsa_surface <- function(model, data, x_var, y_var,
                               x_lab = "Actor affect (centered)",
                               y_lab = "Partner affect (centered)",
-                              title = "Response Surface") {
+                              title = "Response Surface",
+                              z_lab = "Momentary love",
+                              z_lim = c(0, 100),
+                              x_range = c(-95, 95),
+                              y_range = c(-95, 95)) {
   
-  b <- fixef(model)
+  # ---- fixed effects: intercept, x, y, x^2, x:y, y^2 ----
+  b <- as.numeric(nlme::fixef(model))
+  if (length(b) < 6) {
+    stop("fixef(model) must return at least 6 coefficients ordered as: intercept, x, y, x^2, x:y, y^2")
+  }
+  b <- b[1:6]
   
-  # determine grid range from observed data (central 98%)
-  x_range <- quantile(data[[x_var]], c(0.01, 0.99), na.rm = TRUE)
-  y_range <- quantile(data[[y_var]], c(0.01, 0.99), na.rm = TRUE)
+  poly_fun <- function(x, y) {
+    b[1] + b[2] * x + b[3] * y + b[4] * x^2 + b[5] * x * y + b[6] * y^2
+  }
   
-  x_seq <- seq(x_range[1], x_range[2], length.out = 50)
-  y_seq <- seq(y_range[1], y_range[2], length.out = 50)
-  grid  <- expand.grid(X = x_seq, Y = y_seq)
+  # ---- plotting ranges ----
+  x_range <- x_range
+  y_range <- y_range
   
-  # predicted surface from fixed effects
-  grid$Z <- b[1] + b[2]*grid$X + b[3]*grid$Y + 
-            b[4]*grid$X^2 + b[5]*grid$X*grid$Y + b[6]*grid$Y^2
+  n_grid <- 300L
+  x_seq  <- seq(x_range[1], x_range[2], length.out = n_grid)
+  y_seq  <- seq(y_range[1], y_range[2], length.out = n_grid)
   
-  # reshape for surface plot
-  z_matrix <- matrix(grid$Z, nrow = length(x_seq), ncol = length(y_seq))
+  Xmat <- outer(x_seq, y_seq, function(x, y) x)
+  Ymat <- outer(x_seq, y_seq, function(x, y) y)
+  Zmat <- poly_fun(Xmat, Ymat)
   
-  # subsample data points for overlay (too many points = slow rendering)
+  vx <- as.vector(Xmat)
+  vy <- as.vector(Ymat)
+  vz <- as.vector(Zmat)
+  
+  vid <- function(ix, iy) ix + (iy - 1L) * n_grid
+  
+  # ---- diverging palette (fixed to love's natural scale, not per-plot z-range) ----
+  # Using z_lim as the colour anchor means all four response surfaces share a
+  # comparable colour mapping — a blue patch on one plot represents the same
+  # predicted love as a blue patch on another.
+  ramp_lo <- grDevices::colorRamp(c("#2166ac", "#f7f7f7"))
+  ramp_hi <- grDevices::colorRamp(c("#f7f7f7", "#b2182b"))
+  
+  z_to_col <- function(z) {
+    u <- (z - z_lim[1]) / (z_lim[2] - z_lim[1])
+    u <- pmin(pmax(u, 0), 1)
+    
+    out <- character(length(u))
+    lo  <- u <= 0.5
+    hi  <- !lo
+    
+    if (any(lo)) {
+      rgb_lo <- ramp_lo(u[lo] / 0.5)
+      out[lo] <- grDevices::rgb(rgb_lo[, 1], rgb_lo[, 2], rgb_lo[, 3],
+                                maxColorValue = 255)
+    }
+    if (any(hi)) {
+      rgb_hi <- ramp_hi((u[hi] - 0.5) / 0.5)
+      out[hi] <- grDevices::rgb(rgb_hi[, 1], rgb_hi[, 2], rgb_hi[, 3],
+                                maxColorValue = 255)
+    }
+    out
+  }
+  
+  # ---- explicit triangulation ----
+  n_faces <- 2L * (n_grid - 1L) * (n_grid - 1L)
+  ii <- integer(n_faces); jj <- integer(n_faces); kk <- integer(n_faces)
+  face_x <- numeric(n_faces); face_y <- numeric(n_faces); face_z <- numeric(n_faces)
+  loc_hit  <- logical(n_faces)
+  loic_hit <- logical(n_faces)
+  
+  pos <- 1L
+  for (iy in 1:(n_grid - 1L)) {
+    for (ix in 1:(n_grid - 1L)) {
+      v00 <- vid(ix, iy)
+      v10 <- vid(ix + 1L, iy)
+      v11 <- vid(ix + 1L, iy + 1L)
+      v01 <- vid(ix, iy + 1L)
+      
+      # triangle 1: (v00, v10, v11)
+      tri1 <- c(v00, v10, v11)
+      x1 <- vx[tri1]; y1 <- vy[tri1]; z1 <- vz[tri1]
+      ii[pos] <- tri1[1] - 1L; jj[pos] <- tri1[2] - 1L; kk[pos] <- tri1[3] - 1L
+      face_x[pos] <- mean(x1); face_y[pos] <- mean(y1); face_z[pos] <- mean(z1)
+      loc_hit[pos]  <- (min(x1 - y1) <= 0) && (max(x1 - y1) >= 0)
+      loic_hit[pos] <- (min(x1 + y1) <= 0) && (max(x1 + y1) >= 0)
+      pos <- pos + 1L
+      
+      # triangle 2: (v00, v11, v01)
+      tri2 <- c(v00, v11, v01)
+      x2 <- vx[tri2]; y2 <- vy[tri2]; z2 <- vz[tri2]
+      ii[pos] <- tri2[1] - 1L; jj[pos] <- tri2[2] - 1L; kk[pos] <- tri2[3] - 1L
+      face_x[pos] <- mean(x2); face_y[pos] <- mean(y2); face_z[pos] <- mean(z2)
+      loc_hit[pos]  <- (min(x2 - y2) <= 0) && (max(x2 - y2) >= 0)
+      loic_hit[pos] <- (min(x2 + y2) <= 0) && (max(x2 + y2) >= 0)
+      pos <- pos + 1L
+    }
+  }
+  
+  face_col <- z_to_col(face_z)
+  
+  # ---- LOIC dashed pattern ----
+  loic_tmin <- max(x_range[1], -y_range[2])
+  loic_tmax <- min(x_range[2], -y_range[1])
+  loic_span <- loic_tmax - loic_tmin
+  
+  if (is.finite(loic_span) && loic_span > 0) {
+    t_loic   <- (face_x - face_y) / 2
+    dash_len <- loic_span / 30
+    gap_len  <- dash_len * 0.4
+    phase    <- (t_loic - loic_tmin) %% (dash_len + gap_len)
+    loic_on  <- loic_hit & (phase <= dash_len)
+  } else {
+    loic_on <- rep(FALSE, length(face_col))
+  }
+  
+  # paint LOC/LOIC into the face colour vector
+  face_col[loic_on] <- "#000000"
+  face_col[loc_hit] <- "#000000"
+  
+  # ---- observed data points (subsample for rendering speed) ----
   obs <- data %>%
-    select(x = all_of(x_var), y = all_of(y_var), z = love) %>%
-    filter(complete.cases(.))
+    dplyr::select(x = dplyr::all_of(x_var),
+                  y = dplyr::all_of(y_var),
+                  z = love) %>%
+    dplyr::filter(stats::complete.cases(.)) %>%
+    dplyr::filter(x >= x_range[1], x <= x_range[2],
+                  y >= y_range[1], y <= y_range[2])
+  if (nrow(obs) > 2000) obs <- obs %>% dplyr::slice_sample(n = 2000)
   
-  if (nrow(obs) > 2000) obs <- obs %>% slice_sample(n = 2000)
+  # ---- colorbar trace: invisible scatter3d carrying the colour scale ----
+  # mesh3d with facecolor can't display a colorbar, so we attach one to a
+  # hidden marker trace placed off-screen. The colorscale here must match the
+  # z_to_col() mapping above so the legend reflects what the surface shows.
+  cbar_scale <- list(
+    c(0.0, "#2166ac"),
+    c(0.5, "#f7f7f7"),
+    c(1.0, "#b2182b")
+  )
   
-  # plotly surface
-  p <- plot_ly() %>%
-    add_surface(
-      x = x_seq, y = y_seq, z = z_matrix,
-      colorscale = list(c(0, "#2166ac"), c(0.5, "#f7f7f7"), c(1, "#b2182b")),
-      opacity = 0.85,
-      showscale = TRUE,
-      colorbar = list(title = "Predicted\nlove")
+  plotly::plot_ly() %>%
+    # main surface
+    plotly::add_trace(
+      type = "mesh3d",
+      x = vx, y = vy, z = vz,
+      i = ii, j = jj, k = kk,
+      facecolor = I(face_col),
+      flatshading = FALSE,
+      opacity = 0.65,
+      # hoverinfo = "skip",
+      lighting = list(
+        ambient = 0.85, diffuse = 0.7, specular = 0.03,
+        roughness = 0.9, fresnel = 0.02
+      ),
+      lightposition = list(x = 100, y = 200, z = 0),
+      name = "Surface",
+      showlegend = FALSE
     ) %>%
-    add_markers(
+    # observed data points
+    plotly::add_markers(
       x = obs$x, y = obs$y, z = obs$z,
-      marker = list(size = 1.5, color = "black", opacity = 0.15),
-      name = "Observed"
+      marker = list(size = 1.5, color = "black", opacity = 0.25),
+      name = "Observed",
+      # hoverinfo = "skip",
+      showlegend = FALSE
     ) %>%
-    layout(
-      title = list(text = title, font = list(size = 14)),
+    # hidden colorbar trace
+    plotly::add_trace(
+      type = "scatter3d",
+      mode = "markers",
+      x = c(x_range[1], x_range[1]),
+      y = c(y_range[1], y_range[1]),
+      z = z_lim,
+      marker = list(
+        size = 0.1,
+        color = z_lim,
+        colorscale = cbar_scale,
+        cmin = z_lim[1],
+        cmax = z_lim[2],
+        showscale = TRUE,
+        colorbar = list(
+          title = list(text = "Predicted\nlove"),
+          len = 0.7
+        )
+      ),
+      hoverinfo = "skip",
+      showlegend = FALSE
+    ) %>%
+    plotly::layout(
+      title = list(text = title),
       scene = list(
         xaxis = list(title = x_lab),
         yaxis = list(title = y_lab),
-        zaxis = list(title = "Momentary love"),
+        zaxis = list(title = z_lab, range = z_lim),
         camera = list(eye = list(x = 1.5, y = -1.5, z = 1.2))
       ),
-      showlegend = FALSE
+      annotations = list(
+        list(
+          x = 0.01, y = 0.99, xref = "paper", yref = "paper",
+          text = "<b>LOC</b>: solid black&nbsp;&nbsp;&nbsp;<b>LOIC</b>: dashed",
+          showarrow = FALSE, xanchor = "left", yanchor = "top",
+          bgcolor = "rgba(255,255,255,0.75)",
+          bordercolor = "rgba(0,0,0,0.15)",
+          borderwidth = 1
+        )
+      )
     )
-  p
 }
 
 # --- 2D contour plot as a static alternative ---
@@ -292,8 +447,8 @@ plot_rsa_contour <- function(model, data, x_var, y_var,
   
   b <- fixef(model)
   
-  x_range <- quantile(data[[x_var]], c(0.01, 0.99), na.rm = TRUE)
-  y_range <- quantile(data[[y_var]], c(0.01, 0.99), na.rm = TRUE)
+  x_range <- c(-50, 50)
+  y_range <- c(-50, 50)
   
   grid <- expand.grid(
     X = seq(x_range[1], x_range[2], length.out = 100),
@@ -305,12 +460,12 @@ plot_rsa_contour <- function(model, data, x_var, y_var,
   
   ggplot(grid, aes(x = X, y = Y, z = Z)) +
     geom_contour_filled(alpha = 0.8) +
-    geom_abline(intercept = 0, slope = 1, linetype = "dashed", colour = "black") +
-    geom_abline(intercept = 0, slope = -1, linetype = "dotted", colour = "grey40") +
+    geom_abline(intercept = 0, slope = 1, linetype = "solid", colour = "black") +
+    geom_abline(intercept = 0, slope = -1, linetype = "dashed", colour = "black") +
     annotate("text", x = x_range[2]*0.85, y = x_range[2]*0.85, 
              label = "LOC (X = Y)", angle = 45, size = 3, colour = "black") +
     annotate("text", x = x_range[2]*0.85, y = -x_range[2]*0.85, 
-             label = "LOIC (X = −Y)", angle = -45, size = 3, colour = "grey40") +
+             label = "LOIC (X = −Y)", angle = -45, size = 3, colour = "black") +
     labs(x = x_lab, y = y_lab, fill = "Predicted\nlove", title = title) +
     coord_fixed() +
     theme_minimal()
@@ -364,6 +519,15 @@ plot_rsa_surface(
   x_lab = "Actor PA (person-centered)",
   y_lab = "Partner PA (person-centered)",
   title = "Actual PA → Love"
+)
+
+plot_rsa_surface(
+  rsa_PA_act, esm_data, "cPA_own", "cPA_part_act",
+  x_lab = "Actor PA (person-centered)",
+  y_lab = "Partner PA (person-centered)",
+  title = "Actual PA → Love",
+  x_range = c(-30,30),
+  y_range = c(-30,30)
 )
 ```
 
