@@ -12,3 +12,14 @@ nav#TOC, #TOC {
     font-size: 2.6rem;
     line-height: 1.15; 
 }
+
+/* --- Display math spacing --- */
+span.math.display {
+  display: block;
+  margin: 1em 0 1.35em;
+}
+
+mjx-container[jax="CHTML"][display="true"] {
+  overflow: visible !important;
+  padding-bottom: 0.35em;
+}

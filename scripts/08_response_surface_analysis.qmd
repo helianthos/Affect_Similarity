@@ -116,7 +116,7 @@ When $a_5 = 0$, the ridge of the surface (the FPA) lies exactly on the LOC ($X =
 A **strict congruence effect** requires five conditions simultaneously (Edwards, 2002; Humberg et al., 2019; Nestler et al., 2019):
 
 | Condition | Meaning                                                        |
-|------------------|------------------------------------------------------|
+|-------------------|-----------------------------------------------------|
 | $a_1 = 0$ | LOC is flat: congruence at high vs. low levels equally good    |
 | $a_2 = 0$ | LOC is linear (no concavity/convexity)                         |
 | $a_3 = 0$ | LOIC is symmetric around the origin/LOC                        |
