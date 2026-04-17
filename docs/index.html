@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feeling the Same, Seeing the Same — Analysis Reports</title>
+  <style>
+    :root{
+      --ink:#1f2937;
+      --muted:#5f6b7a;
+      --line:#d8dee8;
+      --panel:#ffffff;
+      --soft:#f6f8fb;
+      --accent:#1f4e79;
+      --accent-2:#315f8a;
+      --shadow:0 8px 24px rgba(22, 34, 51, 0.08);
+      --max:980px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+      color:var(--ink);
+      background:linear-gradient(180deg,#f3f6fa 0%, #fbfcfe 220px, #fbfcfe 100%);
+      line-height:1.6;
+    }
+    .wrap{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:40px 24px 64px;
+    }
+    .hero{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:34px 34px 28px;
+      box-shadow:var(--shadow);
+    }
+    .hero-head{
+      display:flex;
+      align-items:center;
+      gap:24px;
+    }
+    .hero-copy{
+      min-width:0;
+    }
+    .hero-logo{
+      width:118px;
+      height:auto;
+      flex:0 0 auto;
+    }
+    h1{
+      margin:0 0 12px;
+      font-size:2.1rem;
+      line-height:1.15;
+      color:#15324f;
+    }
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:1.02rem;
+      max-width:52rem;
+    }
+    .meta{
+      margin-top:18px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px 16px;
+      color:var(--muted);
+      font-size:0.95rem;
+    }
+    .meta span{
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 12px;
+    }
+    .meta a{
+      color:inherit;
+      text-decoration:none;
+    }
+    .contact-button{
+      display:inline-block;
+      margin-left:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--accent);
+      color:white !important;
+      font-weight:600;
+      line-height:1;
+      vertical-align:middle;
+    }
+    .contact-button:hover{
+      background:var(--accent-2);
+    }
+    section{
+      margin-top:28px;
+    }
+    h2{
+      font-size:1.3rem;
+      margin:0 0 12px;
+      color:#183b5c;
+    }
+    .subsection-title{
+      margin:18px 0 10px;
+      font-size:1.08rem;
+      color:#193754;
+    }
+    .section-note{
+      margin:0 0 12px;
+      color:var(--muted);
+      font-size:.97rem;
+    }
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:26px 28px;
+      box-shadow:var(--shadow);
+    }
+    .reports{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:16px;
+      margin-top:10px;
+    }
+    .resource-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:16px;
+      margin-top:10px;
+    }
+    .card{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      background:linear-gradient(180deg,#ffffff 0%, #fbfcff 100%);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px 18px 16px;
+      min-height:200px;
+    }
+    .card h3{
+      margin:0;
+      font-size:1.06rem;
+      line-height:1.3;
+      color:#193754;
+    }
+    .card p{
+      margin:0;
+      color:var(--muted);
+      font-size:.97rem;
+    }
+    .card a{
+      margin-top:auto;
+      display:inline-block;
+      width:fit-content;
+      text-decoration:none;
+      color:white;
+      background:var(--accent);
+      padding:10px 14px;
+      border-radius:10px;
+      font-weight:600;
+    }
+    .card a:hover{background:var(--accent-2)}
+    .resource-links{
+      margin-top:auto;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .resource-links a{
+      display:inline-block;
+      text-decoration:none;
+      font-weight:600;
+      border-radius:10px;
+      padding:10px 14px;
+    }
+    .resource-links a.primary{
+      color:white;
+      background:var(--accent);
+    }
+    .resource-links a.primary:hover{
+      background:var(--accent-2);
+    }
+    .resource-links a.secondary{
+      color:var(--accent);
+      background:#eef4fa;
+      border:1px solid #d6e3f1;
+    }
+    ul{
+      margin:10px 0 0 1.1rem;
+      padding:0;
+    }
+    li + li{margin-top:8px}
+    code{
+      background:#f4f6f9;
+      border:1px solid #e0e6ef;
+      border-radius:6px;
+      padding:1px 6px;
+      font-size:.92em;
+    }
+    .footer-note{
+      margin-top:24px;
+      color:var(--muted);
+      font-size:.94rem;
+    }
+    @media (max-width:700px){
+      .hero,.panel{padding:22px}
+      .hero-head{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:18px;
+      }
+      .hero-logo{width:96px}
+      h1{font-size:1.8rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="hero-head">
+        <img class="hero-logo" src="affectlogo.png" alt="Affect Similarity logo">
+        <div class="hero-copy">
+          <h1>Feeling the Same, Seeing the Same</h1>
+          <p class="subtitle">
+            Public index page for the pre-rendered HTML reports accompanying the reproducible analysis and reporting code
+            for the internship project on actual and perceived affect similarity in romantic couples.
+          </p>
+        </div>
+      </div>
+      <div class="meta">
+        <span><strong>Author:</strong> Geert Van Dingenen <a class="contact-button" href="mailto:geert.vandingenen@gmail.com">Contact</a></span>
+        <span><strong>Supervisor:</strong> Prof. Peter Kuppens</span>
+        <span><strong>Affiliation:</strong> KU Leuven — Faculty of Psychology and Educational Sciences</span>
+        <span><strong>Last updated:</strong> April 17, 2026</span>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>Context</h2>
+      <p>
+        This repository contains analysis and reporting code accompanying the preregistered project
+        <em>Feeling the Same, Seeing the Same</em>. The broader aim is to investigate actual and perceived affect similarity
+        in romantic couples across daily life and laboratory interaction contexts, and to examine how similarity relates to
+        relational outcomes such as love and closeness.
+      </p>
+      <p>
+        The pages linked below are pre-rendered HTML outputs intended for direct online viewing. They complement the fully
+        reproducible project structure in the repository, where scripts, Quarto source files, and the package environment are
+        documented separately.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Project Links</h2>
+      <div class="resource-grid">
+        <article class="card">
+          <h3>OSF project</h3>
+          <p>
+            The preregistered project and accompanying registration materials are available via the Open Science Framework.
+          </p>
+          <div class="resource-links">
+            <a class="primary" href="https://doi.org/10.17605/OSF.IO/E5SZ2" target="_blank" rel="noopener">Open OSF project</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Repository README</h3>
+          <p>
+            The repository README provides the project overview, setup instructions, reproducibility details, and directory structure.
+          </p>
+          <div class="resource-links">
+            <a class="primary" href="README.html" target="_blank" rel="noopener">Open README</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Preregistration PDF</h3>
+          <p>
+            A PDF copy of the preregistration is provided here for direct reading alongside the project website and rendered reports.
+          </p>
+          <div class="resource-links">
+            <a class="primary" href="OSF%20Preregistration_Feeling%20The%20Same_Seeing%20The%20Same_Geert%20Van%20Dingenen.pdf" target="_blank" rel="noopener" type="application/pdf">Open preregistration PDF</a>
+            <a class="secondary" href="https://doi.org/10.17605/OSF.IO/E5SZ2" target="_blank" rel="noopener">Open DOI link</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Available reports</h2>
+      <h3 class="subsection-title">Rendered HTML reports</h3>
+      <p class="section-note">
+        These pages are the pre-rendered HTML outputs generated from the reproducible Quarto source files in the repository.
+      </p>
+      <div class="reports">
+        <article class="card">
+          <h3>Descriptive analyses</h3>
+          <p>
+            Descriptive summaries of the data, including sample characteristics and descriptive statistics relevant to the study.
+          </p>
+          <a href="05_descriptives.html">Open report</a>
+        </article>
+
+        <article class="card">
+          <h3>Study component 1</h3>
+          <p>
+            Analyses corresponding to the first study component and its preregistered research questions.
+          </p>
+          <a href="06_study_component_1.html">Open report</a>
+        </article>
+
+        <article class="card">
+          <h3>Study component 2</h3>
+          <p>
+            Analyses corresponding to the second study component and its preregistered research questions.
+          </p>
+          <a href="07_study_component_2.html">Open report</a>
+        </article>
+
+        <article class="card">
+          <h3>Response surface analysis</h3>
+          <p>
+            Additional response surface analyses extending the main reports with model-based visual and analytic examination of congruence patterns.
+          </p>
+          <a href="08_response_surface_analysis.html">Open report</a>
+        </article>
+      </div>
+
+      <h3 class="subsection-title">Presentation-style Overview Documents</h3>
+      <p class="section-note">
+        These PDF presentations provide a visual overview of the hypothesized relationships in the study components, an overview of the hypotheses a summaries of the results, interpretation, and conclusions based on the analyses above.
+      </p>
+      <div class="reports">
+        <article class="card">
+          <h3>Study component 1 overview</h3>
+          <p>
+            Presentation summarising the main results, interpretation, and conclusions for Study Component 1.
+          </p>
+          <a href="SC1_Results.pdf" target="_blank" rel="noopener" type="application/pdf">Open PDF</a>
+        </article>
+
+        <article class="card">
+          <h3>Study component 2 overview</h3>
+          <p>
+            Presentation summarising the main results, interpretation, and conclusions for Study Component 2.
+          </p>
+          <a href="SC2_Results.pdf" target="_blank" rel="noopener" type="application/pdf">Open PDF</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Reproducibility note</h2>
+      <p>
+        The project is organised so that the codebase remains reproducible while this HTML page (in the <code>docs/</code> folder of the project) provides a browsable public website. The documents shown here are pre-rendered HTML outputs generated from the Quarto source files in the repository, which can be re-rendered and updated as needed.
+        In the repository, the Quarto source files live in <code>scripts/</code>, rendered outputs are generated into <code>outputs/scripts/</code>, and the public-facing pre-rendered copies have been placed in <code>docs/</code> for hosting through GitHub Pages.
+      </p>
+      <ul>
+        <li><code>scripts/</code>: source <code>.qmd</code> and <code>.R</code> files</li>
+        <li><code>outputs/scripts/</code>: rendered analysis outputs produced from the source files</li>
+        <li><code>docs/</code>: pre-rendered HTML files plus this index page for public viewing</li>
+      </ul>
+      <p class="footer-note">
+        For full setup instructions, package restoration, and project structure, consult the repository README.
+      </p>
+    </section>
+  </div>
+</body>
+</html>

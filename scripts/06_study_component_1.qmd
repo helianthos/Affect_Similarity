@@ -72,17 +72,11 @@ Three-level structure:
 
 We person-mean center affect variables:
 
-$$
-X_{mpd} = A_{mpd} - \bar{A}_{pd}
-$$
+$$X_{mpd} = A_{mpd} - \bar{A}_{pd}$$
 
-$$
-Y^{act}_{mpd} = P^{act}_{mpd} - \bar{P}^{act}_{pd}
-$$
+$$Y^{act}_{mpd} = P^{act}_{mpd} - \bar{P}^{act}_{pd}$$
 
-$$
-Y^{perc}_{mpd} = P^{perc}_{mpd} - \bar{P}^{perc}_{pd}
-$$
+$$Y^{perc}_{mpd} = P^{perc}_{mpd} - \bar{P}^{perc}_{pd}$$
 
 ### Similarity indices
 
@@ -90,37 +84,25 @@ $$
 
 Mean component:
 
-$$
-M^{act}_{mpd} = \frac{X_{mpd} + Y^{act}_{mpd}}{2}
-$$
+$$M^{act}_{mpd} = \frac{X_{mpd} + Y^{act}_{mpd}}{2}$$
 
 Mismatch component:
 
-$$
-D^{act}_{mpd} = |X_{mpd} - Y^{act}_{mpd}|
-$$
+$$D^{act}_{mpd} = |X_{mpd} - Y^{act}_{mpd}|$$
 
 Similarity index:
 
-$$
-S^{act}_{mpd} = M^{act}_{mpd} - D^{act}_{mpd}
-$$
+$$S^{act}_{mpd} = M^{act}_{mpd} - D^{act}_{mpd}$$
 
 Actual affect similarity is symmetric within a couple at a given moment (it compares the two partners’ self-reported affect), such that $S^{act}_{mpd}$ is conceptually a dyad–moment construct that is identical for both partners.
 
 #### Perceived Similarity
 
-$$
-M^{perc}_{mpd} = \frac{X_{mpd} + Y^{perc}_{mpd}}{2}
-$$
+$$M^{perc}_{mpd} = \frac{X_{mpd} + Y^{perc}_{mpd}}{2}$$
 
-$$
-D^{perc}_{mpd} = |X_{mpd} - Y^{perc}_{mpd}|
-$$
+$$D^{perc}_{mpd} = |X_{mpd} - Y^{perc}_{mpd}|$$
 
-$$
-S^{perc}_{mpd} = M^{perc}_{mpd} - D^{perc}_{mpd}
-$$
+$$S^{perc}_{mpd} = M^{perc}_{mpd} - D^{perc}_{mpd}$$
 
 Perceived similarity is actor-specific because it compares the actor’s affect to the actor’s perception of the partner’s affect, so $S^{perc}_{mpd}$ can differ between partners within the same dyad.
 
@@ -132,30 +114,22 @@ We split between a between-dyad component and a within-dyad (momentary) componen
 
 Dyad mean, and grand-mean:
 
-$$
-\bar{S}^{act}_d, \bar{\bar{S}}^{act}
-$$
+$$\bar{S}^{act}_d, \bar{\bar{S}}^{act}$$
 
 Within-dyad:
 
-$$
-S^{act,within}_{mpd} = S^{act}_{mpd} - \bar{S}^{act}_d
-$$
+$$S^{act,within}_{mpd} = S^{act}_{mpd} - \bar{S}^{act}_d$$
 
 Between-dyad:
 
-$$
-\bar{S}^{act,between}_d = \bar{S}^{act}_d - \bar{\bar{S}}^{act}
-$$
+$$\bar{S}^{act,between}_d = \bar{S}^{act}_d - \bar{\bar{S}}^{act}$$
 
 The decomposition can be understood by specifying a model in different steps. For example, for the step 1a model (see below):
 
-$$
-L_{mpd} = b_{0,pd} + 
+$$L_{mpd} = b_{0,pd} + 
 \beta_1 S^{act,within}_{mpd} +
 \beta_2 \bar{S}^{act,between}_d +
-\varepsilon_{mpd},\;\text{with}\; b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}
-$$
+\varepsilon_{mpd},\;\text{with}\; b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}$$
 
 we could equally write
 
@@ -175,21 +149,15 @@ we could equally write
 
 Person mean, and grand-mean:
 
-$$
-\bar{S}^{perc}_{pd}, \bar{\bar{S}}^{perc}
-$$
+$$\bar{S}^{perc}_{pd}, \bar{\bar{S}}^{perc}$$
 
 Within-person:
 
-$$
-S^{perc,within}_{mpd} = S^{perc}_{mpd} - \bar{S}^{perc}_{pd}
-$$
+$$S^{perc,within}_{mpd} = S^{perc}_{mpd} - \bar{S}^{perc}_{pd}$$
 
 Between-person:
 
-$$
-\bar{S}^{perc,between}_{pd} = \bar{S}^{perc}_{pd} - \bar{\bar{S}}^{perc}
-$$
+$$\bar{S}^{perc,between}_{pd} = \bar{S}^{perc}_{pd} - \bar{\bar{S}}^{perc}$$
 
 ## Assumptions and Robustness Checks
 
@@ -326,18 +294,14 @@ with the arguments
 
 Primary multilevel model:
 
-$$
-L_{mpd} = b_{0,pd} + 
+$$L_{mpd} = b_{0,pd} + 
 \beta_1 S^{act,within}_{mpd} +
 \beta_2 \bar{S}^{act,between}_d +
-\varepsilon_{mpd}
-$$
+\varepsilon_{mpd}$$
 
 Random intercept structure:
 
-$$
-b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}
-$$
+$$b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}$$
 
 -   $v_{0,d} \sim N(0, \tau_d^2)$
 -   $𝑢_{0,𝑝𝑑}∼𝑁(0, 𝜏_𝑝^2)$
@@ -1072,15 +1036,13 @@ model_output(h12_decomposed)
 
 # Step 1b: Additive Model (H1.3)
 
-$$
-L_{mpd} =
+$$L_{mpd} =
 b_{0,pd} +
 \beta_1 S^{act,within}_{mpd} +
 \beta_2 \bar{S}^{act,between}_d +
 \beta_3 S^{perc,within}_{mpd} +
 \beta_4 \bar{S}^{perc,between}_{pd} +
-\varepsilon_{mpd}
-$$
+\varepsilon_{mpd}$$
 
 Goals:
 
@@ -1383,8 +1345,7 @@ model_output(h13_NA_elevation)
 
 For both PA and NA, we estimate the model
 
-$$
-L_{mpd} =
+$$L_{mpd} =
 b_{0,pd} +
 \beta_1 S^{act,within}_{mpd} +
 \beta_2 \bar{S}^{act,between}_d +
@@ -1393,8 +1354,7 @@ b_{0,pd} +
 $$$$
 + \beta_5 (S^{act,within}_{mpd} \times S^{perc,within}_{mpd})
 + \beta_6 (\bar{S}^{act,between}_d \times \bar{S}^{perc,between}_{pd})
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 Predicted values will be probed at −1 SD, mean, and +1 SD.
 
@@ -2145,25 +2105,21 @@ plot(p) + ggtitle("General Mediation Diagram")
 
 **Mediator Model**
 
-$$
-S^{perc}_{mpd} =
+$$S^{perc}_{mpd} =
 t_{0,pd} +
 \theta_1 S^{act,within}_{mpd} +
 \theta_2 \bar{S}^{act,between}_d +
-\varepsilon^M_{mpd}
-$$
+\varepsilon^M_{mpd}$$
 
 **Outcome Model**
 
-$$
-L_{mpd} =
+$$L_{mpd} =
 f_{0,pd} +
 \phi_1 S^{perc,within}_{mpd} +
 \phi_2 \bar{S}^{perc,between}_{pd} +
 \phi_3 S^{act,within}_{mpd} +
 \phi_4 \bar{S}^{act,between}_d +
-\varepsilon^L_{mpd}
-$$
+\varepsilon^L_{mpd}$$
 
 Indirect effects:
 
@@ -2922,23 +2878,19 @@ To have responsiveness as an amplifier, we expect $\beta_4 >0$.
 
 General model structure:
 
-$$
-L_{mpd} =
+$$L_{mpd} =
 b_{0,pd} + 
 \beta_1 S^{act,within}_{mpd} +
 \beta_2 \bar{S}^{act,between}_d +
 \beta_3 R_{mpd}+
 \beta_4 (S^{act,within}_{mpd} \times R_{mpd}) +
-\varepsilon_{mpd}
-$$
+\varepsilon_{mpd}$$
 
 with $R_{mpd}$ the momentary perceived partner responsiveness (person-mean centered). We focus on within-person moderation by person-mean centering $𝑅_{𝑚𝑝𝑑}$; we do not model between-person differences in typical responsiveness as a moderator.
 
 Random intercept structure:
 
-$$
-b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}
-$$
+$$b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}$$
 
 -   $v_{0,d} \sim N(0, \tau_d^2)$
 -   $𝑢_{0,𝑝𝑑}∼𝑁(0, 𝜏_𝑝^2)$
@@ -2947,9 +2899,7 @@ With continuous time AR(1) residual structure within persons.
 
 The effect of momentary actual similarity on love is thus:
 
-$$
-\frac{∂𝐿_{𝑚𝑝𝑑}}{∂𝑆_{𝑚𝑝𝑑}^{𝑎𝑐𝑡,𝑤𝑖𝑡ℎ𝑖𝑛}} = 𝛽_1 + 𝛽_4𝑅_{𝑚𝑝𝑑}
-$$
+$$\frac{∂𝐿_{𝑚𝑝𝑑}}{∂𝑆_{𝑚𝑝𝑑}^{𝑎𝑐𝑡,𝑤𝑖𝑡ℎ𝑖𝑛}} = 𝛽_1 + 𝛽_4𝑅_{𝑚𝑝𝑑}$$
 
 Accordingly, $𝛽_1$ represents the momentary similarity–love association when $𝑅_{𝑚𝑝𝑑}=0$ (i.e., at the person’s typical level of perceived partner responsiveness), whereas $𝛽_4$ captures how much the similarity–love slope changes for a one-unit increase in momentary perceived responsiveness relative to that person’s typical level.
 
@@ -3094,12 +3044,10 @@ kable(tbl_h31p,
 
 To examine whether this moderation operated through the perceptual pathway identified in H2.1 (does responsiveness substitute for perceived similarity specifically), we also run
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 L_{mpd} &= f_{0,pd} + \phi_1 S_{mpd}^{\text{perc,within}} + \phi_2 \bar{S}_d^{\text{perc,between}} + \phi_3 S_{mpd}^{\text{act,within}} + \phi_4 \bar{S}_d^{\text{act,between}} + \phi_5 R_{mpd} \\
 &\quad + \phi_6 \left(S_{mpd}^{\text{perc,within}} \times R_{mpd}\right) + \phi_7 \left(S_{mpd}^{\text{act,within}} \times R_{mpd}\right) + \varepsilon_{mpd}
-\end{aligned}
-$$
+\end{aligned}$$
 
 ```{r h31_moderated_outcome}
 #| output-fold: true
@@ -3170,9 +3118,7 @@ kable(tbl_extended,
 
 Finally we also run the moderated mediation model to test whether responsiveness moderates the a-path, i.e. whether the strength of the actual $\rightarrow$ perceived PA similarity association depends on how responsive the partner is felt to be?
 
-$$
-S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​R_{mpd}​+θ_4​(S_{mpd}^{act,within}​×R_{mpd}​)+ε_{mpd}
-$$
+$$S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​R_{mpd}​+θ_4​(S_{mpd}^{act,within}​×R_{mpd}​)+ε_{mpd}$$
 
 ```{r h31_moderated_mediator}
 #| output-fold: true
@@ -3756,9 +3702,7 @@ plot(p_mod) +
 
 At each beep, participants report whether something positive and something negative happened since the previous beep (1 = no, 2 = yes, a little, 3 = yes, a lot). For each person 𝑝 in dyad 𝑑 at moment 𝑚, we will recode these items to a 0–2 scale (0 = no, 1 = a little, 2 = a lot). We will then construct a momentary context index
 
-$$
-𝐶_{𝑚𝑝𝑑} = 𝑃𝑜𝑠𝑖𝑡𝑖𝑣𝑒 𝐸𝑣𝑒𝑛𝑡_{𝑚𝑝𝑑}− 𝑁𝑒𝑔𝑎𝑡𝑖𝑣𝑒 𝐸𝑣𝑒𝑛𝑡_{𝑚𝑝𝑑}
-$$
+$$𝐶_{𝑚𝑝𝑑} = 𝑃𝑜𝑠𝑖𝑡𝑖𝑣𝑒 𝐸𝑣𝑒𝑛𝑡_{𝑚𝑝𝑑}− 𝑁𝑒𝑔𝑎𝑡𝑖𝑣𝑒 𝐸𝑣𝑒𝑛𝑡_{𝑚𝑝𝑑}$$
 
 so that higher values indicate relatively more positive (vs negative) contexts and lower values indicate relatively more negative contexts. Consistent with our general centering strategy, we will person-mean center $𝐶_{𝑚𝑝𝑑}$ so that 0 reflects a person’s typical event context, $𝐶_{𝑚𝑝𝑑} > 0$ in moments more positive than typical, and $𝐶_{𝑚𝑝𝑑} < 0$ in moments more negative than typical.
 
@@ -3799,9 +3743,7 @@ We hypothesized:
 
 We fit the model
 
-$$
-𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{𝑎𝑐𝑡,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{𝑎𝑐𝑡,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{act,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}
-$$
+$$𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{𝑎𝑐𝑡,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{𝑎𝑐𝑡,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{act,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}$$
 
 ```{r h33a_valence_moderation}
 #| output-fold: true
@@ -3885,9 +3827,7 @@ We hypothesized a mismatch effect whereby the positive association between actua
 
 We fit the model
 
-$$
-𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{perc,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{perc,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{perc,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}
-$$
+$$𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{perc,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{perc,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{perc,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}$$
 
 ```{r h33p_valence_moderation}
 #| output-fold: true
@@ -3971,11 +3911,9 @@ We hypothesized a mismatch effect whereby the positive association between perce
 
 To examine whether the impact of variation in event valence on the mediation of the actual PA similarity - love association through perceived PA similarity, we run the moderated outcome model `h33_outcome_mod`
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 L_{mpd}​=&\ f_{0,pd}​+\phi_1​S_{mpd}^{perc,within}​+\phi_2\bar{​S}_d^{perc,between}​+\phi_3​S_{mpd}^{act,within}​+\phi_4\bar{​S}_d^{act,between}​+\phi_5​C_{mpd}​+ \\& \quad \phi_6​(S_{mpd}^{perc,within}​×C_{mpd}​)+\phi_7​(S_{mpd}^{act,within}​×C_{mpd}​)+\varepsilon_{mpd}
-\end{aligned}
-$$
+\end{aligned}$$
 
 ```{r h33_moderated_outcome}
 #| output-fold: true
@@ -4042,9 +3980,7 @@ kable(tbl_extended,
 
 We also run the moderated mediation model to test whether event valence moderates the a-path, i.e. whether the strength of the actual $\rightarrow$ perceived PA similarity association depends on the event valence?
 
-$$
-S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​C_{mpd}​+θ_4​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}
-$$
+$$S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​C_{mpd}​+θ_4​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}$$
 
 ```{r h33_moderated_mediator}
 #| output-fold: true
@@ -4221,9 +4157,7 @@ We hypothesized:
 
 We fit the model
 
-$$
-𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{𝑎𝑐𝑡,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{𝑎𝑐𝑡,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{act,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}
-$$
+$$𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{𝑎𝑐𝑡,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{𝑎𝑐𝑡,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{act,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}$$
 
 ```{r h34a_valence_moderation}
 #| output-fold: true
@@ -4307,9 +4241,7 @@ We hypothesized a mismatch effect whereby the negative association between actua
 
 We fit the model
 
-$$
-𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{perc,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{perc,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{perc,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}
-$$
+$$𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{perc,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{perc,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{perc,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}$$
 
 ```{r h34p_valence_moderation}
 #| output-fold: true
@@ -4393,11 +4325,9 @@ We hypothesized a mismatch effect whereby the negative association between perce
 
 To examine whether variation in event valence moderates the mediation of the actual NA similarity – love association through perceived NA similarity, we run the moderated outcome model `h34_outcome_mod`
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 L_{mpd}​=& f_{0,pd}​+ϕ_1​S_{mpd}^{perc,within}​+ϕ_2\bar{​S}_d^{perc,between}​+ϕ_3​S_{mpd}^{act,within}​+ϕ_4\bar{​S}_d^{act,between}​+ϕ_5​C_{mpd}​+\\ & \quad ϕ_6​(S_{mpd}^{perc,within}​×C_{mpd}​)+ϕ_7​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}
-\end{aligned}
-$$
+\end{aligned}$$
 
 ```{r h34_moderated_outcome}
 #| output-fold: true
@@ -4464,9 +4394,7 @@ kable(tbl_extended,
 
 We also run the moderated mediation model to test whether event valence moderates the a-path, i.e. whether the strength of the actual $\rightarrow$ perceived NA similarity association depends on event valence.
 
-$$
-S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​C_{mpd}​+θ_4​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}
-$$
+$$S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​C_{mpd}​+θ_4​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}$$
 
 ```{r h34_moderated_mediator}
 #| output-fold: true
@@ -4638,18 +4566,14 @@ The preregistered event valence index $C_{mpd}$ is based on general positive and
 
 As an exploratory extension, we construct a broader event valence index $C^{expl}_{mpd}$ that additionally draws on the partner-specific event items (items 11 and 12 in the ESM beeps), which were presented in the complementary branches of the questionnaire (i.e., when at least one of the partner-presence or partner-contact conditions was met). Specifically:
 
-$$
-C^{expl}_{mpd} = \begin{cases}
+$$C^{expl}_{mpd} = \begin{cases}
   \text{pos_part}_{mpd} - \text{neg_part}_{mpd} & \text{if partner-item branch was taken}\\
   C_{mpd} = \text{pos_gen}_{mpd} - \text{neg_gen}_{mpd} & \text{if general-item branch was taken and partner items are NA}
-\end{cases}
-$$
+\end{cases}$$
 
 Like $C_{mpd}$, the index is person-mean centered:
 
-$$
-cC^{expl}_{mpd} = C^{expl}_{mpd} - \bar{C}^{expl}_{pd}
-$$
+$$cC^{expl}_{mpd} = C^{expl}_{mpd} - \bar{C}^{expl}_{pd}$$
 
 so that $cC^{expl}_{mpd} = 0$ reflects a person's own typical event context, positive values index more positive than typical moments, and negative values index more negative than typical moments.
 
@@ -4659,12 +4583,10 @@ This alternative covers a substantially larger portion of the beep-level data, a
 
 ### Actual PA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
 + \beta_3\, cC^{expl}_{mpd}
 + \beta_4 \left(S_{mpd}^{act,within} \times cC^{expl}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e1_h33a}
 #| output-fold: true
@@ -4726,12 +4648,10 @@ The interaction between actual PA similarity and extended event valence was sign
 
 ### Perceived PA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
 + \beta_3\, cC^{expl}_{mpd}
 + \beta_4 \left(S_{mpd}^{perc,within} \times cC^{expl}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e1_h33p}
 #| output-fold: true
@@ -4792,16 +4712,14 @@ For perceived PA similarity, the interaction with extended event valence was als
 
 The moderated outcome model tests whether $cC^{expl}_{mpd}$ moderates the b-path and/or the direct c'-path:
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
 + \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
 + \phi_5\, cC^{expl}_{mpd} \\
 &+ \phi_6 \left(S_{mpd}^{perc,within} \times cC^{expl}_{mpd}\right)
 + \phi_7 \left(S_{mpd}^{act,within}   \times cC^{expl}_{mpd}\right)
 + \varepsilon_{mpd}
-\end{aligned}
-$$
+\end{aligned}$$
 
 ```{r e1_h33_outcome_mod}
 #| output-fold: true
@@ -4877,12 +4795,10 @@ kable(tbl_e1_out,
 
 The moderated outcome model tests whether $cC^{expl}_{mpd}$ moderates the a-path:
 
-$$
-S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
+$$S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
 + \theta_3\, cC^{expl}_{mpd}
 + \theta_4 \left(S_{mpd}^{act,within} \times cC^{expl}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e1_h33_mediator_mod}
 #| output-fold: true
@@ -5059,12 +4975,10 @@ plot(p_mod) +
 
 ### Actual NA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
 + \beta_3\, cC^{expl}_{mpd}
 + \beta_4 \left(S_{mpd}^{act,within} \times cC^{expl}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e1_h34a}
 #| output-fold: true
@@ -5123,12 +5037,10 @@ With the extended valence index, the interaction between actual NA similarity an
 
 ### Perceived NA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
 + \beta_3\, cC^{expl}_{mpd}
 + \beta_4 \left(S_{mpd}^{perc,within} \times cC^{expl}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e1_h34p}
 #| output-fold: true
@@ -5187,16 +5099,14 @@ The same pattern emerged for perceived NA similarity: the interaction was signif
 
 ### Impact on NA mediation
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
 + \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
 + \phi_5\, cC^{expl}_{mpd} \\
 &+ \phi_6 \left(S_{mpd}^{perc,within} \times cC^{expl}_{mpd}\right)
 + \phi_7 \left(S_{mpd}^{act,within}   \times cC^{expl}_{mpd}\right)
 + \varepsilon_{mpd}
-\end{aligned}
-$$
+\end{aligned}$$
 
 ```{r e1_h34_outcome_mod}
 #| output-fold: true
@@ -5255,12 +5165,10 @@ kable(tbl_e1_out_na,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
-$$
-S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
+$$S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
 + \theta_3\, cC^{expl}_{mpd}
 + \theta_4 \left(S_{mpd}^{act,within} \times cC^{expl}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e1_h34_mediator_mod}
 #| output-fold: true
@@ -5459,13 +5367,11 @@ plot(p_mod) +
 
 Rather than treating event valence as a continuous moderator, this section uses a binary indicator of whether a negative event occurred at all. The variable $D^{neg}_{mpd}$ is coded as:
 
-$$
-D^{neg}_{mpd} = \begin{cases}
+$$D^{neg}_{mpd} = \begin{cases}
   1 & \text{if neg_gen}_{mpd} \geq 2 \;\text{or}\; \text{neg_part}_{mpd} \geq 2
       \quad \text{(something negative happened, even if only a little)}\\
   0 & \text{otherwise (nothing negative happened)}
-\end{cases}
-$$
+\end{cases}$$
 
 The variable pools across both flowchart branches: if the general event item is available, it determines the code; if it is `NA`, the partner event item is used instead. This produces a broader "was anything negative present?" contrast that does not require assuming the linear scaling of the continuous $C_{mpd}$ index.
 
@@ -5475,12 +5381,10 @@ Because $D^{neg}_{mpd}$ is a dummy (0 = no negative event, 1 = negative event oc
 
 ### Actual PA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
 + \beta_3\, D^{neg}_{mpd}
 + \beta_4 \left(S_{mpd}^{act,within} \times D^{neg}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e2_h33a}
 #| output-fold: true
@@ -5540,12 +5444,10 @@ The interaction between actual PA similarity and negative event occurrence was s
 
 ### Perceived PA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
 + \beta_3\, D^{neg}_{mpd}
 + \beta_4 \left(S_{mpd}^{perc,within} \times D^{neg}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e2_h33p}
 #| output-fold: true
@@ -5603,16 +5505,14 @@ Perceived PA similarity showed the same pattern: the interaction was significant
 
 ### Impact on PA mediation
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
 + \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
 + \phi_5\, D^{neg}_{mpd} \\
 &+ \phi_6 \left(S_{mpd}^{perc,within} \times D^{neg}_{mpd}\right)
 + \phi_7 \left(S_{mpd}^{act,within}   \times D^{neg}_{mpd}\right)
 + \varepsilon_{mpd}
-\end{aligned}
-$$
+\end{aligned}$$
 
 ```{r e2_h33_outcome_mod}
 #| output-fold: true
@@ -5685,12 +5585,10 @@ kable(tbl_e2_out,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
-$$
-S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
+$$S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
 + \theta_3\, D^{neg}_{mpd}
 + \theta_4 \left(S_{mpd}^{act,within} \times D^{neg}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e2_h33_mediator_mod}
 #| output-fold: true
@@ -5889,12 +5787,10 @@ plot(p_mod) +
 
 ### Actual NA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
 + \beta_3\, D^{neg}_{mpd}
 + \beta_4 \left(S_{mpd}^{act,within} \times D^{neg}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e2_h34a}
 #| output-fold: true
@@ -5952,12 +5848,10 @@ The interaction between actual NA similarity and negative event occurrence was s
 
 ### Perceived NA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
 + \beta_3\, D^{neg}_{mpd}
 + \beta_4 \left(S_{mpd}^{perc,within} \times D^{neg}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e2_h34p}
 #| output-fold: true
@@ -6015,16 +5909,14 @@ The interaction for perceived NA similarity was also significant ($\beta_4 = -0.
 
 ### Impact on NA mediation
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
 + \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
 + \phi_5\, D^{neg}_{mpd} \\
 &+ \phi_6 \left(S_{mpd}^{perc,within} \times D^{neg}_{mpd}\right)
 + \phi_7 \left(S_{mpd}^{act,within}   \times D^{neg}_{mpd}\right)
 + \varepsilon_{mpd}
-\end{aligned}
-$$
+\end{aligned}$$
 
 ```{r e2_h34_outcome_mod}
 #| output-fold: true
@@ -6083,12 +5975,10 @@ kable(tbl_e2_out_na,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
-$$
-S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
+$$S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
 + \theta_3\, D^{neg}_{mpd}
 + \theta_4 \left(S_{mpd}^{act,within} \times D^{neg}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e2_h34_mediator_mod}
 #| output-fold: true
@@ -6287,13 +6177,11 @@ plot(p_mod) +
 
 This section mirrors Alternative 2, but uses a binary indicator of whether a *positive* event occurred. The variable $D^{pos}_{mpd}$ is coded as:
 
-$$
-D^{pos}_{mpd} = \begin{cases}
+$$D^{pos}_{mpd} = \begin{cases}
   1 & \text{if pos_gen}_{mpd} \geq 2 \;\text{or}\; \text{pos_part}_{mpd} \geq 2
       \quad \text{(something positive happened, even if only a little)}\\
   0 & \text{otherwise (nothing positive happened)}
-\end{cases}
-$$
+\end{cases}$$
 
 The motivation for examining $D^{pos}_{mpd}$ separately is that positive and negative events may have asymmetric effects on the similarity–love association. Whereas the preregistered hypothesis (H3.3/H3.4) was formulated in terms of the net valence of the context, decomposing presence/absence of each event type independently allows us to identify whether it is the presence of a positive event, the absence of a negative event, or the balance between them that drives any observed moderation.
 
@@ -6303,12 +6191,10 @@ As with Alternative 2, the coefficient on $D^{pos}_{mpd}$ is interpretable as th
 
 ### Actual PA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
 + \beta_3\, D^{pos}_{mpd}
 + \beta_4 \left(S_{mpd}^{act,within} \times D^{pos}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e3_h33a}
 #| output-fold: true
@@ -6368,12 +6254,10 @@ The interaction between actual PA similarity and positive event occurrence was s
 
 ### Perceived PA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
 + \beta_3\, D^{pos}_{mpd}
 + \beta_4 \left(S_{mpd}^{perc,within} \times D^{pos}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e3_h33p}
 #| output-fold: true
@@ -6431,16 +6315,14 @@ For perceived PA similarity, the interaction with positive event occurrence was 
 
 ### Impact on PA mediation
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
 + \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
 + \phi_5\, D^{pos}_{mpd} \\
 &+ \phi_6 \left(S_{mpd}^{perc,within} \times D^{pos}_{mpd}\right)
 + \phi_7 \left(S_{mpd}^{act,within}   \times D^{pos}_{mpd}\right)
 + \varepsilon_{mpd}
-\end{aligned}
-$$
+\end{aligned}$$
 
 ```{r e3_h33_outcome_mod}
 #| output-fold: true
@@ -6499,12 +6381,10 @@ kable(tbl_e3_out,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
-$$
-S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
+$$S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
 + \theta_3\, D^{pos}_{mpd}
 + \theta_4 \left(S_{mpd}^{act,within} \times D^{pos}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e3_h33_mediator_mod}
 #| output-fold: true
@@ -6676,12 +6556,10 @@ plot(p_mod) +
 
 ### Actual NA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between}
 + \beta_3\, D^{pos}_{mpd}
 + \beta_4 \left(S_{mpd}^{act,within} \times D^{pos}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e3_h34a}
 #| output-fold: true
@@ -6739,12 +6617,10 @@ The interaction between actual NA similarity and positive event occurrence was s
 
 ### Perceived NA similarity
 
-$$
-L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
+$$L_{mpd} = b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between}
 + \beta_3\, D^{pos}_{mpd}
 + \beta_4 \left(S_{mpd}^{perc,within} \times D^{pos}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e3_h34p}
 #| output-fold: true
@@ -6802,16 +6678,14 @@ For perceived NA similarity, the interaction with positive event occurrence was 
 
 ### Impact on NA mediation
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 L_{mpd} =&\ f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between}
 + \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between}
 + \phi_5\, D^{pos}_{mpd} \\
 &+ \phi_6 \left(S_{mpd}^{perc,within} \times D^{pos}_{mpd}\right)
 + \phi_7 \left(S_{mpd}^{act,within}   \times D^{pos}_{mpd}\right)
 + \varepsilon_{mpd}
-\end{aligned}
-$$
+\end{aligned}$$
 
 ```{r e3_h34_outcome_mod}
 #| output-fold: true
@@ -6870,12 +6744,10 @@ kable(tbl_e3_out_na,
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
-$$
-S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
+$$S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
 + \theta_3\, D^{pos}_{mpd}
 + \theta_4 \left(S_{mpd}^{act,within} \times D^{pos}_{mpd}\right)
-+ \varepsilon_{mpd}
-$$
++ \varepsilon_{mpd}$$
 
 ```{r e3_h34_mediator_mod}
 #| output-fold: true

@@ -29,9 +29,7 @@ This document presents an **exploratory extension** to Study Component 1 (`06_st
 
 In our preregistered analyses, we operationalized affect similarity as a single composite index:
 
-$$
-S_{mpd} = \underbrace{\frac{X_{mpd} + Y_{mpd}}{2}}_{\text{elevation}} - \underbrace{|X_{mpd} - Y_{mpd}|}_{\text{distance}}
-$$
+$$S_{mpd} = \underbrace{\frac{X_{mpd} + Y_{mpd}}{2}}_{\text{elevation}} - \underbrace{|X_{mpd} - Y_{mpd}|}_{\text{distance}}$$
 
 where $X$ is the actor's person-mean centered affect and $Y$ is the partner's (actual or perceived) person-mean centered affect. This index captures the idea that similarity means shared, elevated affect, rewarding co-experienced high affect and penalizing mismatch. However, this operationalization collapses a fundamentally two-dimensional predictor space (actor affect $\times$ partner affect) into a single number. In doing so, it imposes specific assumptions about the functional form of the relationship between individual affect levels and love.
 
@@ -53,9 +51,7 @@ RSA is not a replacement for our preregistered approach, it answers a related bu
 
 RSA begins with a second-degree polynomial regression. For moment $m$, person $p$ in dyad $d$:
 
-$$
-L_{mpd} = b_0 + b_1 X_{mpd} + b_2 Y_{mpd} + b_3 X^2_{mpd} + b_4 X_{mpd} Y_{mpd} + b_5 Y^2_{mpd} + \varepsilon_{mpd}
-$$
+$$L_{mpd} = b_0 + b_1 X_{mpd} + b_2 Y_{mpd} + b_3 X^2_{mpd} + b_4 X_{mpd} Y_{mpd} + b_5 Y^2_{mpd} + \varepsilon_{mpd}$$
 
 where $L$ is momentary love, $X$ is the actor's person-mean centered affect, and $Y$ is the partner's person-mean centered affect (actual or perceived). The five predictors capture linear effects of each partner's affect ($b_1$, $b_2$), curvilinear effects ($b_3$, $b_5$), and their interaction ($b_4$).
 
@@ -65,9 +61,9 @@ This produces a three-dimensional response surface with actor affect on the $x$-
 
 Following @nestlerResponseSurfaceAnalysis2019, we embed this polynomial regression in our three-level structure (moments within persons within dyads). We fit the model with `nlme::lme()` using the same specification conventions as in SC1:
 
--   Random intercepts for dyads and persons within dyads
--   Continuous-time AR(1) residual correlation structure
--   Person-mean centered predictors (the `c*` variables already constructed in `04_data_construct.R`)
+- Random intercepts for dyads and persons within dyads
+- Continuous-time AR(1) residual correlation structure
+- Person-mean centered predictors (the `c*` variables already constructed in `04_data_construct.R`)
 
 The fixed effects $\hat{b}_1$ through $\hat{b}_5$ define the **average response surface** across all persons and dyads.
 
@@ -83,18 +79,14 @@ The polynomial coefficients can be transformed into five **response surface para
 
 The LOC traces the surface along the diagonal where actor and partner affect are equal ($X = Y$):
 
-$$
-\hat{L} = \hat{b}_0 + a_1 X + a_2 X^2
-$$
+$$\hat{L} = \hat{b}_0 + a_1 X + a_2 X^2$$
 
 with
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 a_1 &= b_1 + b_2 \quad &\text{(slope of the LOC at the origin)} \\
 a_2 &= b_3 + b_4 + b_5 \quad &\text{(curvature of the LOC)}
-\end{aligned}
-$$
+\end{aligned}$$
 
 The LOC tells us what happens to predicted love as both partners' affect increases together. A positive $a_1$ indicates a "rising ridge": love is higher when both partners share high affect than when both share low affect.
 
@@ -102,26 +94,20 @@ The LOC tells us what happens to predicted love as both partners' affect increas
 
 The LOIC is orthogonal to the LOC and passes through the origin ($X = -Y$):
 
-$$
-\hat{L} = \hat{b}_0 + a_3 X + a_4 X^2
-$$
+$$\hat{L} = \hat{b}_0 + a_3 X + a_4 X^2$$
 
 with
 
-$$
-\begin{aligned}
+$$\begin{aligned}
 a_3 &= b_1 - b_2 \quad &\text{(slope of the LOIC at the origin)} \\
 a_4 &= b_3 - b_4 + b_5 \quad &\text{(curvature of the LOIC)}
-\end{aligned}
-$$
+\end{aligned}$$
 
 The LOIC tells us what happens when the partners diverge. A negative $a_4$ (inverted-U/concave curvature) means love decreases as actor and partner affect diverge from each other.
 
 ### First Principal Axis (FPA) condition
 
-$$
-a_5 = b_3 - b_5
-$$
+$$a_5 = b_3 - b_5$$
 
 When $a_5 = 0$, the ridge of the surface (the FPA) lies exactly on the LOC ($X = Y$). If $a_5 \neq 0$, the ridge is shifted, meaning the "optimal" partner affect for maximizing love is not equal to the actor's own affect.
 
@@ -130,7 +116,7 @@ When $a_5 = 0$, the ridge of the surface (the FPA) lies exactly on the LOC ($X =
 A **strict congruence effect** requires five conditions simultaneously (Edwards, 2002; Humberg et al., 2019; Nestler et al., 2019):
 
 | Condition | Meaning                                                        |
-|---------------|---------------------------------------------------------|
+|------------------|------------------------------------------------------|
 | $a_1 = 0$ | LOC is flat: congruence at high vs. low levels equally good    |
 | $a_2 = 0$ | LOC is linear (no concavity/convexity)                         |
 | $a_3 = 0$ | LOIC is symmetric around the origin/LOC                        |
@@ -476,9 +462,7 @@ plot_rsa_contour <- function(model, data, x_var, y_var,
 
 ## Model specification
 
-$$
-L_{mpd} = b_{0,pd} + b_1 \, cPA^{own}_{mpd} + b_2 \, cPA^{part,act}_{mpd} + b_3 \, (cPA^{own}_{mpd})^2 + b_4 \, cPA^{own}_{mpd} \cdot cPA^{part,act}_{mpd} + b_5 \, (cPA^{part,act}_{mpd})^2 + \varepsilon_{mpd}
-$$
+$$L_{mpd} = b_{0,pd} + b_1 \, cPA^{own}_{mpd} + b_2 \, cPA^{part,act}_{mpd} + b_3 \, (cPA^{own}_{mpd})^2 + b_4 \, cPA^{own}_{mpd} \cdot cPA^{part,act}_{mpd} + b_5 \, (cPA^{part,act}_{mpd})^2 + \varepsilon_{mpd}$$
 
 with random intercepts $b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}$ and continuous-time AR(1) residuals.
 
@@ -546,9 +530,7 @@ plot_rsa_contour(
 
 ## Model specification
 
-$$
-L_{mpd} = b_{0,pd} + b_1 \, cNA^{own}_{mpd} + b_2 \, cNA^{part,act}_{mpd} + b_3 \, (cNA^{own}_{mpd})^2 + b_4 \, cNA^{own}_{mpd} \cdot cNA^{part,act}_{mpd} + b_5 \, (cNA^{part,act}_{mpd})^2 + \varepsilon_{mpd}
-$$
+$$L_{mpd} = b_{0,pd} + b_1 \, cNA^{own}_{mpd} + b_2 \, cNA^{part,act}_{mpd} + b_3 \, (cNA^{own}_{mpd})^2 + b_4 \, cNA^{own}_{mpd} \cdot cNA^{part,act}_{mpd} + b_5 \, (cNA^{part,act}_{mpd})^2 + \varepsilon_{mpd}$$
 
 **Expectation:** The SC1 results for H1.2 showed a negative within-dyad association between NA similarity and love ($\beta_1 = -0.15$, $p < .001$) and a positive between-dyad association ($\beta_2 = 0.62$, $p < .01$). Since this model estimates within-person effects, we focus on the within-person pattern. The negative within-dyad finding suggests $a_1 < 0$ (love decreasing as both partners' NA rises together). Whether a congruence pattern ($a_4 < 0$) emerges is less clear: the composite index's mismatch penalty may or may not correspond to a clean inverted-U on the LOIC when modeled as a free polynomial.
 
@@ -601,9 +583,7 @@ plot_rsa_contour(
 
 ## Model specification
 
-$$
-L_{mpd} = b_{0,pd} + b_1 \, cPA^{own}_{mpd} + b_2 \, cPA^{part,perc}_{mpd} + b_3 \, (cPA^{own}_{mpd})^2 + b_4 \, cPA^{own}_{mpd} \cdot cPA^{part,perc}_{mpd} + b_5 \, (cPA^{part,perc}_{mpd})^2 + \varepsilon_{mpd}
-$$
+$$L_{mpd} = b_{0,pd} + b_1 \, cPA^{own}_{mpd} + b_2 \, cPA^{part,perc}_{mpd} + b_3 \, (cPA^{own}_{mpd})^2 + b_4 \, cPA^{own}_{mpd} \cdot cPA^{part,perc}_{mpd} + b_5 \, (cPA^{part,perc}_{mpd})^2 + \varepsilon_{mpd}$$
 
 **Expectation:** The preregistered H1.3 tested perceived PA similarity as a mediator. The direct effect of perceived PA similarity on love was significant within persons ($\beta = 0.11$, $p < .001$) in the Step 1a models. In RSA terms, we would again expect a rising ridge ($a_1 > 0$), potentially with a congruence component ($a_4 < 0$). If the perceived similarity surface closely resembles the actual similarity surface, this would suggest that perceived and actual congruence tap into the same underlying process.
 
@@ -656,9 +636,7 @@ plot_rsa_contour(
 
 ## Model specification
 
-$$
-L_{mpd} = b_{0,pd} + b_1 \, cNA^{own}_{mpd} + b_2 \, cNA^{part,perc}_{mpd} + b_3 \, (cNA^{own}_{mpd})^2 + b_4 \, cNA^{own}_{mpd} \cdot cNA^{part,perc}_{mpd} + b_5 \, (cNA^{part,perc}_{mpd})^2 + \varepsilon_{mpd}
-$$
+$$L_{mpd} = b_{0,pd} + b_1 \, cNA^{own}_{mpd} + b_2 \, cNA^{part,perc}_{mpd} + b_3 \, (cNA^{own}_{mpd})^2 + b_4 \, cNA^{own}_{mpd} \cdot cNA^{part,perc}_{mpd} + b_5 \, (cNA^{part,perc}_{mpd})^2 + \varepsilon_{mpd}$$
 
 **Expectation:** As with Model 2, the NA surface may show a descending ridge ($a_1 < 0$) reflecting that shared high NA predicts lower love. The congruence component is exploratory: it is unclear whether a clean inverted-U on the LOIC will emerge for perceived NA, particularly given that the perceived NA similarity effect in the preregistered analyses was significant within persons.
 
@@ -753,7 +731,7 @@ This analysis is exploratory and should be interpreted with appropriate caution:
 
 # References
 
--   Edwards, J. R. (2002). Alternatives to difference scores: Polynomial regression analysis and response surface methodology. In F. Drasgow & N. Schmitt (Eds.), *Measuring and analyzing behavior in organizations* (pp. 350–400). Jossey-Bass.
--   Humberg, S., Nestler, S., & Back, M. D. (2019). Response surface analysis in personality and social psychology: Checklist and clarifications for the case of congruence hypotheses. *Social Psychological and Personality Science*, *10*(3), 409–419.
--   Nestler, S., Humberg, S., & Schönbrodt, F. D. (2019). Response surface analysis with multilevel data: Illustration for the case of congruence hypotheses. *Psychological Methods*, *24*(3), 291–308.
--   Shanock, L. R., Baran, B. E., Gentry, W. A., Pattison, S. C., & Heggestad, E. D. (2010). Polynomial regression with response surface analysis: A powerful approach for examining moderation and overcoming limitations of difference scores. *Journal of Business and Psychology*, *25*, 543–554.
+- Edwards, J. R. (2002). Alternatives to difference scores: Polynomial regression analysis and response surface methodology. In F. Drasgow & N. Schmitt (Eds.), *Measuring and analyzing behavior in organizations* (pp. 350–400). Jossey-Bass.
+- Humberg, S., Nestler, S., & Back, M. D. (2019). Response surface analysis in personality and social psychology: Checklist and clarifications for the case of congruence hypotheses. *Social Psychological and Personality Science*, *10*(3), 409–419.
+- Nestler, S., Humberg, S., & Schönbrodt, F. D. (2019). Response surface analysis with multilevel data: Illustration for the case of congruence hypotheses. *Psychological Methods*, *24*(3), 291–308.
+- Shanock, L. R., Baran, B. E., Gentry, W. A., Pattison, S. C., & Heggestad, E. D. (2010). Polynomial regression with response surface analysis: A powerful approach for examining moderation and overcoming limitations of difference scores. *Journal of Business and Psychology*, *25*, 543–554.

@@ -4,6 +4,9 @@
 .RData
 .Ruserdata
 
+# VS Code
+.vscode/
+
 # MacOs
 .DS_Store
 
