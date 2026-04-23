@@ -33,7 +33,7 @@ $$S_{mpd} = \underbrace{\frac{X_{mpd} + Y_{mpd}}{2}}_{\text{elevation}} - \under
 
 where $X$ is the actor's person-mean centered affect and $Y$ is the partner's (actual or perceived) person-mean centered affect. This index captures the idea that similarity means shared, elevated affect, rewarding co-experienced high affect and penalizing mismatch. However, this operationalization collapses a fundamentally two-dimensional predictor space (actor affect $\times$ partner affect) into a single number. In doing so, it imposes specific assumptions about the functional form of the relationship between individual affect levels and love.
 
-**Response surface analysis** (RSA; @edwardsAlternativesDifferenceScores2002; @nestlerResponseSurfaceAnalysis2019) offers a complementary approach. Rather than constructing a similarity score upfront, RSA fits a second-degree polynomial regression with both individual affect levels as separate predictors and then analyzes the shape of the resulting three-dimensional response surface. This allows the data to reveal whether love is maximized along the line where actor and partner affect match (a congruence pattern), whether higher shared levels additionally matter (a rising ridge), or whether some other, more complex pattern emerges, without imposing the specific constraints baked into the composite similarity index.
+**Response surface analysis** (RSA) [@edwardsAlternativesDifferenceScores2002; @nestlerResponseSurfaceAnalysis2019; @shanockPolynomialRegressionResponse2010] offers a complementary approach. Rather than constructing a similarity score upfront, RSA fits a second-degree polynomial regression with both individual affect levels as separate predictors and then analyzes the shape of the resulting three-dimensional response surface. This allows the data to reveal whether love is maximized along the line where actor and partner affect match (a congruence pattern), whether higher shared levels additionally matter (a rising ridge), or whether some other, more complex pattern emerges, without imposing the specific constraints baked into the composite similarity index.
 
 ## Why RSA as an exploratory complement?
 
@@ -51,7 +51,10 @@ RSA is not a replacement for our preregistered approach, it answers a related bu
 
 RSA begins with a second-degree polynomial regression. For moment $m$, person $p$ in dyad $d$:
 
-$$L_{mpd} = b_0 + b_1 X_{mpd} + b_2 Y_{mpd} + b_3 X^2_{mpd} + b_4 X_{mpd} Y_{mpd} + b_5 Y^2_{mpd} + \varepsilon_{mpd}$$
+$$\begin{aligned}
+L_{mpd} =\ & b_0 + b_1 X_{mpd} + b_2 Y_{mpd} \\
+& + b_3 X^2_{mpd} + b_4 X_{mpd} Y_{mpd} + b_5 Y^2_{mpd} + \varepsilon_{mpd}
+\end{aligned}$$
 
 where $L$ is momentary love, $X$ is the actor's person-mean centered affect, and $Y$ is the partner's person-mean centered affect (actual or perceived). The five predictors capture linear effects of each partner's affect ($b_1$, $b_2$), curvilinear effects ($b_3$, $b_5$), and their interaction ($b_4$).
 
@@ -113,10 +116,10 @@ When $a_5 = 0$, the ridge of the surface (the FPA) lies exactly on the LOC ($X =
 
 ## Interpreting surface patterns
 
-A **strict congruence effect** requires five conditions simultaneously (Edwards, 2002; Humberg et al., 2019; Nestler et al., 2019):
+A **strict congruence effect** requires five conditions simultaneously [@edwardsAlternativesDifferenceScores2002; @humbergResponseSurfaceAnalysis2019; @nestlerResponseSurfaceAnalysis2019]:
 
 | Condition | Meaning                                                        |
-|-------------------|-----------------------------------------------------|
+|-----------------------|-------------------------------------------------|
 | $a_1 = 0$ | LOC is flat: congruence at high vs. low levels equally good    |
 | $a_2 = 0$ | LOC is linear (no concavity/convexity)                         |
 | $a_3 = 0$ | LOIC is symmetric around the origin/LOC                        |
@@ -131,7 +134,7 @@ Translating the preregistered hypotheses into RSA terms:
 
 **PA similarity (H1.1/H1.3).** Our preregistered index captures both elevation and congruence. In RSA, we would expect a **rising ridge** pattern: a positive $a_1$ (love increases along the LOC, i.e., shared high PA is better than shared low PA) combined with a negative $a_4$ (love drops when partners' PA diverges). This would confirm that the similarity index's two components — shared elevation and low mismatch — both contribute independently.
 
-**NA similarity (H1.2/H1.4).** The preregistered hypothesis predicted that higher NA similarity is associated with lower love (within dyads) — but the SC1 results showed the opposite at the within-dyad level. In RSA terms, the within-dyad finding ($\beta_1 = -0.15$, $p < .001$) suggests a pattern where shared negative affect relates to lower love. We might expect a negative $a_1$ (love decreases along the LOC as shared NA rises). Whether a congruence effect ($a_4 < 0$) emerges for NA is an open question: it would mean that NA mismatch is worse for love than matched NA levels, regardless of the direction.
+**NA similarity (H1.2/H1.4).** The preregistered hypothesis predicted that higher NA similarity is associated with lower love (within dyads), while the SC1 results showed the opposite at the within-dyad level. In RSA terms, the within-dyad finding ($\beta_1 = -0.15$, $p < .001$) suggests a pattern where shared negative affect relates to lower love. We might expect a negative $a_1$ (love decreases along the LOC as shared NA rises). Whether a congruence effect ($a_4 < 0$) emerges for NA is an open question: it would mean that NA mismatch is worse for love than matched NA levels, regardless of the direction.
 
 # Data Preparation
 
@@ -238,7 +241,7 @@ plot_rsa_surface <- function(model, data, x_var, y_var,
   x_range <- x_range
   y_range <- y_range
   
-  n_grid <- 300L
+  n_grid <- 150L
   x_seq  <- seq(x_range[1], x_range[2], length.out = n_grid)
   y_seq  <- seq(y_range[1], y_range[2], length.out = n_grid)
   
@@ -422,7 +425,8 @@ plot_rsa_surface <- function(model, data, x_var, y_var,
           borderwidth = 1
         )
       )
-    )
+    ) %>%
+    plotly::partial_bundle("gl3d")
 }
 
 # --- 2D contour plot as a static alternative ---
@@ -462,7 +466,11 @@ plot_rsa_contour <- function(model, data, x_var, y_var,
 
 ## Model specification
 
-$$L_{mpd} = b_{0,pd} + b_1 \, cPA^{own}_{mpd} + b_2 \, cPA^{part,act}_{mpd} + b_3 \, (cPA^{own}_{mpd})^2 + b_4 \, cPA^{own}_{mpd} \cdot cPA^{part,act}_{mpd} + b_5 \, (cPA^{part,act}_{mpd})^2 + \varepsilon_{mpd}$$
+$$\begin{aligned}
+L_{mpd} =\ & b_{0,pd} + b_1 \, cPA^{own}_{mpd} + b_2 \, cPA^{part,act}_{mpd} \\
+& + b_3 \, (cPA^{own}_{mpd})^2 + b_4 \, cPA^{own}_{mpd} \cdot cPA^{part,act}_{mpd} \\
+& + b_5 \, (cPA^{part,act}_{mpd})^2 + \varepsilon_{mpd}
+\end{aligned}$$
 
 with random intercepts $b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}$ and continuous-time AR(1) residuals.
 
@@ -504,12 +512,20 @@ plot_rsa_surface(
   y_lab = "Partner PA (person-centered)",
   title = "Actual PA → Love"
 )
+```
+
+### A note on visual curvature and data range
+
+Because the polynomial's quadratic terms scale with $X^2$ and $Y^2$, the surface curves most dramatically near the edges of the plotting range, where observations are sparse or absent. Rendering the surface over the full centered scale ($\pm 95$) therefore emphasises regions the data barely constrain and can give the impression of stronger curvature than is actually present across the bulk of the observations. To illustrate this, we show a zoomed version of the Model 1 surface restricted to roughly where most observations lie ($\pm 30$ on each centered axis). Within this range the surface is visibly flatter and closer to a tilted plane, which is a more honest reflection of the relationships supported by the data. We render this zoomed view for Model 1 only as an illustration; the same caveat applies when interpreting the full-range plots for Models 2–4, and readers should weight the central region of each surface more heavily than the corners.
+
+```{r rsa_PA_act_3d_zoom}
+#| fig-cap: "Zoomed view of the actual PA response surface, restricted to the region where most observations lie (±30 on each centered axis). Compared with the full-range plot above, the surface is visibly flatter in this region, illustrating that the apparent curvature at the edges is driven by the quadratic terms extrapolating into sparsely observed areas."
 
 plot_rsa_surface(
   rsa_PA_act, esm_data, "cPA_own", "cPA_part_act",
   x_lab = "Actor PA (person-centered)",
   y_lab = "Partner PA (person-centered)",
-  title = "Actual PA → Love",
+  title = "Actual PA → Love (zoomed to observed range)",
   x_range = c(-30,30),
   y_range = c(-30,30)
 )
@@ -526,11 +542,27 @@ plot_rsa_contour(
 )
 ```
 
+## Results and connection to SC1
+
+Three features of this surface stand out.
+
+**Positive LOC slope (**$a_1 = 0.310$, $p < .001$) — rising ridge. Predicted love increases as both partners' PA rise together. This is the elevation component of the preregistered similarity index, and closely matches the `PAelevation` coefficient ($\beta_1 = 0.29$) obtained in the SC1 directional-decomposition follow-up (`h11_decomposed`).
+
+**Positive LOIC slope (**$a_3 = 0.178$, $p < .001$) — directional asymmetry. The surface is tilted along the antidiagonal: moving from "partner higher PA than actor" toward "actor higher PA than partner" raises predicted love. This is the same asymmetry that SC1 identified in its elevation sensitivity (`h11_elevation`), where the within-dyad similarity coefficient unexpectedly flipped sign ($\beta_1 = -0.05$) once actor and partner PA were added as covariates. SC1's decomposition model resolved that puzzle by showing that the signed difference `PAdiff` $=$ `PAown` $-$ `PApart` had a positive coefficient ($\beta_2 = +0.075$, $p < .001$), meaning the actor being happier than the partner predicts more love, not less. The RSA reaches the same conclusion without needing a separate decomposition: because the polynomial has no absolute-value constraint, the asymmetry is visible directly as a significant $a_3$. The symmetric $|X - Y|$ term in the composite similarity index was averaging "actor exceeds partner" with "partner exceeds actor", two effects of opposite sign but comparable magnitude, and the resulting coefficient was therefore an artefact of the operationalization rather than substantive evidence that mismatch harms love.
+
+**Curvatures are negligible in magnitude.** Both $a_2 = -0.001$ and $a_4 = 0.005$ reach significance (the sample is large) but are an order of magnitude smaller than $a_1$ and $a_3$. Within the observed data range they shift predicted love by only a few points. Importantly, $a_4$ is *positive*, not negative, so there is no inverted-U mismatch penalty. The data-supported shape is a tilted plane with very gentle curvature, not the strict-congruence surface that the preregistered mismatch framing implicitly assumed.
+
+**The zoomed plot is where this is most visible.** The full-range plot makes the quadratic terms dominate visually at the edges, but the zoom to where the data actually live shows the surface as essentially a tilted plane, with a positive gradient in both the LOC and LOIC directions. This is the RSA counterpart of the argument made in SC1: once the symmetric mismatch constraint is relaxed (by RSA) or decomposed (by the signed-difference model in SC1), the structure of the joint PA–love association is elevation plus direction, not symmetric congruence.
+
 # Model 2: Actual NA — Response Surface
 
 ## Model specification
 
-$$L_{mpd} = b_{0,pd} + b_1 \, cNA^{own}_{mpd} + b_2 \, cNA^{part,act}_{mpd} + b_3 \, (cNA^{own}_{mpd})^2 + b_4 \, cNA^{own}_{mpd} \cdot cNA^{part,act}_{mpd} + b_5 \, (cNA^{part,act}_{mpd})^2 + \varepsilon_{mpd}$$
+$$\begin{aligned}
+L_{mpd} =\ & b_{0,pd} + b_1 \, cNA^{own}_{mpd} + b_2 \, cNA^{part,act}_{mpd} \\
+& + b_3 \, (cNA^{own}_{mpd})^2 + b_4 \, cNA^{own}_{mpd} \cdot cNA^{part,act}_{mpd} \\
+& + b_5 \, (cNA^{part,act}_{mpd})^2 + \varepsilon_{mpd}
+\end{aligned}$$
 
 **Expectation:** The SC1 results for H1.2 showed a negative within-dyad association between NA similarity and love ($\beta_1 = -0.15$, $p < .001$) and a positive between-dyad association ($\beta_2 = 0.62$, $p < .01$). Since this model estimates within-person effects, we focus on the within-person pattern. The negative within-dyad finding suggests $a_1 < 0$ (love decreasing as both partners' NA rises together). Whether a congruence pattern ($a_4 < 0$) emerges is less clear: the composite index's mismatch penalty may or may not correspond to a clean inverted-U on the LOIC when modeled as a free polynomial.
 
@@ -579,11 +611,25 @@ plot_rsa_contour(
 )
 ```
 
+## Results and connection to SC1
+
+The actual-NA surface is the sign-mirrored counterpart of the actual-PA surface and tells a structurally analogous story.
+
+**Negative LOC slope (**$a_1 = -0.287$, $p < .001$) — descending ridge. Predicted love decreases as both partners' NA rises together. This reproduces the within-dyad H1.2 finding from SC1 (`h12`) and shows that the within-person NA–love association operates mainly via shared elevation.
+
+**Negative LOIC slope (**$a_3 = -0.131$, $p < .001$) — directional asymmetry. The surface is tilted: moments in which the actor's NA is *higher* than the partner's predict lower love than moments in which the partner's NA is higher. This mirrors the signed-difference result in SC1's NA elevation sensitivity (`h12_elevation`): the signed `NAown` $-$ `NApart` term carried a negative coefficient ($\beta = -0.07$, $p < .001$). As with PA, the composite similarity index's $|X - Y|$ term was averaging these two directional effects into a single symmetric number.
+
+**Curvatures negligible.** $a_2 = -0.002$ and $a_4 = 0.003$ reach significance but are very small. $a_4$ is positive, so also here no inverted-U congruence penalty emerges. The NA surface, like the PA surface, is essentially a tilted plane: shared elevation (in the negative direction for NA) plus a directional tilt, not a symmetric mismatch pattern.
+
 # Model 3: Perceived PA — Response Surface
 
 ## Model specification
 
-$$L_{mpd} = b_{0,pd} + b_1 \, cPA^{own}_{mpd} + b_2 \, cPA^{part,perc}_{mpd} + b_3 \, (cPA^{own}_{mpd})^2 + b_4 \, cPA^{own}_{mpd} \cdot cPA^{part,perc}_{mpd} + b_5 \, (cPA^{part,perc}_{mpd})^2 + \varepsilon_{mpd}$$
+$$\begin{aligned}
+L_{mpd} =\ & b_{0,pd} + b_1 \, cPA^{own}_{mpd} + b_2 \, cPA^{part,perc}_{mpd} \\
+& + b_3 \, (cPA^{own}_{mpd})^2 + b_4 \, cPA^{own}_{mpd} \cdot cPA^{part,perc}_{mpd} \\
+& + b_5 \, (cPA^{part,perc}_{mpd})^2 + \varepsilon_{mpd}
+\end{aligned}$$
 
 **Expectation:** The preregistered H1.3 tested perceived PA similarity as a mediator. The direct effect of perceived PA similarity on love was significant within persons ($\beta = 0.11$, $p < .001$) in the Step 1a models. In RSA terms, we would again expect a rising ridge ($a_1 > 0$), potentially with a congruence component ($a_4 < 0$). If the perceived similarity surface closely resembles the actual similarity surface, this would suggest that perceived and actual congruence tap into the same underlying process.
 
@@ -632,11 +678,25 @@ plot_rsa_contour(
 )
 ```
 
+## Results and connection to SC1
+
+**Stronger LOC slope than for actual PA ($a_1 = 0.385$, $p < .001$).** Predicted love rises more steeply when the actor's PA and the actor's *perception* of the partner's PA move together than in the corresponding actual-PA surface ($a_1 = 0.310$, Model 1). This tracks the SC1 H1.3.PA finding (`h13_PA`) that perceived PA similarity carries a substantially larger within-person association with love than actual PA similarity when both are in the model.
+
+**No directional asymmetry ($a_3 = -0.012$, n.s.).** The pronounced tilt seen in Model 1 disappears when the partner's affect is replaced by the actor's perception of it. Substantively: the actor's perception of the partner's PA is already aligned more symmetrically with the actor's own PA than the partner's self-reported PA is, so the perceived-PA surface is close to rotationally symmetric around the LOC.
+
+**Curvatures negligible.** $a_2$ is non-significant; $a_4 = 0.004$ is significant but small and positive, so, consistent with Models 1 and 2, no inverted-U mismatch pattern is present.
+
+The perceived-PA surface is effectively a clean rising ridge: shared (perceived) PA elevation drives love, without a meaningful directional or congruence component. The contrast with Model 1 also sharpens the SC1 directional-asymmetry interpretation: the asymmetry only appears when the partner's affect enters the model objectively, not when it enters as perceived by the actor.
+
 # Model 4: Perceived NA — Response Surface
 
 ## Model specification
 
-$$L_{mpd} = b_{0,pd} + b_1 \, cNA^{own}_{mpd} + b_2 \, cNA^{part,perc}_{mpd} + b_3 \, (cNA^{own}_{mpd})^2 + b_4 \, cNA^{own}_{mpd} \cdot cNA^{part,perc}_{mpd} + b_5 \, (cNA^{part,perc}_{mpd})^2 + \varepsilon_{mpd}$$
+$$\begin{aligned}
+L_{mpd} =\ & b_{0,pd} + b_1 \, cNA^{own}_{mpd} + b_2 \, cNA^{part,perc}_{mpd} \\
+& + b_3 \, (cNA^{own}_{mpd})^2 + b_4 \, cNA^{own}_{mpd} \cdot cNA^{part,perc}_{mpd} \\
+& + b_5 \, (cNA^{part,perc}_{mpd})^2 + \varepsilon_{mpd}
+\end{aligned}$$
 
 **Expectation:** As with Model 2, the NA surface may show a descending ridge ($a_1 < 0$) reflecting that shared high NA predicts lower love. The congruence component is exploratory: it is unclear whether a clean inverted-U on the LOIC will emerge for perceived NA, particularly given that the perceived NA similarity effect in the preregistered analyses was significant within persons.
 
@@ -685,6 +745,16 @@ plot_rsa_contour(
 )
 ```
 
+## Results and connection to SC1
+
+**Descending ridge, slightly steeper than for actual NA ($a_1 = -0.310$, $p < .001$).** As actor NA and the actor's perception of the partner's NA rise together, predicted love drops. Magnitude exceeds the corresponding actual-NA LOC slope (Model 2: $a_1 = -0.287$), consistent with the SC1 H1.3.NA finding (`h13_NA`) that perceived NA similarity carries a stronger negative within-person association with love than actual NA similarity when both are modelled.
+
+**Small residual directional asymmetry ($a_3 = -0.072$, $p < .001$).** A mild negative LOIC slope remains, smaller in magnitude than for actual NA (Model 2: $a_3 = -0.131$) but in the same direction. Unlike the perceived-PA surface, where perception fully absorbed the directional signal, a residual directional tilt persists for NA.
+
+**Curvatures negligible.** Neither $a_2$ nor $a_4$ reaches significance. No curvilinear component, and in particular no inverted-U congruence pattern.
+
+The perceived-NA surface is thus essentially a tilted plane, dominated by the descending-ridge elevation effect.
+
 # Summary Comparison
 
 ## RSA parameters across models
@@ -705,15 +775,23 @@ kable(summary_tbl, digits = 3,
                        "Perceived PA" = 5, "Perceived NA" = 5))
 ```
 
+## Cross-model pattern
+
+Reading the summary table across the four models produces a consistent picture.
+
+**LOC slopes ($a_1$) are large and in the expected direction in every model.** PA models ($a_1 = 0.310$ actual, $0.385$ perceived) show a rising ridge; NA models ($a_1 = -0.287$ actual, $-0.310$ perceived) show a descending ridge. In every case the perceived-affect LOC slope is steeper than its actual-affect counterpart, consistent with the SC1 result that perceived similarity carries more of the within-person association with love than actual similarity.
+
+**LOIC slopes ($a_3$) are substantial in the actual-affect models and attenuated in the perceived-affect models.** Actual PA shows $a_3 = 0.178$ ($p < .001$) and actual NA shows $a_3 = -0.131$ ($p < .001$); perceived PA drops to $a_3 = -0.012$ (n.s.) and perceived NA to $a_3 = -0.072$. This pattern is the RSA signature of the directional-asymmetry story that SC1 developed from its signed-difference decompositions: when partner affect enters the model objectively, the surface is tilted in the direction where the actor's affect exceeds the partner's; when partner affect enters as perceived by the actor, this asymmetry is largely absorbed.
+
+**Curvatures ($a_2$, $a_4$) are small everywhere and in no case consistent with an inverted-U congruence pattern.** Where $a_4$ reaches significance it is *positive*, not negative, and always an order of magnitude smaller than $a_1$ or $a_3$. None of the four surfaces show the strict-congruence shape (flat LOC plus concave LOIC) that the preregistered mismatch framing implicitly assumed.
+
 ## Connecting RSA to the preregistered similarity index
 
-The response surfaces above provide a complementary lens on the same data analyzed in Study Component 1. A few points of connection:
+**Elevation and direction, not symmetric congruence.** The composite similarity index $S = \tfrac{X+Y}{2} - |X-Y|$ combines elevation and a symmetric mismatch penalty. The RSA surfaces support the elevation component clearly ($a_1$ is large and signed as expected in all four models) but not the symmetric mismatch component (no model shows $a_4 < 0$). What the RSA *does* show, consistently for actual affect, is a directional tilt: $a_3$ large and signed in the direction that matches the signed-difference decompositions in SC1.
 
-**Elevation vs. congruence decomposition.** Where the preregistered similarity index collapses elevation and mismatch into a single score, RSA separates them. The LOC parameters ($a_1$, $a_2$) capture the elevation component, how love changes as both partners' affect rises together. The LOIC parameters ($a_3$, $a_4$) capture the congruence component, how love changes as partners diverge. If both the LOC and LOIC contribute to the surface shape, this supports the idea that our composite index captures two meaningfully distinct processes.
+**The sign flip in SC1's elevation sensitivity is an artefact of the absolute-value constraint.** SC1 found that adding actor and partner PA as covariates to H1.1 turned the within-dyad similarity coefficient negative (`h11_elevation`). SC1's directional-decomposition follow-up (`h11_decomposed`) diagnosed this as a consequence of $|X - Y|$ collapsing two opposite-direction effects into one symmetric number, and the ceiling-restricted follow-up showed that scale compression contributed only modestly. The RSA confirms this diagnosis independently: with the absolute-value constraint removed, the polynomial recovers both the elevation signal ($a_1 > 0$) and the directional signal ($a_3 > 0$) as separate, positive contributions to love. There is no underlying "mismatch harms love" effect to be found once the operationalization is relaxed.
 
-**Asymmetric mismatch.** The composite similarity index assumes symmetric mismatch penalties ($|X - Y|$). If the RSA surface is asymmetric around the LOC (visible as $a_3 \neq 0$ or an asymmetric contour pattern), this suggests that actor-exceeds-partner and partner-exceeds-actor mismatches have different implications for love.
-
-**Nonlinearity.** The polynomial model can capture curvilinear effects ($a_2 \neq 0$) that the preregistered linear models cannot. A dome-shaped surface ($a_2 < 0$) would suggest diminishing returns of shared elevated affect — shared PA above some threshold does not further increase love.
+**Nonlinearity is not a meaningful feature of these data.** The polynomial could in principle capture dome-shaped LOC ($a_2 < 0$) or inverted-U LOIC ($a_4 < 0$) patterns; neither appears. The joint actor–partner affect landscape, within the range where observations lie, is well approximated by a tilted plane. This has practical implications for how SC1 results should be read: the preregistered linear similarity models are not missing a hidden curvilinear structure.
 
 # Limitations of This Exploration
 
@@ -728,10 +806,3 @@ This analysis is exploratory and should be interpreted with appropriate caution:
 4.  **No random slopes.** We fit random intercepts only, consistent with SC1. Adding random slopes for the five polynomial terms (as Nestler et al. recommend for the full approach) would quickly exhaust the data, given our sample size.
 
 5.  **Polynomial boundary.** Second-degree polynomials can produce implausible predictions (e.g., negative love or values $> 100$) in regions of the predictor space with sparse data. The 3D plots are trimmed to the central 98% of the observed data to mitigate this, but extrapolation beyond the data range should not be trusted.
-
-# References
-
-- Edwards, J. R. (2002). Alternatives to difference scores: Polynomial regression analysis and response surface methodology. In F. Drasgow & N. Schmitt (Eds.), *Measuring and analyzing behavior in organizations* (pp. 350–400). Jossey-Bass.
-- Humberg, S., Nestler, S., & Back, M. D. (2019). Response surface analysis in personality and social psychology: Checklist and clarifications for the case of congruence hypotheses. *Social Psychological and Personality Science*, *10*(3), 409–419.
-- Nestler, S., Humberg, S., & Schönbrodt, F. D. (2019). Response surface analysis with multilevel data: Illustration for the case of congruence hypotheses. *Psychological Methods*, *24*(3), 291–308.
-- Shanock, L. R., Baran, B. E., Gentry, W. A., Pattison, S. C., & Heggestad, E. D. (2010). Polynomial regression with response surface analysis: A powerful approach for examining moderation and overcoming limitations of difference scores. *Journal of Business and Psychology*, *25*, 543–554.

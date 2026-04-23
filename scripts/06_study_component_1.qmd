@@ -34,14 +34,14 @@ Study Component 1 examines how **momentary affect similarity** in daily life rel
 
 We distinguish:
 
--   **Positive Affect (PA)** and **Negative Affect (NA)** (analyzed separately)
--   **Actual similarity** (self-reported affect compared to partner's self-reported affect)
--   **Perceived similarity** (self-reported affect compared to actor's perception of partner's affect)
+- **Positive Affect (PA)** and **Negative Affect (NA)** (analyzed separately)
+- **Actual similarity** (self-reported affect compared to partner's self-reported affect)
+- **Perceived similarity** (self-reported affect compared to actor's perception of partner's affect)
 
 Similarity is conceptualized as **shared, co-experienced elevated affect**, operationalized as:
 
--   Dyadic elevation (mean level)
--   Penalized by mismatch (absolute difference)
+- Dyadic elevation (mean level)
+- Penalized by mismatch (absolute difference)
 
 The main research questions are:
 
@@ -57,16 +57,16 @@ All analyses use multilevel models with moments (m) nested within persons (p) ne
 
 Let:
 
--   $L_{mpd}$ = momentary love
--   $A_{mpd}$ = actor affect
--   $P^{act}_{mpd}$ = partner's actual affect
--   $P^{perc}_{mpd}$ = partner affect as perceived by actor
+- $L_{mpd}$ = momentary love
+- $A_{mpd}$ = actor affect
+- $P^{act}_{mpd}$ = partner's actual affect
+- $P^{perc}_{mpd}$ = partner affect as perceived by actor
 
 Three-level structure:
 
--   Moments ($m$)
--   Persons ($p$)
--   Dyads ($d$)
+- Moments ($m$)
+- Persons ($p$)
+- Dyads ($d$)
 
 ### Person-Mean Centering
 
@@ -163,9 +163,9 @@ $$\bar{S}^{perc,between}_{pd} = \bar{S}^{perc}_{pd} - \bar{\bar{S}}^{perc}$$
 
 ### Random Effects
 
--   Random intercepts for dyads
--   Random intercepts for persons nested within dyads
--   No random slopes in primary models
+- Random intercepts for dyads
+- Random intercepts for persons nested within dyads
+- No random slopes in primary models
 
 ### Temporal Dependence
 
@@ -274,21 +274,21 @@ The lme() formula has the core signature:
 
 with the arguments
 
--   `fixed` specifying the fixed-effects regression
+- `fixed` specifying the fixed-effects regression
 
--   `random` specifying the random effects and how the data is nested. \~ 1 indicates random intercepts, \~ x random slopes for variable x, and what is written behind the pipe '\|', e.g., dyad/person applies this for dyad and person-within-dyad. x/y means that y is nested in x. `random` can also be specified using a list, specifiying different structures at each level of nesting.
+- `random` specifying the random effects and how the data is nested. \~ 1 indicates random intercepts, \~ x random slopes for variable x, and what is written behind the pipe '\|', e.g., dyad/person applies this for dyad and person-within-dyad. x/y means that y is nested in x. `random` can also be specified using a list, specifiying different structures at each level of nesting.
 
--   `correlation` adds a residual correlation structure. We use `correlation = corCAR1(form = ~ time | dyad/person)` to define a continuous-time AR(1) structure. Because we specify the grouping dyad/person, the correlarion only applies within the same group; different groups are treated as uncorrelated. The time variable does not need to be integer-valued. By default, $\phi$ is esrtimated starting from a value of $0.2$ and then allowed to vary to be estimated from the data. See also <https://rdrr.io/cran/nlme/man/corCAR1.html>.
+- `correlation` adds a residual correlation structure. We use `correlation = corCAR1(form = ~ time | dyad/person)` to define a continuous-time AR(1) structure. Because we specify the grouping dyad/person, the correlarion only applies within the same group; different groups are treated as uncorrelated. The time variable does not need to be integer-valued. By default, $\phi$ is esrtimated starting from a value of $0.2$ and then allowed to vary to be estimated from the data. See also <https://rdrr.io/cran/nlme/man/corCAR1.html>.
 
--   `na.action` specifies what to do with rows that have missing values. The default is `na.fail`, meaning that `lme()` will stop with an error. To allow missing beeps, we will specify `na.action = na.exclude`. Both na.omit and na.exclude drop incomplete rows for estimation (listwise deletion of rows where any variable, outcome or predictors, is NA).
+- `na.action` specifies what to do with rows that have missing values. The default is `na.fail`, meaning that `lme()` will stop with an error. To allow missing beeps, we will specify `na.action = na.exclude`. Both na.omit and na.exclude drop incomplete rows for estimation (listwise deletion of rows where any variable, outcome or predictors, is NA).
 
--   `control` adjusts optimisation behaviour and convergence (optimiser choice, iteration limits, tolerances,...), passing a list from `lmeControl()`. The optimiser choice is passed with `opt = c("nlminb","optim")`, defaulting to `"nlminb"` (nonlinear minimization subject to box constraints; generally robust. `optim` is a general-purpose optimiser offering several algorithms, like BFGS (Broyden-Fletcher-Goldfarb-Shanno) which sometimes navigates complex surfaces better (`optimMethod = "BFGS"`, the default when choosing `opt = "optim"`).
+- `control` adjusts optimisation behaviour and convergence (optimiser choice, iteration limits, tolerances,...), passing a list from `lmeControl()`. The optimiser choice is passed with `opt = c("nlminb","optim")`, defaulting to `"nlminb"` (nonlinear minimization subject to box constraints; generally robust. `optim` is a general-purpose optimiser offering several algorithms, like BFGS (Broyden-Fletcher-Goldfarb-Shanno) which sometimes navigates complex surfaces better (`optimMethod = "BFGS"`, the default when choosing `opt = "optim"`).
 
-    We will use default values and switch only in case of convergence issues. In that case, we will increase the iteration limits and/or try `opt = "optim"`.
+  We will use default values and switch only in case of convergence issues. In that case, we will increase the iteration limits and/or try `opt = "optim"`.
 
--   `method` chooses whether the model is fitted using restricted maximum likelihood ("REML", default) or full maximum likelihood ("ML"). We will use the default method = "REML". Note however that results are then not comparable across different fixed-effects model specifications (see guidance for `lme()` on <https://stat.ethz.ch/pipermail/r-help/2006-October/115739.html>). Comparing different fixed effects should use `method = "ML"`.
+- `method` chooses whether the model is fitted using restricted maximum likelihood ("REML", default) or full maximum likelihood ("ML"). We will use the default method = "REML". Note however that results are then not comparable across different fixed-effects model specifications (see guidance for `lme()` on <https://stat.ethz.ch/pipermail/r-help/2006-October/115739.html>). Comparing different fixed effects should use `method = "ML"`.
 
-    Note that lme() does not scale internally, so in case of convergence problems, data needs to be pre-scaled.
+  Note that lme() does not scale internally, so in case of convergence problems, data needs to be pre-scaled.
 
 # Step 1a: Main Effects of Actual Similarity (H1.1-H1.2)
 
@@ -303,16 +303,16 @@ Random intercept structure:
 
 $$b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}$$
 
--   $v_{0,d} \sim N(0, \tau_d^2)$
--   $𝑢_{0,𝑝𝑑}∼𝑁(0, 𝜏_𝑝^2)$
+- $v_{0,d} \sim N(0, \tau_d^2)$
+- $𝑢_{0,𝑝𝑑}∼𝑁(0, 𝜏_𝑝^2)$
 
 With continuous time AR(1) residual structure within persons.
 
 Interpretation:
 
--   $\beta_1$: within-dyad association. When I (we) am (are) more similar **than usual** (moment-to-moment fluctuation), do I feel more love than usual?
+- $\beta_1$: within-dyad association. When I (we) am (are) more similar **than usual** (moment-to-moment fluctuation), do I feel more love than usual?
 
--   $\beta_2$: between-dyad association. Do dyads who are generally/on average more similar report generally/on average higher levels of love?
+- $\beta_2$: between-dyad association. Do dyads who are generally/on average more similar report generally/on average higher levels of love?
 
 ## H1.1 – Actual PA Similarity
 
@@ -367,11 +367,11 @@ Linearity: We add the loess curve (lowess = LOcally WEighted Scatterplot Smoothe
 
 Note: there are three types of residuals:
 
--   raw (`type = "response"`**):** observed value minus predicted value; generally not useful for diagnostics in complexer multilevel model.
+- raw (`type = "response"`**):** observed value minus predicted value; generally not useful for diagnostics in complexer multilevel model.
 
--   standardized or Pearson (`type = "pearson"`): raw residuals divided by the estimated standard deviation (standard error) of the errors, putting the residuals on a standard normal scale (mean =0, SD = 1). These residuals will still exhibit the autocorrelation structure that was explicitly modeled.
+- standardized or Pearson (`type = "pearson"`): raw residuals divided by the estimated standard deviation (standard error) of the errors, putting the residuals on a standard normal scale (mean =0, SD = 1). These residuals will still exhibit the autocorrelation structure that was explicitly modeled.
 
--   normalized (`type = "normalized"`). these are the standardized residuals but 'uncorrelated' by the specified correlation structure ("standardized residuals pre-multiplied by the inverse of the error correlation matrix").
+- normalized (`type = "normalized"`). these are the standardized residuals but 'uncorrelated' by the specified correlation structure ("standardized residuals pre-multiplied by the inverse of the error correlation matrix").
 
 ```{r h11_residuals}
 #| warning: false
@@ -426,17 +426,17 @@ There is **clear heteroscedasticity**, violating the constant variance assumptio
 
 Other observations:
 
--   There are some strong outliers
+- There are some strong outliers
 
--   The LOESS line is smooth and close to flat
+- The LOESS line is smooth and close to flat
 
--   There seems to be a small subgroup with low predicted love
+- There seems to be a small subgroup with low predicted love
 
 Looking at the normalized residuals per dyad:
 
--   No strong evidence that certain dyads are systematically over- or under-predicted. The random dyad intercept seems to be doing its job in capturing between-dyad mean differences.
+- No strong evidence that certain dyads are systematically over- or under-predicted. The random dyad intercept seems to be doing its job in capturing between-dyad mean differences.
 
--   Some variability in residual spread across dyads, but not extreme or structurally patterned. No strong dyad-specific heteroscedasticity
+- Some variability in residual spread across dyads, but not extreme or structurally patterned. No strong dyad-specific heteroscedasticity
 
 Looking at the residuals in function of time, we again see the small time trend, which we previously tested and found to be significant but immaterial.
 
@@ -522,19 +522,19 @@ ggplot(diag_plot, aes(x = pred, y = love)) +
 
 ```
 
--   **Fixed-effect predictions:** Because only the fixed effects are used, predicted love varies little (horizontally). The large vertical scatter around these predictions mainly reflects moment-to-moment residual variation (Residual $variance = 145.17, SD = 12.05$).
--   **Mixed-effect predictions**: Adding dyad/person random intercepts shifts predictions across units, producing extra horizontal spread in predicted love due to between-unit baseline differences (Dyad $variance = 96.47, SD = 9.82$; Person-within-dyad $variance = 123.02, SD = 11.09$), while the remaining vertical scatter is still driven by the residual ($variance = 145.17, SD = 12.05$).
--   Clear boundary effects
+- **Fixed-effect predictions:** Because only the fixed effects are used, predicted love varies little (horizontally). The large vertical scatter around these predictions mainly reflects moment-to-moment residual variation (Residual $variance = 145.17, SD = 12.05$).
+- **Mixed-effect predictions**: Adding dyad/person random intercepts shifts predictions across units, producing extra horizontal spread in predicted love due to between-unit baseline differences (Dyad $variance = 96.47, SD = 9.82$; Person-within-dyad $variance = 123.02, SD = 11.09$), while the remaining vertical scatter is still driven by the residual ($variance = 145.17, SD = 12.05$).
+- Clear boundary effects
 
 ### Robustness/Sensitivities
 
 There are no estimation changes when re-estimating the model with
 
--   `control = lmeControl(opt = "optim")`
+- `control = lmeControl(opt = "optim")`
 
--   `method = "ML"`
+- `method = "ML"`
 
--   with `correlation = corCAR1(form = ~ time | dyad/person/day_index)`, which makes that the correlation between residuals from the last beep on a day and the first beep of the next day are explicitly set to 0.
+- with `correlation = corCAR1(form = ~ time | dyad/person/day_index)`, which makes that the correlation between residuals from the last beep on a day and the first beep of the next day are explicitly set to 0.
 
 #### Random slopes
 
@@ -1046,15 +1046,15 @@ b_{0,pd} +
 
 Goals:
 
--   Test whether perceived similarity predicts love above actual similarity
+- Test whether perceived similarity predicts love above actual similarity
 
--   Examine attenuation of actual similarity coefficients
+- Examine attenuation of actual similarity coefficients
 
 Interpretation:
 
--   $𝛽_3$ indicates whether at moments when an actor perceives more similarity than they typically do (i.e., higher $S^{perc, within}_{mpd}$), they report higher/lower love over and above what can be explained by actual similarity at that moment.
+- $𝛽_3$ indicates whether at moments when an actor perceives more similarity than they typically do (i.e., higher $S^{perc, within}_{mpd}$), they report higher/lower love over and above what can be explained by actual similarity at that moment.
 
--   $𝛽_4$ indicates whether persons who tend to perceive more similarity on average report higher/lower love overall, controlling for the dyad’s average actual similarity. As noted in the preregistration, this between-person component combines differences between dyads and stable differences between partners within dyads.
+- $𝛽_4$ indicates whether persons who tend to perceive more similarity on average report higher/lower love overall, controlling for the dyad’s average actual similarity. As noted in the preregistration, this between-person component combines differences between dyads and stable differences between partners within dyads.
 
 If $𝛽_3$ and $𝛽_4$ are comparable in direction to the corresponding actual-similarity effects in Step 1a, and the actual-similarity association with love are being reduced in magnitude when perceived similarity is included, this is consistent with H1.3.
 
@@ -1085,29 +1085,29 @@ model_output(h13_PA)
 
 2.  **Within-person effects (momentary deviations from one’s/one dyad’s typical level)**
 
-    -   **Actual PA similarity:** statistically significant, $β_1 = 0.032$, 95% CI $[0.020, 0.043]$.
+    - **Actual PA similarity:** statistically significant, $β_1 = 0.032$, 95% CI $[0.020, 0.043]$.
 
-        When partners are more actually similar in PA than usual at a given moment, love is slightly higher at that moment (net of perceived similarity).
+      When partners are more actually similar in PA than usual at a given moment, love is slightly higher at that moment (net of perceived similarity).
 
-        A 10-point increase in momentary actual PA similarity $\rightarrow$ $+0.32$ points in love (0–100).
+      A 10-point increase in momentary actual PA similarity $\rightarrow$ $+0.32$ points in love (0–100).
 
-    -   **Perceived PA similarity:** statistically significant, $β_3 = 0.149$, 95% CI $[0.137, 0.161]$.
+    - **Perceived PA similarity:** statistically significant, $β_3 = 0.149$, 95% CI $[0.137, 0.161]$.
 
-        When someone perceives higher-than-usual PA similarity with the partner, love is higher at that moment (net of actual similarity).
+      When someone perceives higher-than-usual PA similarity with the partner, love is higher at that moment (net of actual similarity).
 
-        A 10-point increase in momentary perceived PA similarity $\rightarrow$ $+1.49$ points in love.
+      A 10-point increase in momentary perceived PA similarity $\rightarrow$ $+1.49$ points in love.
 
 3.  **Between-person/dyad effects (stable differences in typical levels across the study period)**
 
-    -   **Actual PA similarity**: not statistically significant, $β_2 = −0.355$, 95% CI $[-0.962, 0.252]$.
+    - **Actual PA similarity**: not statistically significant, $β_2 = −0.355$, 95% CI $[-0.962, 0.252]$.
 
-        People in dyads who are typically higher in actual PA similarity do not show reliably different overall love, as in the model without perceived similarity.
+      People in dyads who are typically higher in actual PA similarity do not show reliably different overall love, as in the model without perceived similarity.
 
-    -   **Perceived PA similarity:** statistically significant, $β_4 = 0.859$, 95% CI $[0.370, 1.349]$.
+    - **Perceived PA similarity:** statistically significant, $β_4 = 0.859$, 95% CI $[0.370, 1.349]$.
 
-        Persons who typically perceive more PA similarity report higher overall love across moments.
+      Persons who typically perceive more PA similarity report higher overall love across moments.
 
-        A 10-point higher typical perceived PA similarity $\rightarrow$ $+8.59$ points higher love on average.
+      A 10-point higher typical perceived PA similarity $\rightarrow$ $+8.59$ points higher love on average.
 
 This is consistent with our hypothesis: $𝛽_3=0.149$ has the same direction as $β_1=0.113$ from H1.1 and $𝛽_4=0.859$ has the same direction as $\beta_2=0.214$ from H1.1 (although that wasn't significant) and the $\beta_1=0.032$ and $\beta_2=−0.355$ (not significant) here are reduced in magnitude.
 
@@ -1152,21 +1152,21 @@ model_output(h13_PA_rs)
 
 2.  **Within-person effects**:
 
-    -   **Actual PA similarity**: statistically significant, $\beta_1 = 0.042$, 95% CI $[0.024, 0.059]$. When partners are more actually similar in PA than usual at a given moment, love is slightly higher. The effect is slightly larger than in the base model ($0.032$), with wider CIs reflecting added random slope variance. A 10-point increase in momentary actual PA similarity $\rightarrow$ $+0.42$ points in love.
+    - **Actual PA similarity**: statistically significant, $\beta_1 = 0.042$, 95% CI $[0.024, 0.059]$. When partners are more actually similar in PA than usual at a given moment, love is slightly higher. The effect is slightly larger than in the base model ($0.032$), with wider CIs reflecting added random slope variance. A 10-point increase in momentary actual PA similarity $\rightarrow$ $+0.42$ points in love.
 
-    -   **Perceived PA similarity**: statistically significant, $\beta_3 = 0.165$, 95% CI $[0.143, 0.188]$. When someone perceives higher-than-usual PA similarity, love is higher. Slightly larger than the base model ($0.149$). A 10-point increase in momentary perceived PA similarity $\rightarrow$ $+1.65$ points in love.
+    - **Perceived PA similarity**: statistically significant, $\beta_3 = 0.165$, 95% CI $[0.143, 0.188]$. When someone perceives higher-than-usual PA similarity, love is higher. Slightly larger than the base model ($0.149$). A 10-point increase in momentary perceived PA similarity $\rightarrow$ $+1.65$ points in love.
 
 3.  **Between-person/dyad effects**:
 
-    -   **Actual PA similarity**: not statistically significant, $\beta_2 = -0.191$, 95% CI $[-0.725, 0.342]$. The sign remains negative as in the base model ($-0.355$), and the estimate attenuates toward zero (unlike the NA counterpart, there is no sign flip here, which suggests better stability).
+    - **Actual PA similarity**: not statistically significant, $\beta_2 = -0.191$, 95% CI $[-0.725, 0.342]$. The sign remains negative as in the base model ($-0.355$), and the estimate attenuates toward zero (unlike the NA counterpart, there is no sign flip here, which suggests better stability).
 
-    -   **Perceived PA similarity**: statistically significant, $\beta_4 = 0.913$, 95% CI $[0.502, 1.324]$. Persons who typically perceive more PA similarity report higher overall love, essentially unchanged from the base model ($0.859$). A 10-point higher typical perceived PA similarity $\rightarrow$ $+9.13$ points higher love.
+    - **Perceived PA similarity**: statistically significant, $\beta_4 = 0.913$, 95% CI $[0.502, 1.324]$. Persons who typically perceive more PA similarity report higher overall love, essentially unchanged from the base model ($0.859$). A 10-point higher typical perceived PA similarity $\rightarrow$ $+9.13$ points higher love.
 
 4.  **Random slopes**:
 
-    -   At the **dyad level**, both slope SDs are modest but non-negligible: actual PA similarity ($SD = 0.050$) and perceived PA similarity ($SD = 0.045$) vary across dyads. Both intercept-slope correlations are negative (actual: $-0.436$; perceived: $-0.273$\$): dyads with higher baseline love tend to show weaker positive effects of both actual and perceived PA similarity on love, suggesting ceiling-type pattern at the dyad level. The positive slope-slope correlation ($0.460$) indicates that the two pathways reinforce each other across dyads.
+    - At the **dyad level**, both slope SDs are modest but non-negligible: actual PA similarity ($SD = 0.050$) and perceived PA similarity ($SD = 0.045$) vary across dyads. Both intercept-slope correlations are negative (actual: $-0.436$; perceived: $-0.273$\$): dyads with higher baseline love tend to show weaker positive effects of both actual and perceived PA similarity on love, suggesting ceiling-type pattern at the dyad level. The positive slope-slope correlation ($0.460$) indicates that the two pathways reinforce each other across dyads.
 
-    -   At the **person level**, variability in the perceived PA similarity slope is more pronounced ($SD = 0.111$) than for actual PA similarity ($SD = 0.057$). The intercept-slope correlation for perceived similarity is notably negative ($-0.598$): persons with higher baseline love show a weaker perceived similarity effect on momentary love. The slope-slope correlation is mildly negative ($-0.212$), suggesting a slight substitutability between the two pathways at the person level, though this substitutability is less pronounced than in the NA model ($-0.582$).
+    - At the **person level**, variability in the perceived PA similarity slope is more pronounced ($SD = 0.111$) than for actual PA similarity ($SD = 0.057$). The intercept-slope correlation for perceived similarity is notably negative ($-0.598$): persons with higher baseline love show a weaker perceived similarity effect on momentary love. The slope-slope correlation is mildly negative ($-0.212$), suggesting a slight substitutability between the two pathways at the person level, though this substitutability is less pronounced than in the NA model ($-0.582$).
 
 5.  **Comparison with h13_PA**
 
@@ -1221,29 +1221,29 @@ model_output(h13_NA)
 
 2.  Within-person effects (momentary deviations from one’s/one dyad’s typical level)
 
-    -   **Actual NA similarity**: statistically significant, $\beta_1 = -0.094$, 95% CI $[-0.112, -0.077]$.
+    - **Actual NA similarity**: statistically significant, $\beta_1 = -0.094$, 95% CI $[-0.112, -0.077]$.
 
-        When partners are more actually similar in NA than usual at a given moment, love is lower at that moment (net of perceived similarity).
+      When partners are more actually similar in NA than usual at a given moment, love is lower at that moment (net of perceived similarity).
 
-        A 10-point increase in momentary actual NA similarity $\rightarrow$ $-0.94$ points in love (0–100).
+      A 10-point increase in momentary actual NA similarity $\rightarrow$ $-0.94$ points in love (0–100).
 
-    -   **Perceived NA similarity**: statistically significant, $\beta_3 = -0.127$, 95% CI $[-0.144, -0.110]$.
+    - **Perceived NA similarity**: statistically significant, $\beta_3 = -0.127$, 95% CI $[-0.144, -0.110]$.
 
-        When someone perceives higher-than-usual NA similarity with the partner, love is lower at that moment (net of actual similarity).
+      When someone perceives higher-than-usual NA similarity with the partner, love is lower at that moment (net of actual similarity).
 
-        A 10-point increase in momentary perceived NA similarity $\rightarrow$ $-1.27$ points in love.
+      A 10-point increase in momentary perceived NA similarity $\rightarrow$ $-1.27$ points in love.
 
 3.  Between-person/dyad effects (stable differences in typical levels across the study period)
 
-    -   **Actual NA similarity**: not statistically significant, $\beta_2 = 0.010$, 95% CI $[-0.547, 0.567]$.
+    - **Actual NA similarity**: not statistically significant, $\beta_2 = 0.010$, 95% CI $[-0.547, 0.567]$.
 
-        People in dyads who are typically higher in actual NA similarity do not show reliably different overall love once perceived similarity is included.
+      People in dyads who are typically higher in actual NA similarity do not show reliably different overall love once perceived similarity is included.
 
-    -   **Perceived NA similarity**: statistically significant, $\beta_4 = 0.893$, 95% CI $[0.358, 1.428]$.
+    - **Perceived NA similarity**: statistically significant, $\beta_4 = 0.893$, 95% CI $[0.358, 1.428]$.
 
-        Persons who typically perceive more NA similarity report higher overall love across moments.
+      Persons who typically perceive more NA similarity report higher overall love across moments.
 
-        A 10-point higher typical perceived NA similarity $\rightarrow$ $+8.93$ points higher love on average.
+      A 10-point higher typical perceived NA similarity $\rightarrow$ $+8.93$ points higher love on average.
 
 #### Diagnostics
 
@@ -1290,33 +1290,33 @@ To achieve convergence for the `h13_NA_rs` model, we needed to increase the maxi
 
 2.  **Within-person/dyad effects**:
 
-    -   **Actual NA similarity**: statistically significant, $\beta_1 = -0.081$, 95% CI $[-0.116, -0.046]$. When partners are more actually similar in NA than usual at a given moment, love is lower. The effect is only slightly attenuated compared to the base model ($-0.094$), with wider CIs reflecting the added random slope variance. A 10-point increase in momentary actual NA similarity $\rightarrow$ $-0.81$ points in love.
+    - **Actual NA similarity**: statistically significant, $\beta_1 = -0.081$, 95% CI $[-0.116, -0.046]$. When partners are more actually similar in NA than usual at a given moment, love is lower. The effect is only slightly attenuated compared to the base model ($-0.094$), with wider CIs reflecting the added random slope variance. A 10-point increase in momentary actual NA similarity $\rightarrow$ $-0.81$ points in love.
 
-    -   **Perceived NA similarity**: statistically significant, $\beta_3 = -0.119$, 95% CI $[-0.150, -0.089]$. When someone perceives higher-than-usual NA similarity, love is lower. Effect is nearly identical to the base model ($-0.127$). A 10-point increase in momentary perceived NA similarity $\rightarrow$ $-1.19$ points in love.
+    - **Perceived NA similarity**: statistically significant, $\beta_3 = -0.119$, 95% CI $[-0.150, -0.089]$. When someone perceives higher-than-usual NA similarity, love is lower. Effect is nearly identical to the base model ($-0.127$). A 10-point increase in momentary perceived NA similarity $\rightarrow$ $-1.19$ points in love.
 
 3.  **Between-person/dyad effects**:
 
-    -   **Actual NA similarity**: not statistically significant, $\beta_2 = -0.130$, 95% CI $[-0.670, 0.410]$. Sign has flipped compared to the base model (where it was $+0.010$) but remains non-significant with very wide CIs, so this should not be over-interpreted.
+    - **Actual NA similarity**: not statistically significant, $\beta_2 = -0.130$, 95% CI $[-0.670, 0.410]$. Sign has flipped compared to the base model (where it was $+0.010$) but remains non-significant with very wide CIs, so this should not be over-interpreted.
 
-    -   **Perceived NA similarity**: statistically significant, $\beta_4 = 0.882$, 95% CI $[0.357, 1.406]$. Persons who typically perceive more NA similarity report higher overall love, essentially unchanged from the base model ($0.893$). A 10-point higher typical perceived NA similarity $\rightarrow$ $+8.82$ points higher love.
+    - **Perceived NA similarity**: statistically significant, $\beta_4 = 0.882$, 95% CI $[0.357, 1.406]$. Persons who typically perceive more NA similarity report higher overall love, essentially unchanged from the base model ($0.893$). A 10-point higher typical perceived NA similarity $\rightarrow$ $+8.82$ points higher love.
 
 4.  **Random slopes**:
 
-    -   At the **dyad level**, there is meaningful variability in the actual NA similarity slope across dyads ($SD = 0.128$), with a positive intercept-slope correlation ($0.422$): dyads with higher baseline love tend to show a weaker (less negative) actual NA similarity effect. So dyads that are high in baseline love, have lower negatove impact from momentary higher actual NA similarity. The perceived similarity slope varies much less across dyads ($SD = 0.024$), suggesting this effect is relatively uniform across dyads.
+    - At the **dyad level**, there is meaningful variability in the actual NA similarity slope across dyads ($SD = 0.128$), with a positive intercept-slope correlation ($0.422$): dyads with higher baseline love tend to show a weaker (less negative) actual NA similarity effect. So dyads that are high in baseline love, have lower negatove impact from momentary higher actual NA similarity. The perceived similarity slope varies much less across dyads ($SD = 0.024$), suggesting this effect is relatively uniform across dyads.
 
-    -   At the **person level**, there is meaningful variability in the perceived NA similarity slope across persons ($SD = 0.161$), with a negative slope-slope correlation ($-0.582$) suggesting some substitutability between the two pathways. The actual similarity slope varies less across persons ($SD = 0.083$).
+    - At the **person level**, there is meaningful variability in the perceived NA similarity slope across persons ($SD = 0.161$), with a negative slope-slope correlation ($-0.582$) suggesting some substitutability between the two pathways. The actual similarity slope varies less across persons ($SD = 0.083$).
 
 5.  **Comparison with `h13_NA`**
 
-    -   Worth flagging is that $\beta_2$ (between-dyad actual similarity) flips sign from $+0.010$ in `h13_NA` to $-0.130$, though it remains non-significant in both models. This instability likely reflects multicollinearity between the between-dyad actual and perceived similarity predictors (their coefficient correlation is $-0.664$ in both models) combined with the added complexity of the random slopes structure redistributing variance. It should not be interpreted substantively.
+    - Worth flagging is that $\beta_2$ (between-dyad actual similarity) flips sign from $+0.010$ in `h13_NA` to $-0.130$, though it remains non-significant in both models. This instability likely reflects multicollinearity between the between-dyad actual and perceived similarity predictors (their coefficient correlation is $-0.664$ in both models) combined with the added complexity of the random slopes structure redistributing variance. It should not be interpreted substantively.
 
-    -   The fixed effect conclusions are highly consistent across both models. The two within-dyad effects and the between-dyad perceived similarity effect survive in sign, magnitude, and significance. This stability is reassuring. The key added information from the random slopes model is:
+    - The fixed effect conclusions are highly consistent across both models. The two within-dyad effects and the between-dyad perceived similarity effect survive in sign, magnitude, and significance. This stability is reassuring. The key added information from the random slopes model is:
 
-        -   The negative effect of momentary actual NA similarity on love varies substantially across dyads. For some dyads, sharing negative affect may matter much more than for others.
+      - The negative effect of momentary actual NA similarity on love varies substantially across dyads. For some dyads, sharing negative affect may matter much more than for others.
 
-        -   The negative effect of momentary perceived NA similarity varies substantially across persons. Individual differences in how perceived similarity relates to love are considerable.
+      - The negative effect of momentary perceived NA similarity varies substantially across persons. Individual differences in how perceived similarity relates to love are considerable.
 
-        -   The residual SD drops modestly from $12.05$ to $11.67$, suggesting the random slopes absorb some within-person variance.
+      - The residual SD drops modestly from $12.05$ to $11.67$, suggesting the random slopes absorb some within-person variance.
 
 ##### Elevation
 
@@ -2048,8 +2048,6 @@ ggplot(plot_df_NA_b,
   theme(legend.position = "right")
 ```
 
-![](images/clipboard-1864111886.png)
-
 # Step 2: Multilevel mediation (H2.1-H2.2)
 
 We test whether perceived similarity mediates the association between actual similarity and love.
@@ -2123,8 +2121,8 @@ f_{0,pd} +
 
 Indirect effects:
 
--   Within-person: $\theta_1 \phi_1$
--   Between-dyad: $\theta_2 \phi_2$
+- Within-person: $\theta_1 \phi_1$
+- Between-dyad: $\theta_2 \phi_2$
 
 ## H2.1 - PA mediation
 
@@ -2190,9 +2188,9 @@ model_output(h21_mediator_sup)
 
 The outcome model estimates the b- and c'-paths:
 
--   The coefficients $\phi_1/\phi_2$ on `PA_similarity_perc_w/b` are the **b-paths**: effect of the mediator on love, controlling for actual similarity
+- The coefficients $\phi_1/\phi_2$ on `PA_similarity_perc_w/b` are the **b-paths**: effect of the mediator on love, controlling for actual similarity
 
--   The coefficients $ϕ_3/ϕ_2$ on `PA_similarity_act_w/b` are the **c'-paths**: the direct effect of actual similarity on love after the mediator is controlled
+- The coefficients $ϕ_3/ϕ_2$ on `PA_similarity_act_w/b` are the **c'-paths**: the direct effect of actual similarity on love after the mediator is controlled
 
 ```{r h21_outcome_model}
 #| output-fold: true
@@ -2213,31 +2211,31 @@ model_output(h21_outcome)
 
 **b-paths (mediator perceived similarity → love, controlling for actual similarity)**
 
--   **Within:** $\phi_1 = 0.149$**,** 95% CI $[0.137, 0.161]$**,** $p < .001$ When a person perceives more PA similarity than usual at a given moment (above and beyond how actually similar they are) they report more love. A one-unit increase in perceived PA similarity predicts 0.15 more love units. Perceived similarity has its own effect on love that is not reducible to actual similarity.
+- **Within:** $\phi_1 = 0.149$**,** 95% CI $[0.137, 0.161]$**,** $p < .001$ When a person perceives more PA similarity than usual at a given moment (above and beyond how actually similar they are) they report more love. A one-unit increase in perceived PA similarity predicts 0.15 more love units. Perceived similarity has its own effect on love that is not reducible to actual similarity.
 
--   **Between:** $\phi_2 = 0.859$**,** 95% CI $[0.370, 1.349]$**,** $p < .001$ Dyads where the actor on average perceives more similarity than other dyads report more love, again controlling for actual similarity. This between-level b-path is notably larger than the within-level one.
+- **Between:** $\phi_2 = 0.859$**,** 95% CI $[0.370, 1.349]$**,** $p < .001$ Dyads where the actor on average perceives more similarity than other dyads report more love, again controlling for actual similarity. This between-level b-path is notably larger than the within-level one.
 
 **c'-paths (direct effects of actual similarity after controlling for perceived similarity)**
 
--   **Within:** $\phi_3 = 0.032$**,** 95% CI $[0.020, 0.043]$**,** $p < .001$ This is a reduction from the original c-path of β = 0.113 in the base model (`h11`). Actual PA similarity still has a small but significant direct effect on love even after perceived similarity is controlled, meaning mediation is **partial**, not complete.
+- **Within:** $\phi_3 = 0.032$**,** 95% CI $[0.020, 0.043]$**,** $p < .001$ This is a reduction from the original c-path of β = 0.113 in the base model (`h11`). Actual PA similarity still has a small but significant direct effect on love even after perceived similarity is controlled, meaning mediation is **partial**, not complete.
 
--   **Between:** $\phi_4 = −0.355$**,** 95% CI $[−0.962, 0.252]$**,** $p = .249$ Non-significant. The between-level direct effect of actual similarity remains non significant when controlling for perceived similarity.. This suggests **full mediation at the between level**: whatever effect average actual PA similarity has on average love is entirely carried through perceived similarity. Though note the wide CI — the between-level estimates are less stable given only 102 dyads at that level.
+- **Between:** $\phi_4 = −0.355$**,** 95% CI $[−0.962, 0.252]$**,** $p = .249$ Non-significant. The between-level direct effect of actual similarity remains non significant when controlling for perceived similarity.. This suggests **full mediation at the between level**: whatever effect average actual PA similarity has on average love is entirely carried through perceived similarity. Though note the wide CI — the between-level estimates are less stable given only 102 dyads at that level.
 
 Putting the a-paths and b-paths together, the pattern is:
 
 **Within-person level**
 
--   a-path: $\theta_1 = 0.565$, 95% CI $[0.553, 0.578]$, $p < .001$ (actual similarity → perceived similarity)
+- a-path: $\theta_1 = 0.565$, 95% CI $[0.553, 0.578]$, $p < .001$ (actual similarity → perceived similarity)
 
--   b-path: $\phi_1 = 0.149$, 95% CI $[0.137, 0.161]$, $p < .001$ (perceived similarity → love, controlling actual)
+- b-path: $\phi_1 = 0.149$, 95% CI $[0.137, 0.161]$, $p < .001$ (perceived similarity → love, controlling actual)
 
--   c-path: $β_1=0.113$, 95% CI: $[0.104,0.122]$, $p<.001$ (actual similarity → love, total)
+- c-path: $β_1=0.113$, 95% CI: $[0.104,0.122]$, $p<.001$ (actual similarity → love, total)
 
--   c'-path: $\phi_3 = 0.032$ , 95% CI $[0.020, 0.043]$, $p < .001$ (actual similarity → love, direct)
+- c'-path: $\phi_3 = 0.032$ , 95% CI $[0.020, 0.043]$, $p < .001$ (actual similarity → love, direct)
 
--   **Indirect effect** = a × b = $\theta_1 \phi_1 = 0.565 × 0.149 ≈ 0.084$
+- **Indirect effect** = a × b = $\theta_1 \phi_1 = 0.565 × 0.149 ≈ 0.084$
 
--   **Proportion mediated** ≈ $0.084 / 0.113 ≈ 74\%$
+- **Proportion mediated** ≈ $0.084 / 0.113 ≈ 74\%$
 
 ```{r within_PA_mediation}
 
@@ -2288,17 +2286,17 @@ About three quarters of the momentary effect of actual PA similarity on love is 
 
 **Between-person level**
 
--   a-path: $\theta_2 = 0.708$, 95% CI $[0.603, 0.814]$, $p < .001$ (actual similarity → perceived similarity)
+- a-path: $\theta_2 = 0.708$, 95% CI $[0.603, 0.814]$, $p < .001$ (actual similarity → perceived similarity)
 
--   b-path: $ϕ_2=0.859$, 95% CI $[0.370, 1.349]$**,** $p < .001$ (perceived similarity → love, controlling actual)
+- b-path: $ϕ_2=0.859$, 95% CI $[0.370, 1.349]$**,** $p < .001$ (perceived similarity → love, controlling actual)
 
--   c-path: $\beta_2=0.214$, 95% CI $[−0.314,0.742]$, $p = .43$, ns. (actual similarity → love, total)
+- c-path: $\beta_2=0.214$, 95% CI $[−0.314,0.742]$, $p = .43$, ns. (actual similarity → love, total)
 
--   c'-path: $\phi_4 = −0.355$, 95% CI $[−0.962, 0.252]$**,** $p = .249$ , ns, (actual similarity → love, direct)
+- c'-path: $\phi_4 = −0.355$, 95% CI $[−0.962, 0.252]$**,** $p = .249$ , ns, (actual similarity → love, direct)
 
--   **Indirect effect** = $θ_2ϕ_2= 0.708× 0.859 ≈ 0.609$
+- **Indirect effect** = $θ_2ϕ_2= 0.708× 0.859 ≈ 0.609$
 
--   Mediation appears **complete** at the between level, there is no direct path
+- Mediation appears **complete** at the between level, there is no direct path
 
 Dyads higher in actual PA similarity love each other more, and this effect is entirely accounted for by their tendency to perceive each other as more similar.
 
@@ -2556,9 +2554,9 @@ model_output(h22_mediator_sup)
 
 The outcome model estimates the b- and c'-paths:
 
--   The coefficients $\phi_1/\phi_2$ on `NA_similarity_perc_w/b` are the **b-paths**: effect of the mediator on love, controlling for actual similarity
+- The coefficients $\phi_1/\phi_2$ on `NA_similarity_perc_w/b` are the **b-paths**: effect of the mediator on love, controlling for actual similarity
 
--   The coefficients $ϕ_3/ϕ_4$ on `NA_similarity_act_w/b` are the **c'-paths**: the direct effect of actual similarity on love after the mediator is controlled
+- The coefficients $ϕ_3/ϕ_4$ on `NA_similarity_act_w/b` are the **c'-paths**: the direct effect of actual similarity on love after the mediator is controlled
 
 ```{r h22_outcome_model}
 #| output-fold: true
@@ -2579,31 +2577,31 @@ model_output(h22_outcome)
 
 **b-paths (mediator perceived similarity → love, controlling for actual similarity)**
 
--   **Within:** $\phi_1 = -0.127$**,** 95% CI$[-0.144, -0.110]$**,** $p < .001$ When a person perceives more NA similarity than usual at a given moment (above and beyond how actually similar they are) they report *less* love. A one-unit increase in perceived NA similarity predicts 0.13 fewer love units. This is the opposite direction from the PA b-path, suggesting that perceiving oneself as similarly negative to one's partner is aversive rather than affiliative.
+- **Within:** $\phi_1 = -0.127$**,** 95% CI$[-0.144, -0.110]$**,** $p < .001$ When a person perceives more NA similarity than usual at a given moment (above and beyond how actually similar they are) they report *less* love. A one-unit increase in perceived NA similarity predicts 0.13 fewer love units. This is the opposite direction from the PA b-path, suggesting that perceiving oneself as similarly negative to one's partner is aversive rather than affiliative.
 
--   **Between:** $\phi_2 = 0.893$**,** 95% CI$[0.358, 1.428]$**,** $p = .001$ Dyads where the actor on average perceives more NA similarity than other dyads report more love, again controlling for actual similarity. The sign reversal between within and between levels mirrors the pattern seen in the c-paths.
+- **Between:** $\phi_2 = 0.893$**,** 95% CI$[0.358, 1.428]$**,** $p = .001$ Dyads where the actor on average perceives more NA similarity than other dyads report more love, again controlling for actual similarity. The sign reversal between within and between levels mirrors the pattern seen in the c-paths.
 
 **c'-paths (direct effects of actual similarity after controlling for perceived similarity)**
 
--   **Within:** $\phi_3 = -0.094$**,** 95% CI$[-0.112, -0.077]$**,** $p < .001$ This is a reduction in absolute terms from the c-path of $\beta_1 = -0.152$ in the base model (`h12`). Actual NA similarity still has a significant direct negative effect on love even after perceived similarity is controlled, meaning mediation is **partial** at the within level.
+- **Within:** $\phi_3 = -0.094$**,** 95% CI$[-0.112, -0.077]$**,** $p < .001$ This is a reduction in absolute terms from the c-path of $\beta_1 = -0.152$ in the base model (`h12`). Actual NA similarity still has a significant direct negative effect on love even after perceived similarity is controlled, meaning mediation is **partial** at the within level.
 
--   **Between:** $\phi_4 = 0.010$**,** 95% CI$[-0.547, 0.567]$**,** $p = .972$ Non-significant. The between-level direct effect of actual similarity becomes negligible when controlling for perceived similarity, suggesting **full mediation at the between level**: whatever effect average actual NA similarity has on average love is entirely carried through perceived similarity.
+- **Between:** $\phi_4 = 0.010$**,** 95% CI$[-0.547, 0.567]$**,** $p = .972$ Non-significant. The between-level direct effect of actual similarity becomes negligible when controlling for perceived similarity, suggesting **full mediation at the between level**: whatever effect average actual NA similarity has on average love is entirely carried through perceived similarity.
 
 Putting the a-paths and b-paths together, the pattern is:
 
 **Within-person level**
 
--   a-path: $\theta_1 = 0.471$, 95% CI $[0.456, 0.486]$, $p < .001$ (actual similarity → perceived similarity)
+- a-path: $\theta_1 = 0.471$, 95% CI $[0.456, 0.486]$, $p < .001$ (actual similarity → perceived similarity)
 
--   b-path: $\phi_1 = -0.127$, 95% CI $[-0.144, -0.110]$, $p < .001$ (perceived similarity → love, controlling actual)
+- b-path: $\phi_1 = -0.127$, 95% CI $[-0.144, -0.110]$, $p < .001$ (perceived similarity → love, controlling actual)
 
--   c-path: $β_1=-0.152$, 95% CI: $[-0.167,-0.136]$, $p<.001$ (actual similarity → love, total)
+- c-path: $β_1=-0.152$, 95% CI: $[-0.167,-0.136]$, $p<.001$ (actual similarity → love, total)
 
--   c'-path: $\phi_3 = -0.094$ , 95% CI $[-0.112, -0.077]$, $p < .001$ (actual similarity → love, direct)
+- c'-path: $\phi_3 = -0.094$ , 95% CI $[-0.112, -0.077]$, $p < .001$ (actual similarity → love, direct)
 
--   **Indirect effect** = a × b = $\theta_1 \phi_1 = 0.471 × (-0.127) ≈ -0.060$
+- **Indirect effect** = a × b = $\theta_1 \phi_1 = 0.471 × (-0.127) ≈ -0.060$
 
--   **Proportion mediated** ≈ $0.060 / 0.152 ≈ 39\%$
+- **Proportion mediated** ≈ $0.060 / 0.152 ≈ 39\%$
 
 ```{r within_NA_mediation}
 
@@ -2654,17 +2652,17 @@ About two fifths of the momentary negative effect of actual NA similarity on lov
 
 **Between-person level**
 
--   a-path: $\theta_2 = 0.676$, $p < .001$, 95% CI $[0.594,0.758]$ (actual similarity → perceived similarity)
+- a-path: $\theta_2 = 0.676$, $p < .001$, 95% CI $[0.594,0.758]$ (actual similarity → perceived similarity)
 
--   b-path: $ϕ_2=0.893$, $p=.001$, 95% CI $[0.358,1.428]$ (perceived similarity → love, controlling actual)
+- b-path: $ϕ_2=0.893$, $p=.001$, 95% CI $[0.358,1.428]$ (perceived similarity → love, controlling actual)
 
--   c-path: $\beta_2=0.621$, $p = .005$ , 95% CI $[0.197, 1.045]$ (actual similarity → love, total)
+- c-path: $\beta_2=0.621$, $p = .005$ , 95% CI $[0.197, 1.045]$ (actual similarity → love, total)
 
--   c'-path: $\phi_4 = 0.010$ $p = .972$, 95% CI $[-0.547,0.567]$, ns (actual similarity → love, direct)
+- c'-path: $\phi_4 = 0.010$ $p = .972$, 95% CI $[-0.547,0.567]$, ns (actual similarity → love, direct)
 
--   **Indirect effect** = $θ_2ϕ_2= 0.676 × 0.893 ≈ 0.604$
+- **Indirect effect** = $θ_2ϕ_2= 0.676 × 0.893 ≈ 0.604$
 
--   Mediation appears **complete** at the between level: there is no residual direct path from actual to love once perceived similarity is controlled.
+- Mediation appears **complete** at the between level: there is no residual direct path from actual to love once perceived similarity is controlled.
 
 Dyads higher in average actual NA similarity love each other more on average, and this effect is entirely accounted for by their tendency to perceive each other as more similar. The between-level pattern for NA thus mirrors that of PA: full mediation through perceived similarity. The positive between-level b-path ($\phi_2 = 0.893$) means that dyads who perceive themselves as more similar — even in negativity — report more love, perhaps reflecting a sense of being understood or validated by one's partner.
 
@@ -2878,13 +2876,11 @@ To have responsiveness as an amplifier, we expect $\beta_4 >0$.
 
 General model structure:
 
-$$L_{mpd} =
-b_{0,pd} + 
-\beta_1 S^{act,within}_{mpd} +
-\beta_2 \bar{S}^{act,between}_d +
-\beta_3 R_{mpd}+
-\beta_4 (S^{act,within}_{mpd} \times R_{mpd}) +
-\varepsilon_{mpd}$$
+$$\begin{aligned}
+L_{mpd} =\ & b_{0,pd} + \beta_1 S^{act,within}_{mpd} + \beta_2 \bar{S}^{act,between}_d \\
+& + \beta_3 R_{mpd} + \beta_4 (S^{act,within}_{mpd} \times R_{mpd}) \\
+& + \varepsilon_{mpd}
+\end{aligned}$$
 
 with $R_{mpd}$ the momentary perceived partner responsiveness (person-mean centered). We focus on within-person moderation by person-mean centering $𝑅_{𝑚𝑝𝑑}$; we do not model between-person differences in typical responsiveness as a moderator.
 
@@ -2892,8 +2888,8 @@ Random intercept structure:
 
 $$b_{0,pd} = \beta_0 + v_{0,d} + u_{0,pd}$$
 
--   $v_{0,d} \sim N(0, \tau_d^2)$
--   $𝑢_{0,𝑝𝑑}∼𝑁(0, 𝜏_𝑝^2)$
+- $v_{0,d} \sim N(0, \tau_d^2)$
+- $𝑢_{0,𝑝𝑑}∼𝑁(0, 𝜏_𝑝^2)$
 
 With continuous time AR(1) residual structure within persons.
 
@@ -3045,8 +3041,11 @@ kable(tbl_h31p,
 To examine whether this moderation operated through the perceptual pathway identified in H2.1 (does responsiveness substitute for perceived similarity specifically), we also run
 
 $$\begin{aligned}
-L_{mpd} &= f_{0,pd} + \phi_1 S_{mpd}^{\text{perc,within}} + \phi_2 \bar{S}_d^{\text{perc,between}} + \phi_3 S_{mpd}^{\text{act,within}} + \phi_4 \bar{S}_d^{\text{act,between}} + \phi_5 R_{mpd} \\
-&\quad + \phi_6 \left(S_{mpd}^{\text{perc,within}} \times R_{mpd}\right) + \phi_7 \left(S_{mpd}^{\text{act,within}} \times R_{mpd}\right) + \varepsilon_{mpd}
+L_{mpd} &= f_{0,pd} + \phi_1 S_{mpd}^{\text{perc,within}} \\
+&\quad + \phi_2 \bar{S}_d^{\text{perc,between}} + \phi_3 S_{mpd}^{\text{act,within}} \\
+&\quad + \phi_4 \bar{S}_d^{\text{act,between}} + \phi_5 R_{mpd} \\
+&\quad + \phi_6 \left(S_{mpd}^{\text{perc,within}} \times R_{mpd}\right) \\
+&\quad + \phi_7 \left(S_{mpd}^{\text{act,within}} \times R_{mpd}\right) + \varepsilon_{mpd}
 \end{aligned}$$
 
 ```{r h31_moderated_outcome}
@@ -3118,7 +3117,10 @@ kable(tbl_extended,
 
 Finally we also run the moderated mediation model to test whether responsiveness moderates the a-path, i.e. whether the strength of the actual $\rightarrow$ perceived PA similarity association depends on how responsive the partner is felt to be?
 
-$$S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​R_{mpd}​+θ_4​(S_{mpd}^{act,within}​×R_{mpd}​)+ε_{mpd}$$
+$$S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
++ \theta_3\, R_{mpd}
++ \theta_4 \left(S_{mpd}^{act,within} \times R_{mpd}\right)
++ \varepsilon_{mpd}$$
 
 ```{r h31_moderated_mediator}
 #| output-fold: true
@@ -3743,7 +3745,11 @@ We hypothesized:
 
 We fit the model
 
-$$𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{𝑎𝑐𝑡,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{𝑎𝑐𝑡,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{act,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}$$
+$$\begin{aligned}
+L_{mpd} =\ & b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between} \\
+& + \beta_3 C_{mpd} + \beta_4(S_{mpd}^{act,within} \times C_{mpd}) \\
+& + \varepsilon_{mpd}
+\end{aligned}$$
 
 ```{r h33a_valence_moderation}
 #| output-fold: true
@@ -3765,17 +3771,17 @@ model_output(h33a)
 
 **Main effects**
 
--   $\beta_1 = 0.059$, $p = .001$, 95% CI $[0.025, 0.094]$ On moments when PA similarity is higher than a person's own average, more love is reported.
+- $\beta_1 = 0.059$, $p = .001$, 95% CI $[0.025, 0.094]$ On moments when PA similarity is higher than a person's own average, more love is reported.
 
--   $\beta_2 = 0.033$, $p = .915$, 95% CI $[−0.575, 0.640]$ People in dyads that are generally more similar in PA do not systematically report more love than others.
+- $\beta_2 = 0.033$, $p = .915$, 95% CI $[−0.575, 0.640]$ People in dyads that are generally more similar in PA do not systematically report more love than others.
 
--   $\beta_3 = 2.735$, $p < .001$, 95% CI $[1.439, 4.032]$ On moments when more positive (or less negative) events occurred, people report substantially more love. Event valence has a meaningful independent effect on felt love, above and beyond actual PA similarity.
+- $\beta_3 = 2.735$, $p < .001$, 95% CI $[1.439, 4.032]$ On moments when more positive (or less negative) events occurred, people report substantially more love. Event valence has a meaningful independent effect on felt love, above and beyond actual PA similarity.
 
 **Moderation**
 
--   $\beta_4 = 0.033$, $p = .292$, 95% CI $[−0.028, 0.094]$
+- $\beta_4 = 0.033$, $p = .292$, 95% CI $[−0.028, 0.094]$
 
-    The interaction is non-significant. The within-person actual PA similarity – love association does **not** depend on whether the recent event was positive or negative.
+  The interaction is non-significant. The within-person actual PA similarity – love association does **not** depend on whether the recent event was positive or negative.
 
 ```{r h33a_probing}
 #| output-fold: true
@@ -3827,7 +3833,11 @@ We hypothesized a mismatch effect whereby the positive association between actua
 
 We fit the model
 
-$$𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{perc,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{perc,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{perc,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}$$
+$$\begin{aligned}
+L_{mpd} =\ & b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between} \\
+& + \beta_3 C_{mpd} + \beta_4(S_{mpd}^{perc,within} \times C_{mpd}) \\
+& + \varepsilon_{mpd}
+\end{aligned}$$
 
 ```{r h33p_valence_moderation}
 #| output-fold: true
@@ -3849,17 +3859,17 @@ model_output(h33p)
 
 **Main effects**
 
--   $\beta_1 = 0.057$, $p < .001$, 95% CI $[0.029, 0.085]$ On moments when perceived PA similarity is higher than a person's own average, more love is reported.
+- $\beta_1 = 0.057$, $p < .001$, 95% CI $[0.029, 0.085]$ On moments when perceived PA similarity is higher than a person's own average, more love is reported.
 
--   $\beta_2 = 0.721$, $p = .009$, 95% CI $[0.186, 1.256]$ People who are generally higher in perceived PA similarity report more love than others.
+- $\beta_2 = 0.721$, $p = .009$, 95% CI $[0.186, 1.256]$ People who are generally higher in perceived PA similarity report more love than others.
 
--   $\beta_3 = 2.216$, $p < .001$, 95% CI $[1.150, 3.283]$ On moments when more positive (or less negative) events occurred, people report more love. Event valence has a meaningful independent effect on felt love, above and beyond perceived PA similarity.
+- $\beta_3 = 2.216$, $p < .001$, 95% CI $[1.150, 3.283]$ On moments when more positive (or less negative) events occurred, people report more love. Event valence has a meaningful independent effect on felt love, above and beyond perceived PA similarity.
 
 **Moderation**
 
--   $\beta_4 = -0.035$, $p = .149$, 95% CI $[−0.083, 0.013]$
+- $\beta_4 = -0.035$, $p = .149$, 95% CI $[−0.083, 0.013]$
 
-    The interaction is non-significant. The within-person perceived PA similarity – love association does not significantly depend on whether the recent event was positive or negative.
+  The interaction is non-significant. The within-person perceived PA similarity – love association does not significantly depend on whether the recent event was positive or negative.
 
 ```{r h33p_probing}
 #| output-fold: true
@@ -3912,7 +3922,11 @@ We hypothesized a mismatch effect whereby the positive association between perce
 To examine whether the impact of variation in event valence on the mediation of the actual PA similarity - love association through perceived PA similarity, we run the moderated outcome model `h33_outcome_mod`
 
 $$\begin{aligned}
-L_{mpd}​=&\ f_{0,pd}​+\phi_1​S_{mpd}^{perc,within}​+\phi_2\bar{​S}_d^{perc,between}​+\phi_3​S_{mpd}^{act,within}​+\phi_4\bar{​S}_d^{act,between}​+\phi_5​C_{mpd}​+ \\& \quad \phi_6​(S_{mpd}^{perc,within}​×C_{mpd}​)+\phi_7​(S_{mpd}^{act,within}​×C_{mpd}​)+\varepsilon_{mpd}
+L_{mpd} &= f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between} \\
+&\quad + \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between} + \phi_5 C_{mpd} \\
+&\quad + \phi_6 (S_{mpd}^{perc,within} \times C_{mpd}) \\
+&\quad + \phi_7 (S_{mpd}^{act,within} \times C_{mpd}) \\
+&\quad + \varepsilon_{mpd}
 \end{aligned}$$
 
 ```{r h33_moderated_outcome}
@@ -3980,7 +3994,10 @@ kable(tbl_extended,
 
 We also run the moderated mediation model to test whether event valence moderates the a-path, i.e. whether the strength of the actual $\rightarrow$ perceived PA similarity association depends on the event valence?
 
-$$S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​C_{mpd}​+θ_4​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}$$
+$$S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
++ \theta_3\, C_{mpd}
++ \theta_4 \left(S_{mpd}^{act,within} \times C_{mpd}\right)
++ \varepsilon_{mpd}$$
 
 ```{r h33_moderated_mediator}
 #| output-fold: true
@@ -4157,7 +4174,11 @@ We hypothesized:
 
 We fit the model
 
-$$𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{𝑎𝑐𝑡,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{𝑎𝑐𝑡,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{act,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}$$
+$$\begin{aligned}
+L_{mpd} =\ & b_{0,pd} + \beta_1 S_{mpd}^{act,within} + \beta_2 \bar{S}_d^{act,between} \\
+& + \beta_3 C_{mpd} + \beta_4(S_{mpd}^{act,within} \times C_{mpd}) \\
+& + \varepsilon_{mpd}
+\end{aligned}$$
 
 ```{r h34a_valence_moderation}
 #| output-fold: true
@@ -4179,17 +4200,17 @@ model_output(h34a)
 
 **Main effects**
 
--   $\beta_1 = 0.020$, $p = .571$, 95% CI $[-0.048, 0.087]$ On moments when actual NA similarity is higher than a person's own average, there is no significant effect on reported love.
+- $\beta_1 = 0.020$, $p = .571$, 95% CI $[-0.048, 0.087]$ On moments when actual NA similarity is higher than a person's own average, there is no significant effect on reported love.
 
--   $\beta_2 = 0.375$, $p = .156$, 95% CI $[-0.146, 0.896]$ People in dyads that are generally more similar in NA do not systematically report more or less love than others.
+- $\beta_2 = 0.375$, $p = .156$, 95% CI $[-0.146, 0.896]$ People in dyads that are generally more similar in NA do not systematically report more or less love than others.
 
--   $\beta_3 = 2.801$, $p < .001$, 95% CI $[1.480, 4.122]$ On moments when more positive (or less negative) events occurred, people report substantially more love. Event valence has a meaningful independent effect on felt love, above and beyond actual NA similarity.
+- $\beta_3 = 2.801$, $p < .001$, 95% CI $[1.480, 4.122]$ On moments when more positive (or less negative) events occurred, people report substantially more love. Event valence has a meaningful independent effect on felt love, above and beyond actual NA similarity.
 
 **Moderation**
 
--   $\beta_4 = -0.054$, $p = .429$, 95% CI $[-0.189, 0.080]$
+- $\beta_4 = -0.054$, $p = .429$, 95% CI $[-0.189, 0.080]$
 
-    The interaction is non-significant. The within-person actual NA similarity – love association does not depend on whether the recent event was positive or negative.
+  The interaction is non-significant. The within-person actual NA similarity – love association does not depend on whether the recent event was positive or negative.
 
 ```{r h34a_probing}
 #| output-fold: true
@@ -4241,7 +4262,11 @@ We hypothesized a mismatch effect whereby the negative association between actua
 
 We fit the model
 
-$$𝐿_{𝑚𝑝𝑑} = 𝑏_{0,𝑝𝑑} + 𝛽_1𝑆_{𝑚𝑝𝑑}^{perc,𝑤𝑖𝑡ℎ𝑖𝑛} + 𝛽_2𝑆̅_𝑑^{perc,𝑏𝑒𝑡𝑤𝑒𝑒𝑛} + 𝛽_3𝐶_{𝑚𝑝𝑑} + 𝛽_4(𝑆_{𝑚𝑝𝑑}^{perc,within} × 𝐶_{𝑚𝑝𝑑}) + 𝜀_{𝑚𝑝𝑑}$$
+$$\begin{aligned}
+L_{mpd} =\ & b_{0,pd} + \beta_1 S_{mpd}^{perc,within} + \beta_2 \bar{S}_d^{perc,between} \\
+& + \beta_3 C_{mpd} + \beta_4(S_{mpd}^{perc,within} \times C_{mpd}) \\
+& + \varepsilon_{mpd}
+\end{aligned}$$
 
 ```{r h34p_valence_moderation}
 #| output-fold: true
@@ -4263,17 +4288,17 @@ model_output(h34p)
 
 **Main effects**
 
--   $\beta_1 = 0.032$, $p = .283$, 95% CI $[-0.027, 0.091]$ On moments when perceived NA similarity is higher than a person's own average, there is no significant effect on reported love.
+- $\beta_1 = 0.032$, $p = .283$, 95% CI $[-0.027, 0.091]$ On moments when perceived NA similarity is higher than a person's own average, there is no significant effect on reported love.
 
--   $\beta_2 = 0.744$, $p = .006$, 95% CI $[0.225, 1.263]$ People who are generally higher in perceived NA similarity report more love than others.
+- $\beta_2 = 0.744$, $p = .006$, 95% CI $[0.225, 1.263]$ People who are generally higher in perceived NA similarity report more love than others.
 
--   $\beta_3 = 2.421$, $p < .001$, 95% CI $[1.330, 3.512]$ On moments when more positive (or less negative) events occurred, people report more love. Event valence has a meaningful independent effect on felt love, above and beyond perceived NA similarity.
+- $\beta_3 = 2.421$, $p < .001$, 95% CI $[1.330, 3.512]$ On moments when more positive (or less negative) events occurred, people report more love. Event valence has a meaningful independent effect on felt love, above and beyond perceived NA similarity.
 
 **Moderation**
 
--   $\beta_4 = -0.052$, $p = .352$, 95% CI $[-0.163, 0.058]$
+- $\beta_4 = -0.052$, $p = .352$, 95% CI $[-0.163, 0.058]$
 
-    The interaction is non-significant. The within-person perceived NA similarity – love association does not depend on whether the recent event was positive or negative.
+  The interaction is non-significant. The within-person perceived NA similarity – love association does not depend on whether the recent event was positive or negative.
 
 ```{r h34p_probing}
 #| output-fold: true
@@ -4326,7 +4351,11 @@ We hypothesized a mismatch effect whereby the negative association between perce
 To examine whether variation in event valence moderates the mediation of the actual NA similarity – love association through perceived NA similarity, we run the moderated outcome model `h34_outcome_mod`
 
 $$\begin{aligned}
-L_{mpd}​=& f_{0,pd}​+ϕ_1​S_{mpd}^{perc,within}​+ϕ_2\bar{​S}_d^{perc,between}​+ϕ_3​S_{mpd}^{act,within}​+ϕ_4\bar{​S}_d^{act,between}​+ϕ_5​C_{mpd}​+\\ & \quad ϕ_6​(S_{mpd}^{perc,within}​×C_{mpd}​)+ϕ_7​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}
+L_{mpd} &= f_{0,pd} + \phi_1 S_{mpd}^{perc,within} + \phi_2 \bar{S}_d^{perc,between} \\
+&\quad + \phi_3 S_{mpd}^{act,within} + \phi_4 \bar{S}_d^{act,between} + \phi_5 C_{mpd} \\
+&\quad + \phi_6 (S_{mpd}^{perc,within} \times C_{mpd}) \\
+&\quad + \phi_7 (S_{mpd}^{act,within} \times C_{mpd}) \\
+&\quad + \varepsilon_{mpd}
 \end{aligned}$$
 
 ```{r h34_moderated_outcome}
@@ -4394,7 +4423,10 @@ kable(tbl_extended,
 
 We also run the moderated mediation model to test whether event valence moderates the a-path, i.e. whether the strength of the actual $\rightarrow$ perceived NA similarity association depends on event valence.
 
-$$S_{mpd}^{perc}​=t_{0,pd}​+θ_1​S_{mpd}^{act,within}​+θ_2\bar{​S}_d^{act,between​}+θ_3​C_{mpd}​+θ_4​(S_{mpd}^{act,within}​×C_{mpd}​)+ε_{mpd}$$
+$$S_{mpd}^{perc} = t_{0,pd} + \theta_1 S_{mpd}^{act,within} + \theta_2 \bar{S}_d^{act,between}
++ \theta_3\, C_{mpd}
++ \theta_4 \left(S_{mpd}^{act,within} \times C_{mpd}\right)
++ \varepsilon_{mpd}$$
 
 ```{r h34_moderated_mediator}
 #| output-fold: true
@@ -4567,8 +4599,8 @@ The preregistered event valence index $C_{mpd}$ is based on general positive and
 As an exploratory extension, we construct a broader event valence index $C^{expl}_{mpd}$ that additionally draws on the partner-specific event items (items 11 and 12 in the ESM beeps), which were presented in the complementary branches of the questionnaire (i.e., when at least one of the partner-presence or partner-contact conditions was met). Specifically:
 
 $$C^{expl}_{mpd} = \begin{cases}
-  \text{pos_part}_{mpd} - \text{neg_part}_{mpd} & \text{if partner-item branch was taken}\\
-  C_{mpd} = \text{pos_gen}_{mpd} - \text{neg_gen}_{mpd} & \text{if general-item branch was taken and partner items are NA}
+  \mathrm{pos\_part}_{mpd} - \mathrm{neg\_part}_{mpd} & \text{if partner-item branch was taken}\\
+  \mathrm{pos\_gen}_{mpd} - \mathrm{neg\_gen}_{mpd} & \text{if general-item branch taken (partner items NA)}
 \end{cases}$$
 
 Like $C_{mpd}$, the index is person-mean centered:
@@ -5368,10 +5400,11 @@ plot(p_mod) +
 Rather than treating event valence as a continuous moderator, this section uses a binary indicator of whether a negative event occurred at all. The variable $D^{neg}_{mpd}$ is coded as:
 
 $$D^{neg}_{mpd} = \begin{cases}
-  1 & \text{if neg_gen}_{mpd} \geq 2 \;\text{or}\; \text{neg_part}_{mpd} \geq 2
-      \quad \text{(something negative happened, even if only a little)}\\
-  0 & \text{otherwise (nothing negative happened)}
+  1 & \text{if } \mathrm{neg\_gen}_{mpd} \geq 2 \;\text{or}\; \mathrm{neg\_part}_{mpd} \geq 2 \\
+  0 & \text{otherwise}
 \end{cases}$$
+
+where 1 indicates that something negative happened (even if only a little) and 0 that nothing negative happened.
 
 The variable pools across both flowchart branches: if the general event item is available, it determines the code; if it is `NA`, the partner event item is used instead. This produces a broader "was anything negative present?" contrast that does not require assuming the linear scaling of the continuous $C_{mpd}$ index.
 
@@ -6178,10 +6211,11 @@ plot(p_mod) +
 This section mirrors Alternative 2, but uses a binary indicator of whether a *positive* event occurred. The variable $D^{pos}_{mpd}$ is coded as:
 
 $$D^{pos}_{mpd} = \begin{cases}
-  1 & \text{if pos_gen}_{mpd} \geq 2 \;\text{or}\; \text{pos_part}_{mpd} \geq 2
-      \quad \text{(something positive happened, even if only a little)}\\
-  0 & \text{otherwise (nothing positive happened)}
+  1 & \text{if } \mathrm{pos\_gen}_{mpd} \geq 2 \;\text{or}\; \mathrm{pos\_part}_{mpd} \geq 2 \\
+  0 & \text{otherwise}
 \end{cases}$$
+
+where 1 indicates that something positive happened (even if only a little) and 0 that nothing positive happened.
 
 The motivation for examining $D^{pos}_{mpd}$ separately is that positive and negative events may have asymmetric effects on the similarity–love association. Whereas the preregistered hypothesis (H3.3/H3.4) was formulated in terms of the net valence of the context, decomposing presence/absence of each event type independently allows us to identify whether it is the presence of a positive event, the absence of a negative event, or the balance between them that drives any observed moderation.
 
