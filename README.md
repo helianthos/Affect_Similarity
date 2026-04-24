@@ -6,19 +6,19 @@ Reproducible analysis and reporting code accompanying the OSF preregistration fo
 
 **Supervisor:** Prof. Peter Kuppens
 
-**Affiliation:**\
-KU Leuven – Faculty of Psychology and Educational Sciences\
+**Affiliation:**
+KU Leuven – Faculty of Psychology and Educational Sciences
 Research Unit Quantitative Psychology and Individual Differences
 
-**Preregistration:**\
-Open Science Framework (OSF):\
-<https://doi.org/10.17605/OSF.IO/E5SZ2>
+**Preregistration:**
+Open Science Framework (OSF):
+[https://doi.org/10.17605/OSF.IO/E5SZ2](https://doi.org/10.17605/OSF.IO/E5SZ2)
 
-**Contact:**\
+**Contact:**
 geert.vandingenen\@student.kuleuven.be / geert.vandingenen\@gmail.com
 
-**Last updated:**\
-2026-04-17
+**Last updated:**
+2026-04-24
 
 ## Project overview
 
@@ -33,9 +33,7 @@ In addition to the reproducible source files, the repository also contains a `do
 This project uses:
 
 - **R** for all data processing and analyses,
-
 - **renv** for reproducible package management, and
-
 - **git/GitHub** for version control.
 
 Raw data files are stored locally (e.g., via OneDrive) and are not tracked in this repository. Analysis-ready datasets are generated reproducible from the raw data using the scripts in this project.
@@ -44,10 +42,10 @@ Raw data files are stored locally (e.g., via OneDrive) and are not tracked in th
 
 For most users, the recommended way to work with this project is to use **RStudio Desktop** together with **Quarto**.
 
-1.  Install **R**
-2.  Install the latest **RStudio Desktop**: <https://posit.co/downloads/>
-3.  Install **Quarto**: <https://quarto.org/docs/download/>
-4.  Open `Affect_Similarity.Rproj` in RStudio
+1. Install **R**
+2. Install the latest **RStudio Desktop**: [https://posit.co/downloads/](https://posit.co/downloads/)
+3. Install **Quarto**: [https://quarto.org/docs/download/](https://quarto.org/docs/download/)
+4. Open `Affect_Similarity.Rproj` in RStudio
 
 A recent version of RStudio is recommended, because Quarto support for `.qmd` files depends on the IDE version. For the analyses in this project, we mainly used **RStudio version 2026.01.0+392**.
 
@@ -62,7 +60,6 @@ You can also work with this repository in **VS Code** or another IDE/editor that
 You can either:
 
 - clone this repository from GitHub, or
-
 - download the final project archive (ZIP) from OSF and extract it.
 
 #### *2. Open the project*
@@ -94,9 +91,9 @@ The raw-data folder may contain other `.csv` files, but the import script requir
 
 These are the preprocessed raw-data exports used as inputs for this project's reproducible pipeline.
 
-1.  Copy the template: `config/local_raw_data_path_TEMPLATE.R` and rename it to `config/local_raw_data_path.R`
-2.  Open `config/local_raw_data_path.R` and set `RAW_DATA_DIR` to the folder that contains the raw CSV files on your machine.
-3.  Restart R (Session → Restart R). The first script for the data processing (see below) will read in the csv files.
+1. Copy the template: `config/local_raw_data_path_TEMPLATE.R` and rename it to `config/local_raw_data_path.R`
+2. Open `config/local_raw_data_path.R` and set `RAW_DATA_DIR` to the folder that contains the raw CSV files on your machine.
+3. Restart R (Session → Restart R). The first script for the data processing (see below) will read in the csv files.
 
 This is the only path that is computer/user dependent and needs to be provided.
 
@@ -104,21 +101,18 @@ This is the only path that is computer/user dependent and needs to be provided.
 
 In the `scripts/` folder, there are 4 R scripts to go from the raw csv data files to processed R datasets that are ready for analysis:
 
-1.  `scripts/01_data_import.R`
+1. `scripts/01_data_import.R`
 
-    Imported data files will be written to `data/imported/*`.
+   Imported data files will be written to `data/imported/*`.
+2. `scripts/02_data_checks.R`
 
-2.  `scripts/02_data_checks.R`
+   Performs various checks on the imported data.
+3. `scripts/03_data_reduction.R`
 
-    Performs various checks on the imported data.
+   Reducing datasets to variables of interest for the present research. Correcting data (with documentation of why). Reduced and corrected datasets will be written to `data/reduced/*`.
+4. `scripts/04_data_construct.R`
 
-3.  `scripts/03_data_reduction.R`
-
-    Reducing datasets to variables of interest for the present research. Correcting data (with documentation of why). Reduced and corrected datasets will be written to `data/reduced/*`.
-
-4.  `scripts/04_data_construct.R`
-
-    Extends datasets by adding centered variables, similarity measures (actual and perceived), and the "we-ness" construct. Analysis-ready datasets will be written to `data/analysis/*`.
+   Extends datasets by adding centered variables, similarity measures (actual and perceived), and the "we-ness" construct. Analysis-ready datasets will be written to `data/analysis/*`.
 
 These scripts should be run in that order (for example using `source("scripts/xyz.R")`) to generate the datasets for analysis. For every script, a log file will be generated in `outputs/logs/`.
 
@@ -136,13 +130,13 @@ or render the full project from the project root with:
 
 `quarto render`
 
-1.  `scripts/05_descriptives.qmd`
+1. `scripts/05_descriptives.qmd`
+2. `scripts/06_study_component_1.qmd`
+3. `scripts/07_study_component_2.qmd`
+4. `scripts/08_response_surface_analysis.qmd`
+5. `scripts/09_tables_manuscript.qmd`
 
-2.  `scripts/06_study_component_1.qmd`
-
-3.  `scripts/07_study_component_2.qmd`
-
-4.  `scripts/08_response_surface_analysis.qmd`
+   Generates publication-ready Word (`.docx`) tables for the manuscript. Re-fits models from the saved analysis datasets and writes output to `outputs/tables/`. Each table is in its own chunk so tables can be generated and fine-tuned individually. Render with `quarto render scripts/09_tables_manuscript.qmd` or run chunks interactively in RStudio.
 
 Confirmatory analyses follow the preregistered analysis plan. Any exploratory analyses are explicitly labeled as such.
 
@@ -150,7 +144,7 @@ Confirmatory analyses follow the preregistered analysis plan. Any exploratory an
 
 The repository can additionally serve a public-facing website through GitHub Pages using the `docs/` folder.
 
-This folder contains: - `docs/index.html`: a landing page linking to the rendered reports - pre-rendered HTML copies of selected reports for direct online viewing
+This folder contains: - `docs/index.html`: a landing page linking to the rendered reports - pre-rendered HTML copies of selected reports for direct online viewing.
 
 Typical contents of `docs/`:
 
@@ -163,14 +157,12 @@ Typical contents of `docs/`:
 This setup makes it possible to:
 
 - keep the repository fully reproducible from source,
-
 - preserve rendered outputs in `outputs/scripts/`, and
-
 - provide a browsable public website through GitHub Pages.
 
 ## Project structure
 
-``` text
+```text
 project/
 │
 ├── README.md
@@ -292,8 +284,11 @@ project/
     │
     ├── logs/
     │   └── Saved log outputs
-    │     
+    │
+    ├── tables/
+    │   └── Word (.docx) tables generated by scripts/09_tables_manuscript.qmd
+    │
     └── scripts/
         └── Rendered Quarto HTML reports generated from source
-        
+      
 ```

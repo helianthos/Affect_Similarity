@@ -57,7 +57,8 @@ paths <- list(
   dir_data_red     = here::here("data", "reduced"),
   dir_data_ana     = here::here("data", "analysis"),
   dir_plots        = here::here("outputs", "plots"),
-  dir_logs         = here::here("outputs", "logs")
+  dir_logs         = here::here("outputs", "logs"),
+  dir_tables       = here::here("outputs", "tables")
 )
 
 # Safeguard: create paths in case they don't exist
@@ -66,6 +67,7 @@ dir.create(paths$dir_data_red, recursive = TRUE, showWarnings = FALSE)
 dir.create(paths$dir_data_ana,  recursive = TRUE, showWarnings = FALSE)
 dir.create(paths$dir_plots, recursive = TRUE, showWarnings = FALSE)
 dir.create(paths$dir_logs,  recursive = TRUE, showWarnings = FALSE)
+dir.create(paths$dir_tables, recursive = TRUE, showWarnings = FALSE)
 
 rm(cfg_file, RAW_DATA_DIR)
 

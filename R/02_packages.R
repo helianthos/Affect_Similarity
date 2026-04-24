@@ -39,5 +39,5 @@ library(car)
 library(patchwork)
 library(emmeans)
 library(kableExtra)
-
-# consider ggpubr for publication ready plots 
+library(flextable)
+library(officer)

@@ -31,6 +31,8 @@ outputs/logs/*
 !outputs/logs/.gitkeep
 outputs/scripts/*
 !outputs/scripts/.gitkeep
+outputs/tables/*
+!outputs/tables/.gitkeep
 
 # Quarto cache
 /.quarto/

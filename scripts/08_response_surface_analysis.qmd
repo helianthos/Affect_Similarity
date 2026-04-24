@@ -119,7 +119,7 @@ When $a_5 = 0$, the ridge of the surface (the FPA) lies exactly on the LOC ($X =
 A **strict congruence effect** requires five conditions simultaneously [@edwardsAlternativesDifferenceScores2002; @humbergResponseSurfaceAnalysis2019; @nestlerResponseSurfaceAnalysis2019]:
 
 | Condition | Meaning                                                        |
-|-------------------------|-----------------------------------------------|
+|--------------------------|---------------------------------------------|
 | $a_1 = 0$ | LOC is flat: congruence at high vs. low levels equally good    |
 | $a_2 = 0$ | LOC is linear (no concavity/convexity)                         |
 | $a_3 = 0$ | LOIC is symmetric around the origin/LOC                        |
@@ -489,6 +489,42 @@ kable(summary_tbl, digits = 3,
   kable_styling(bootstrap_options = c("striped", "condensed"), full_width = FALSE) %>%
   pack_rows(index = c("Actual PA" = 5, "Actual NA" = 5, 
                        "Perceived PA" = 5, "Perceived NA" = 5))
+```
+
+```{r rsa_pub_table}
+pivot_wide_pub <- function(df) {
+  df %>%
+    mutate(
+      cell  = paste0(formatC(Estimate, format = "f", digits = 3), sig),
+      param = c("a1", "a2", "a3", "a4", "a5")
+    ) %>%
+    select(param, cell) %>%
+    pivot_wider(names_from = param, values_from = cell)
+}
+
+pub_wide <- bind_rows(
+  pivot_wide_pub(params_PA_act)  %>% mutate(Actor = "Actual PA", Partner = "Actual PA"),
+  pivot_wide_pub(params_PA_perc) %>% mutate(Actor = "Actual PA", Partner = "Perceived PA"),
+  pivot_wide_pub(params_NA_act)  %>% mutate(Actor = "Actual NA", Partner = "Actual NA"),
+  pivot_wide_pub(params_NA_perc) %>% mutate(Actor = "Actual NA", Partner = "Perceived NA")
+) %>%
+  select(Actor, Partner, a1, a2, a3, a4, a5)
+
+note_text <- "LOC = line of congruence (X = Y); LOIC = line of incongruence (X = −Y); FPA = first principal axis. Parameters are derived from second-degree polynomial multilevel models with random intercepts for dyads and persons, and continuous-time AR(1) residuals. All predictors are person-mean centered. *** p < .001."
+
+kable(pub_wide,
+      col.names = c("Actor", "Partner",
+                    "$a_1$ (LOC slope)", "$a_2$ (LOC curv.)",
+                    "$a_3$ (LOIC slope)", "$a_4$ (LOIC curv.)",
+                    "$a_5$ (FPA = LOC)"),
+      align = c("l", "l", rep("c", 5)),
+      escape = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"),
+                full_width = FALSE, position = "left") %>%
+  add_header_above(c("Model" = 2, " " = 5), bold = TRUE) %>%
+  collapse_rows(columns = 1, valign = "middle") %>%
+  footnote(general = note_text, general_title = "Note.",
+           footnote_as_chunk = TRUE, escape = FALSE)
 ```
 
 ## Cross-model pattern

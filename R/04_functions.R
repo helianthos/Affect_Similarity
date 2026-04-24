@@ -1039,3 +1039,198 @@ plot_rsa_contour <- function(model, data, x_var, y_var,
     coord_fixed() +
     theme_minimal()
 }
+
+
+# ============================================================================ #
+# MANUSCRIPT TABLE HELPERS
+# Used in scripts/09_tables_manuscript.qmd to build flextable Word tables
+# ============================================================================ #
+
+# Format β with significance stars; returns "" for NA inputs
+fmt_b <- function(b, p, digits = 3) {
+  if (is.na(b)) return("")
+  stars <- ifelse(p < .001, "***", ifelse(p < .01, "**", ifelse(p < .05, "*", "")))
+  paste0(formatC(b, digits = digits, format = "f"), stars)
+}
+
+# Pull one term's (β, p, formatted string) from an lme model
+pull <- function(mod, term) {
+  tt <- summary(mod)$tTable
+  if (!term %in% rownames(tt))
+    return(list(b = NA_real_, p = NA_real_, fmt = ""))
+  list(b  = tt[term, "Value"],
+       p  = tt[term, "p-value"],
+       fmt = fmt_b(tt[term, "Value"], tt[term, "p-value"]))
+}
+pull_fmt <- function(mod, term) pull(mod, term)$fmt
+pull_p   <- function(mod, term) {
+  tt <- summary(mod)$tTable
+  if (!term %in% rownames(tt)) return(NA_real_)
+  tt[term, "p-value"]
+}
+
+# Apply bold to every significant (p < .05) cell in a set of columns
+bold_sig <- function(ft, p_mat, col_names) {
+  for (j_col in col_names) {
+    for (i_row in seq_len(nrow(p_mat))) {
+      pval <- p_mat[[j_col]][i_row]
+      if (!is.na(pval) && pval < .05)
+        ft <- bold(ft, i = i_row, j = j_col)
+    }
+  }
+  ft
+}
+
+# Apply shared styling (font, alignment, borders) to SC2 Step 1 tables.
+# Relies on MS_FONT, MS_SIZE_BODY, MS_SIZE_NOTE, rule_thick, rule_thin
+# being defined in the calling script.
+style_step1 <- function(ft, note_text, n_body_rows = 6) {
+  coef_cols <- c("love_1a", "love_1b", "love_1c", "close_1a", "close_1b", "close_1c")
+  ft %>%
+    font(fontname = MS_FONT, part = "all") %>%
+    fontsize(size = MS_SIZE_BODY, part = "all") %>%
+    fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+    bold(part = "header") %>%
+    align(align = "center", part = "header") %>%
+    align(j = c("affect", "predictor"), align = "left", part = "body") %>%
+    align(j = coef_cols, align = "right", part = "body") %>%
+    hline_top(border = rule_thick, part = "header") %>%
+    hline(i = 1, border = rule_thin,  part = "header") %>%
+    hline_bottom(border = rule_thick, part = "header") %>%
+    hline(i = n_body_rows %/% 2, border = rule_thin, part = "body") %>%
+    hline_bottom(border = rule_thick, part = "body") %>%
+    border_remove() %>%
+    hline_top(border = rule_thick, part = "header") %>%
+    hline(i = 1, border = rule_thin,  part = "header") %>%
+    hline_bottom(border = rule_thick, part = "header") %>%
+    hline(i = n_body_rows %/% 2, border = rule_thin, part = "body") %>%
+    hline_bottom(border = rule_thick, part = "body") %>%
+    add_footer_row(values = note_text, colwidths = 8) %>%
+    font(fontname = MS_FONT, part = "footer") %>%
+    fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+    italic(part = "footer") %>%
+    set_table_properties(layout = "autofit")
+}
+
+# Fit SC2 Step 1a / 1b / 1c lme models for one interaction context
+fit_step1 <- function(data) {
+  list(
+    m1a_PA_love  = lme(love  ~ PA_sim_act, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1a_PA_close = lme(close ~ PA_sim_act, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1a_NA_love  = lme(love  ~ NA_sim_act, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1a_NA_close = lme(close ~ NA_sim_act, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1b_PA_love  = lme(love  ~ PA_sim_act + PA_sim_perc, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1b_PA_close = lme(close ~ PA_sim_act + PA_sim_perc, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1b_NA_love  = lme(love  ~ NA_sim_act + NA_sim_perc, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1b_NA_close = lme(close ~ NA_sim_act + NA_sim_perc, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1c_PA_love  = lme(love  ~ PA_sim_act_gmc * PA_sim_perc_gmc, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1c_PA_close = lme(close ~ PA_sim_act_gmc * PA_sim_perc_gmc, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1c_NA_love  = lme(love  ~ NA_sim_act_gmc * NA_sim_perc_gmc, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude),
+    m1c_NA_close = lme(close ~ NA_sim_act_gmc * NA_sim_perc_gmc, random = ~1|dyad, data = data, method = "REML", na.action = na.exclude)
+  )
+}
+
+# Build the table body (tbl) and p-value matrix (p_mat) for one context
+make_step1_data <- function(m) {
+  tbl <- tibble(
+    affect    = c(rep("PA Similarity", 3), rep("NA Similarity", 3)),
+    predictor = rep(c("Actual", "Perceived", "Actual × Perceived"), 2),
+    love_1a  = c(pull_fmt(m$m1a_PA_love, "PA_sim_act"),  "", "",
+                 pull_fmt(m$m1a_NA_love, "NA_sim_act"),  "", ""),
+    love_1b  = c(pull_fmt(m$m1b_PA_love, "PA_sim_act"),
+                 pull_fmt(m$m1b_PA_love, "PA_sim_perc"), "",
+                 pull_fmt(m$m1b_NA_love, "NA_sim_act"),
+                 pull_fmt(m$m1b_NA_love, "NA_sim_perc"), ""),
+    love_1c  = c(pull_fmt(m$m1c_PA_love, "PA_sim_act_gmc"),
+                 pull_fmt(m$m1c_PA_love, "PA_sim_perc_gmc"),
+                 pull_fmt(m$m1c_PA_love, "PA_sim_act_gmc:PA_sim_perc_gmc"),
+                 pull_fmt(m$m1c_NA_love, "NA_sim_act_gmc"),
+                 pull_fmt(m$m1c_NA_love, "NA_sim_perc_gmc"),
+                 pull_fmt(m$m1c_NA_love, "NA_sim_act_gmc:NA_sim_perc_gmc")),
+    close_1a = c(pull_fmt(m$m1a_PA_close, "PA_sim_act"), "", "",
+                 pull_fmt(m$m1a_NA_close, "NA_sim_act"), "", ""),
+    close_1b = c(pull_fmt(m$m1b_PA_close, "PA_sim_act"),
+                 pull_fmt(m$m1b_PA_close, "PA_sim_perc"), "",
+                 pull_fmt(m$m1b_NA_close, "NA_sim_act"),
+                 pull_fmt(m$m1b_NA_close, "NA_sim_perc"), ""),
+    close_1c = c(pull_fmt(m$m1c_PA_close, "PA_sim_act_gmc"),
+                 pull_fmt(m$m1c_PA_close, "PA_sim_perc_gmc"),
+                 pull_fmt(m$m1c_PA_close, "PA_sim_act_gmc:PA_sim_perc_gmc"),
+                 pull_fmt(m$m1c_NA_close, "NA_sim_act_gmc"),
+                 pull_fmt(m$m1c_NA_close, "NA_sim_perc_gmc"),
+                 pull_fmt(m$m1c_NA_close, "NA_sim_act_gmc:NA_sim_perc_gmc"))
+  )
+  p_mat <- tibble(
+    love_1a  = c(pull_p(m$m1a_PA_love, "PA_sim_act"),  NA, NA,
+                 pull_p(m$m1a_NA_love, "NA_sim_act"),  NA, NA),
+    love_1b  = c(pull_p(m$m1b_PA_love, "PA_sim_act"),
+                 pull_p(m$m1b_PA_love, "PA_sim_perc"), NA,
+                 pull_p(m$m1b_NA_love, "NA_sim_act"),
+                 pull_p(m$m1b_NA_love, "NA_sim_perc"), NA),
+    love_1c  = c(pull_p(m$m1c_PA_love, "PA_sim_act_gmc"),
+                 pull_p(m$m1c_PA_love, "PA_sim_perc_gmc"),
+                 pull_p(m$m1c_PA_love, "PA_sim_act_gmc:PA_sim_perc_gmc"),
+                 pull_p(m$m1c_NA_love, "NA_sim_act_gmc"),
+                 pull_p(m$m1c_NA_love, "NA_sim_perc_gmc"),
+                 pull_p(m$m1c_NA_love, "NA_sim_act_gmc:NA_sim_perc_gmc")),
+    close_1a = c(pull_p(m$m1a_PA_close, "PA_sim_act"), NA, NA,
+                 pull_p(m$m1a_NA_close, "NA_sim_act"), NA, NA),
+    close_1b = c(pull_p(m$m1b_PA_close, "PA_sim_act"),
+                 pull_p(m$m1b_PA_close, "PA_sim_perc"), NA,
+                 pull_p(m$m1b_NA_close, "NA_sim_act"),
+                 pull_p(m$m1b_NA_close, "NA_sim_perc"), NA),
+    close_1c = c(pull_p(m$m1c_PA_close, "PA_sim_act_gmc"),
+                 pull_p(m$m1c_PA_close, "PA_sim_perc_gmc"),
+                 pull_p(m$m1c_PA_close, "PA_sim_act_gmc:PA_sim_perc_gmc"),
+                 pull_p(m$m1c_NA_close, "NA_sim_act_gmc"),
+                 pull_p(m$m1c_NA_close, "NA_sim_perc_gmc"),
+                 pull_p(m$m1c_NA_close, "NA_sim_act_gmc:NA_sim_perc_gmc"))
+  )
+  list(tbl = tbl, p_mat = p_mat)
+}
+
+# Render the SC2 Step 1 flextable for one interaction context
+make_step1_ft <- function(d, context_label) {
+  coef_cols <- c("love_1a", "love_1b", "love_1c", "close_1a", "close_1b", "close_1c")
+  note <- paste0(
+    "Note. ", context_label, " interaction context. ",
+    "Step 1a = actual similarity only; 1b = actual + perceived similarity (H1.3); ",
+    "1c = actual + perceived + Actual × Perceived interaction (exploratory). ",
+    "All models include a dyad-level random intercept. ",
+    "Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+  )
+  flextable(d$tbl) %>%
+    set_header_labels(
+      affect    = "Affect\nSimilarity",
+      predictor = "Predictor",
+      love_1a   = "1a", love_1b  = "1b", love_1c  = "1c",
+      close_1a  = "1a", close_1b = "1b", close_1c = "1c"
+    ) %>%
+    add_header_row(
+      values    = c("", "", "Love", "Closeness"),
+      colwidths = c(1, 1, 3, 3)
+    ) %>%
+    merge_v(j = c("affect", "predictor"), part = "header") %>%
+    merge_v(j = "affect", part = "body") %>%
+    bold_sig(d$p_mat, coef_cols) %>%
+    style_step1(note)
+}
+
+# Pivot rsa_params() output wide: one row with formatted "estimate + stars" cells
+pivot_rsa <- function(df) {
+  df %>%
+    mutate(
+      cell  = paste0(formatC(Estimate, format = "f", digits = 3), sig),
+      param = c("a1", "a2", "a3", "a4", "a5")
+    ) %>%
+    select(param, cell) %>%
+    pivot_wider(names_from = param, values_from = cell)
+}
+
+# Pivot rsa_params() output wide: one row with raw p-values (for bold_sig())
+pivot_rsa_p <- function(df) {
+  df %>%
+    mutate(param = c("a1", "a2", "a3", "a4", "a5")) %>%
+    select(param, p) %>%
+    pivot_wider(names_from = param, values_from = p)
+}

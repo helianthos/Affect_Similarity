@@ -1,0 +1,214 @@
+---
+title: "Manuscript Tables"
+---
+
+```{r setup}
+#| include: false
+
+source(here::here("R", "00_setup.R"))
+# dir_tables is defined and created by R/01_paths.R (sourced above)
+
+# Change MS_FONT to match whatever font you use in Word (e.g. "Calibri")
+MS_FONT      <- "Times New Roman"
+MS_SIZE_BODY <- 11
+MS_SIZE_NOTE <-  9
+
+rule_thick <- fp_border(width = 1.5)
+rule_thin  <- fp_border(width = 0.75)
+```
+
+# SC2 Step 1 Tables
+
+```{r sc2-data}
+#| include: false
+
+vmr_data  <- readRDS(file.path(dir_data_ana, "vmr_ana.rds"))
+post_data <- readRDS(file.path(dir_data_ana, "post_ana.rds"))
+bg_data   <- readRDS(file.path(dir_data_ana, "bg_ana.rds"))
+
+vmr_agg <- vmr_data %>%
+  group_by(dyad, person, topic) %>%
+  summarise(
+    PA_sim_act  = mean(PA_similarity_act,  na.rm = TRUE),
+    PA_sim_perc = mean(PA_similarity_perc, na.rm = TRUE),
+    NA_sim_act  = mean(NA_similarity_act,  na.rm = TRUE),
+    NA_sim_perc = mean(NA_similarity_perc, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+post_long <- post_data %>%
+  pivot_longer(
+    cols = c(love_neg, close_neg, love_pos, close_pos),
+    names_to  = c(".value", "topic"),
+    names_pattern = "(love|close)_(neg|pos)"
+  ) %>%
+  mutate(topic = ifelse(topic == "neg", "negative", "positive"))
+
+sc2 <- vmr_agg %>%
+  inner_join(post_long, by = c("dyad", "person", "topic")) %>%
+  left_join(bg_data %>% select(person, we_ness), by = "person") %>%
+  mutate(context  = ifelse(topic == "positive", 1, 0),
+         cwe_ness = we_ness - mean(we_ness, na.rm = TRUE)) %>%
+  group_by(topic) %>%
+  mutate(
+    PA_sim_act_gmc  = PA_sim_act  - mean(PA_sim_act,  na.rm = TRUE),
+    PA_sim_perc_gmc = PA_sim_perc - mean(PA_sim_perc, na.rm = TRUE),
+    NA_sim_act_gmc  = NA_sim_act  - mean(NA_sim_act,  na.rm = TRUE),
+    NA_sim_perc_gmc = NA_sim_perc - mean(NA_sim_perc, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+sc2_neg <- sc2 %>% filter(topic == "negative")
+sc2_pos <- sc2 %>% filter(topic == "positive")
+```
+
+## Negative context
+
+```{r table-sc2-neg}
+m_neg        <- fit_step1(sc2_neg)
+d_neg        <- make_step1_data(m_neg)
+ft_step1_neg <- make_step1_ft(d_neg, "Negative")
+
+save_as_docx(ft_step1_neg, path = file.path(dir_tables, "table_sc2_step1_neg.docx"))
+ft_step1_neg
+```
+
+## Positive context
+
+```{r table-sc2-pos}
+m_pos        <- fit_step1(sc2_pos)
+d_pos        <- make_step1_data(m_pos)
+ft_step1_pos <- make_step1_ft(d_pos, "Positive")
+
+save_as_docx(ft_step1_pos, path = file.path(dir_tables, "table_sc2_step1_pos.docx"))
+ft_step1_pos
+```
+
+# RSA Parameter Table
+
+```{r esm-data}
+#| include: false
+
+esm_data <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
+load_config("ESM")
+
+esm_data <- esm_data %>%
+  arrange(dyad, person, time) %>%
+  mutate(
+    PA_own_sq        = cPA_own^2,
+    PA_part_act_sq   = cPA_part_act^2,
+    PA_own_x_part    = cPA_own * cPA_part_act,
+    NA_own_sq        = cNA_own^2,
+    NA_part_act_sq   = cNA_part_act^2,
+    NA_own_x_part    = cNA_own * cNA_part_act,
+    PA_part_perc_sq  = cPA_part_perc^2,
+    PA_own_x_perc    = cPA_own * cPA_part_perc,
+    NA_part_perc_sq  = cNA_part_perc^2,
+    NA_own_x_perc    = cNA_own * cNA_part_perc
+  )
+```
+
+```{r rsa-models}
+#| cache: true
+
+rsa_ctrl <- lmeControl(opt = "nlminb")
+
+rsa_PA_act <- lme(
+  fixed  = love ~ cPA_own + cPA_part_act + PA_own_sq + PA_own_x_part + PA_part_act_sq,
+  random = ~1 | dyad/person,
+  correlation = corCAR1(form = ~time | dyad/person),
+  data = esm_data, method = "REML", na.action = na.exclude, control = rsa_ctrl
+)
+
+rsa_NA_act <- lme(
+  fixed  = love ~ cNA_own + cNA_part_act + NA_own_sq + NA_own_x_part + NA_part_act_sq,
+  random = ~1 | dyad/person,
+  correlation = corCAR1(form = ~time | dyad/person),
+  data = esm_data, method = "REML", na.action = na.exclude, control = rsa_ctrl
+)
+
+rsa_PA_perc <- lme(
+  fixed  = love ~ cPA_own + cPA_part_perc + PA_own_sq + PA_own_x_perc + PA_part_perc_sq,
+  random = ~1 | dyad/person,
+  correlation = corCAR1(form = ~time | dyad/person),
+  data = esm_data, method = "REML", na.action = na.exclude, control = rsa_ctrl
+)
+
+rsa_NA_perc <- lme(
+  fixed  = love ~ cNA_own + cNA_part_perc + NA_own_sq + NA_own_x_perc + NA_part_perc_sq,
+  random = ~1 | dyad/person,
+  correlation = corCAR1(form = ~time | dyad/person),
+  data = esm_data, method = "REML", na.action = na.exclude, control = rsa_ctrl
+)
+```
+
+```{r table-rsa}
+params_PA_act  <- rsa_params(rsa_PA_act)
+params_NA_act  <- rsa_params(rsa_NA_act)
+params_PA_perc <- rsa_params(rsa_PA_perc)
+params_NA_perc <- rsa_params(rsa_NA_perc)
+
+rsa_tbl <- bind_rows(
+  pivot_rsa(params_PA_act)  %>% mutate(Actor = "Actual PA",  Partner = "Actual PA"),
+  pivot_rsa(params_PA_perc) %>% mutate(Actor = "Actual PA",  Partner = "Perceived PA"),
+  pivot_rsa(params_NA_act)  %>% mutate(Actor = "Actual NA",  Partner = "Actual NA"),
+  pivot_rsa(params_NA_perc) %>% mutate(Actor = "Actual NA",  Partner = "Perceived NA")
+) %>%
+  select(Actor, Partner, a1, a2, a3, a4, a5)
+
+rsa_p <- bind_rows(
+  pivot_rsa_p(params_PA_act)  %>% mutate(Actor = "Actual PA",  Partner = "Actual PA"),
+  pivot_rsa_p(params_PA_perc) %>% mutate(Actor = "Actual PA",  Partner = "Perceived PA"),
+  pivot_rsa_p(params_NA_act)  %>% mutate(Actor = "Actual NA",  Partner = "Actual NA"),
+  pivot_rsa_p(params_NA_perc) %>% mutate(Actor = "Actual NA",  Partner = "Perceived NA")
+) %>%
+  select(a1, a2, a3, a4, a5)
+
+rsa_note <- paste0(
+  "Note. LOC = line of congruence (X = Y); LOIC = line of incongruence (X = −Y); ",
+  "FPA = first principal axis. Parameters are derived from second-degree polynomial ",
+  "multilevel models with random intercepts for dyads and persons, and continuous-time ",
+  "AR(1) residuals. All predictors are person-mean centered. *** p < .001."
+)
+
+rsa_param_cols <- c("a1", "a2", "a3", "a4", "a5")
+
+ft_rsa <- flextable(rsa_tbl) %>%
+  set_header_labels(
+    Actor   = "Actor",
+    Partner = "Partner",
+    a1 = "a₁\n(LOC slope)",
+    a2 = "a₂\n(LOC curv.)",
+    a3 = "a₃\n(LOIC slope)",
+    a4 = "a₄\n(LOIC curv.)",
+    a5 = "a₅\n(FPA = LOC)"
+  ) %>%
+  add_header_row(
+    values    = c("Model", ""),
+    colwidths = c(2, 5)
+  ) %>%
+  merge_v(j = c("Actor", "Partner"), part = "header") %>%
+  merge_v(j = "Actor", part = "body") %>%
+  bold_sig(rsa_p, rsa_param_cols) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = c("Actor", "Partner"), align = "left", part = "body") %>%
+  align(j = rsa_param_cols, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline(i = 1, border = rule_thin,  part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i = 2, border = rule_thin, part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = rsa_note, colwidths = 7) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_rsa, path = file.path(dir_tables, "table_rsa_params.docx"))
+ft_rsa
+```
