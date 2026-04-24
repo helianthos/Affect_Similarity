@@ -195,9 +195,9 @@ As in @bakdashRepeatedMeasuresCorrelation2017 we look at repeated measure correl
 
 We will use the function `rmcorr::rmcorr()`, which calculates the overall within-individual relationship among paired measures assessed on two or more occasions. The first argument of `rmcorr()` specifies the grouping over which commonality is sought:
 
--   When using using 'person' as the first argument in `rmcorr::rmcorr()`, this is the correlation that is common across persons between two variables' deviations from their baseline (so for example own PA and own NA, what is the 'shared' or 'pooled' correlation of the within-person deviations from baseline?).
+- When using using 'person' as the first argument in `rmcorr::rmcorr()`, this is the correlation that is common across persons between two variables' deviations from their baseline (so for example own PA and own NA, what is the 'shared' or 'pooled' correlation of the within-person deviations from baseline?).
 
--   When using 'dyad' as the first argument in `rmcorr::rmcorr()`, this is the correlation between two partner's deviations from baseline that is common across dyads. This treats the correlation as characteristic of the relationship, not of the individuals.
+- When using 'dyad' as the first argument in `rmcorr::rmcorr()`, this is the correlation between two partner's deviations from baseline that is common across dyads. This treats the correlation as characteristic of the relationship, not of the individuals.
 
 As mentioned, we will refrain from using the results from `rmcorr()` for inference. When grouping dyadic data by person in `rmcorr()`, the model treats partners as independent entities, ignoring the shared variance between them (because they belong to the same dyad). This violation of independence artificially inflates the degrees of freedom (df) and deflates p-values, making significance tests overly optimistic. However, the descriptive correlation coefficient (r) accurately represents the common within-person association across the sample.
 
@@ -416,11 +416,11 @@ $Y∼1+(1∣dyad/person)$ , decomposes the total variance into three independent
 
 4.  The ICC is the proportion of variance of the total variance:
 
-    -   **ICC_Dyad:** Stable differences between couples
+    - **ICC_Dyad:** Stable differences between couples
 
-    -   **ICC_Person:** Stable differences between individuals within those couples
+    - **ICC_Person:** Stable differences between individuals within those couples
 
-    -   **ICC_Moment:** The "within-person" variance. This captures how much a person deviates from their own average throughout the day (includes error).
+    - **ICC_Moment:** The "within-person" variance. This captures how much a person deviates from their own average throughout the day (includes error).
 
 The **total variance** is the sum: $\sigma_{total}^2 = \sigma_{dyad}^2 + \sigma_{person}^2 + \sigma_{error}^2$.
 
@@ -484,9 +484,9 @@ plot_trajectory(esm_data, variable, participants)
 
 Theoretically, the similarity indices can range from -200 to +100:
 
--   The -200 would be when one partner has baseline of +100 and rates at 0 (so -100 deviation) while the other partner has baseline of 0 and rates at +100 (so deviation of +100), giving a mean elevation of 0, while their distance is at 200.
+- The -200 would be when one partner has baseline of +100 and rates at 0 (so -100 deviation) while the other partner has baseline of 0 and rates at +100 (so deviation of +100), giving a mean elevation of 0, while their distance is at 200.
 
--   The +100 would be when both partners' baseline would be at 0 and they both rate at +100 (so deviation of +100), bringing the mean elevation to 100 and the distance to 0.
+- The +100 would be when both partners' baseline would be at 0 and they both rate at +100 (so deviation of +100), bringing the mean elevation to 100 and the distance to 0.
 
 ```{r base_theoretical_similarity_surface}
 
@@ -494,14 +494,8 @@ Theoretically, the similarity indices can range from -200 to +100:
 x <- seq(-100, 100, length.out = 200) # 'resolution' of 200
 y <- seq(-100, 100, length.out = 200)
 
-# function Z = (X + Y)/2 - abs(X - Y)
-similarity <- function(X, Y) {
-  elevation <- (X + Y) / 2
-  mismatch <- abs(X - Y)
-  return(elevation - mismatch)
-}
-
-# create z matrix, 'outer' applies similarity function to all combinations.
+# `similarity()` (Z = (X + Y)/2 - |X - Y|) is defined in R/04_functions.R.
+# `outer()` applies it to all combinations to build the theoretical surface.
 z <- outer(x, y, similarity)
 
 # dynamic plot using plotly::plot_ly()
@@ -537,24 +531,14 @@ In practice, these edge cases will not appear. In the data, the similarity indic
 
 ```{r practical_ranges}
 
-sim_cols <- c("PA_similarity_act", "NA_similarity_act", 
+sim_cols <- c("PA_similarity_act", "NA_similarity_act",
               "PA_similarity_perc", "NA_similarity_perc")
 
-draw_violin_plot <- function() {
-  vioplot(esm_data[, sim_cols],
-            main = "Range and Distribution of Affect Similarity",
-            col = c("#A6CEE3", "#FB9A99", "#A6CEE3", "#FB9A99"),
-            names = c("PA\nActual", "NA\nActual", "PA\nPerceived", "NA\nPerceived"),
-            areaEqual = FALSE,
-            rectCol = "gray30", lineCol = "gray30", border = "gray30"
-    )
-    title(ylab = "Similarity (S = M - D)", line = 2)
-    abline(h = 0, col = "black", lty = 2, lwd = 1.5)
-}
-draw_violin_plot()
+# draw_sim_violin_plot() is defined in R/04_functions.R
+draw_sim_violin_plot(esm_data, sim_cols)
 
 plot_name <- sprintf("%s_%d_violin.png", prefix, plot_counter)
-save_base_plot(draw_violin_plot(), plot_name)
+save_base_plot(draw_sim_violin_plot(esm_data, sim_cols), plot_name)
 plot_counter <- plot_counter + 1
 
 # numerical ranges
@@ -845,9 +829,9 @@ To evaluate the potential role of individual affect levels, we examined the prer
 
 **2. Correlation with Similarity Predictors.** The similarity indices themselves showed substantial bivariate overlap with the affect components, as expected given their construction (calculated as Mean − \|Difference\|). This is **a definition-induced overlap**. From the data:
 
--   **For Positive Affect (PA):** The actual similarity index (`PA_similarity_act)` correlates strongly with individual affect levels ($r≈.63$ for both actor and partner).
+- **For Positive Affect (PA):** The actual similarity index (`PA_similarity_act)` correlates strongly with individual affect levels ($r≈.63$ for both actor and partner).
 
--   **For Negative Affect (NA):** The overlap was moderate ($r≈.37$).
+- **For Negative Affect (NA):** The overlap was moderate ($r≈.37$).
 
 Consequently, models that include affect levels as covariates shift the interpretation of the similarity coefficient toward similarity beyond levels.
 
@@ -938,7 +922,7 @@ cat("\nN after excluding dyads with heavy-ceiling persons:", nrow(esm_data_ceili
 
 plot_hist_numeric(esm_data_ceiling_love, "PA_similarity_act", "Ditribution of 'love'", "love (0-100)",2)
 
-±# 7. Summary
+# 7. Summary
 cat("Total beeps:", nrow(esm_data_ceiling_love), "\n")
 cat("Answered beeps with love >=", high, ":", sum(esm_data_ceiling_love$is_high, na.rm = TRUE), "\n")
 cat("Percentage with love >=", high, ":", round(mean(esm_data_ceiling_love$is_high, na.rm = TRUE) * 100, 1), "% of answered beeps\n")
@@ -984,9 +968,9 @@ Because the 30 DCI items used are Likert 1-5, the total DCI score is between 30 
 
 psych::omega() estimates reliability using a factor model and assumes that items may refelect:
 
--   One general factor (what items have in common)
+- One general factor (what items have in common)
 
--   Several group factors (clusters or subscales)
+- Several group factors (clusters or subscales)
 
 In the function, we therefore have to specify the number of group factors we expect. The DCI has the following 9 subscales (@bodenmannDyadicCopingInventory2018), with items 36 and 37 for evaluation (Evaluation of dyadic coping; (EDC):
 
@@ -2042,13 +2026,13 @@ icc_table_wide %>%
 
 Some observations:
 
--   Within positive interactions, perceived NA similarity fluctuates less moment-to-moment and is more attributable to stable person/dyad differences. In a positive interaction, noticing negative cues may be more person/couple-specific, hence more between-person/dyad. Also perceived PA similarity becomes more dyad/person-linked in negative interactions than in positive interactions.
+- Within positive interactions, perceived NA similarity fluctuates less moment-to-moment and is more attributable to stable person/dyad differences. In a positive interaction, noticing negative cues may be more person/couple-specific, hence more between-person/dyad. Also perceived PA similarity becomes more dyad/person-linked in negative interactions than in positive interactions.
 
-    Note: not analysed, but floor effects in NA during positive interactions can cause this I think.
+  Note: not analysed, but floor effects in NA during positive interactions can cause this I think.
 
--   Dyad-level variance is much larger in negative interactions for NA_own: .10 (All) → .04 (Positive) → .26 (Negative). This suggests couples differ much more in their overall NA during negative interactions.
+- Dyad-level variance is much larger in negative interactions for NA_own: .10 (All) → .04 (Positive) → .26 (Negative). This suggests couples differ much more in their overall NA during negative interactions.
 
--   The perceived partner affects show more stable components in the valenced subsets. So perceptions of the partner are less “moment-only” once you condition on interaction valence.
+- The perceived partner affects show more stable components in the valenced subsets. So perceptions of the partner are less “moment-only” once you condition on interaction valence.
 
 ## Similarity indices
 
@@ -2062,27 +2046,14 @@ The similarity indices are constructed in the same way as for the ESM data, so t
 
 ```{r VMR_similarity_pracical_ranges}
 
-sim_cols <- c("PA_similarity_act", "NA_similarity_act", 
+sim_cols <- c("PA_similarity_act", "NA_similarity_act",
               "PA_similarity_perc", "NA_similarity_perc")
 
-draw_violin_plot <- function() {
-  vioplot(vmr_data[, sim_cols],
-        main = "Range and Distribution of Affect Similarity",
-        col = c("#A6CEE3", "#FB9A99", "#A6CEE3", "#FB9A99"),
-        names = c("PA\nActual", "NA\nActual", "PA\nPerceived", "NA\nPerceived"),
-        areaEqual = FALSE,   # FALSE = width is proportional to data density
-        rectCol = "gray30",  # Color of the inner boxplot
-        lineCol = "gray30",  # Color of the median line
-        border = "gray30"    # Color of the violin border
-)
-title(ylab = "Similarity (S = M - D)", line = 2)
-abline(h = 0, col = "black", lty = 2, lwd = 1.5) # Zero line
-}
-
-draw_violin_plot()
+# draw_sim_violin_plot() is defined in R/04_functions.R
+draw_sim_violin_plot(vmr_data, sim_cols)
 
 plot_name <- sprintf("%s_%d_violin.png", prefix, plot_counter)
-save_base_plot(draw_violin_plot(), plot_name)
+save_base_plot(draw_sim_violin_plot(vmr_data, sim_cols), plot_name)
 plot_counter <- plot_counter + 1
 
 # numerical ranges
@@ -2219,9 +2190,9 @@ ggplot(acf_long, aes(x = Variable, y = Autocorrelation, fill = Variable)) +
 
 The mean lag-1 autocorrelations in the VMR data are lower than in the ESM data and have large between-person variability (SDs). Because each person only has T=16 segments (per interaction topic), each correlation r is estimated from only n=T-1=15 adjacent pairs (or fewer when missingness is present). This can lead to
 
--   substantial downward bias in estimates of the correlations, known as the Hurwicz or Kendall bias (see Table 4 in @solanasLagoneAutocorrelationShort2010)
+- substantial downward bias in estimates of the correlations, known as the Hurwicz or Kendall bias (see Table 4 in @solanasLagoneAutocorrelationShort2010)
 
--   substantial sampling error. Using Fisher's z-transformation, the transformed correlation is approximately normal with $SE(z)≈1/\sqrt{(n−3)}$​, see @fisherProbableErrorCoefficient1921. Via back-transormation this implies $SE(r)≈(1−r^2)/\sqrt{n−3}$​. However, this SE is a rough heuristic and can even be too small since it assumes independent pairs, while the data are serially dependent.
+- substantial sampling error. Using Fisher's z-transformation, the transformed correlation is approximately normal with $SE(z)≈1/\sqrt{(n−3)}$​, see @fisherProbableErrorCoefficient1921. Via back-transormation this implies $SE(r)≈(1−r^2)/\sqrt{n−3}$​. However, this SE is a rough heuristic and can even be too small since it assumes independent pairs, while the data are serially dependent.
 
 The lower lag-1 correlations and higher SDs in VMR may therefore come from these bias and noise effects due to short series length in addition to potentially faster, more reactive affect dynamics at the 30 seconds timescale.
 

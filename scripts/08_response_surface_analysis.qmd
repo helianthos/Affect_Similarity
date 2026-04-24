@@ -119,7 +119,7 @@ When $a_5 = 0$, the ridge of the surface (the FPA) lies exactly on the LOC ($X =
 A **strict congruence effect** requires five conditions simultaneously [@edwardsAlternativesDifferenceScores2002; @humbergResponseSurfaceAnalysis2019; @nestlerResponseSurfaceAnalysis2019]:
 
 | Condition | Meaning                                                        |
-|-----------------------|-------------------------------------------------|
+|-------------------------|-----------------------------------------------|
 | $a_1 = 0$ | LOC is flat: congruence at high vs. low levels equally good    |
 | $a_2 = 0$ | LOC is linear (no concavity/convexity)                         |
 | $a_3 = 0$ | LOIC is symmetric around the origin/LOC                        |
@@ -172,295 +172,11 @@ esm_data <- esm_data %>%
 
 ## Helper functions
 
-```{r rsa_helpers}
-# --- Compute RSA surface parameters from polynomial coefficients ---
-rsa_params <- function(model) {
-  b  <- fixef(model)
-  # b[1] = intercept, b[2] = b1 (X), b[3] = b2 (Y), 
-  # b[4] = b3 (X²), b[5] = b4 (XY), b[6] = b5 (Y²)
-  b1 <- b[2]; b2 <- b[3]; b3 <- b[4]; b4 <- b[5]; b5 <- b[6]
-  
-  a1 <- b1 + b2       # LOC slope
-  a2 <- b3 + b4 + b5  # LOC curvature
-  a3 <- b1 - b2       # LOIC slope
-  a4 <- b3 - b4 + b5  # LOIC curvature
-  a5 <- b3 - b5       # FPA = LOC condition
-  
-  # Standard errors via delta method (variance of linear combos)
-  V <- vcov(model)
-  # indices 2:6 correspond to b1..b5
-  se_a1 <- sqrt(V[2,2] + V[3,3] + 2*V[2,3])
-  se_a2 <- sqrt(V[4,4] + V[5,5] + V[6,6] + 2*V[4,5] + 2*V[4,6] + 2*V[5,6])
-  se_a3 <- sqrt(V[2,2] + V[3,3] - 2*V[2,3])
-  se_a4 <- sqrt(V[4,4] + V[5,5] + V[6,6] - 2*V[4,5] + 2*V[4,6] - 2*V[5,6])
-  se_a5 <- sqrt(V[4,4] + V[6,6] - 2*V[4,6])
-  
-  params <- data.frame(
-    Parameter = c("a1 (LOC slope)", "a2 (LOC curvature)", 
-                   "a3 (LOIC slope)", "a4 (LOIC curvature)", 
-                   "a5 (FPA = LOC)"),
-    Meaning   = c("Slope along X = Y at origin",
-                   "Curvature along X = Y",
-                   "Slope along X = −Y at origin",
-                   "Curvature along X = −Y",
-                   "Ridge displacement from LOC"),
-    Estimate = c(a1, a2, a3, a4, a5),
-    SE       = c(se_a1, se_a2, se_a3, se_a4, se_a5),
-    stringsAsFactors = FALSE
-  )
-  params$z    <- params$Estimate / params$SE
-  params$p    <- 2 * pnorm(-abs(params$z))
-  params$sig  <- ifelse(params$p < .001, "***",
-                 ifelse(params$p < .01,  "**",
-                 ifelse(params$p < .05,  "*", "")))
-  params
-}
+The RSA helpers used in the sections below are defined in `R/04_functions.R` (sourced via `R/00_setup.R`). See that file for full definitions and documentation:
 
-# --- 3D response surface plot with plotly ---
-plot_rsa_surface <- function(model, data, x_var, y_var,
-                              x_lab = "Actor affect (centered)",
-                              y_lab = "Partner affect (centered)",
-                              title = "Response Surface",
-                              z_lab = "Momentary love",
-                              z_lim = c(0, 100),
-                              x_range = c(-95, 95),
-                              y_range = c(-95, 95)) {
-  
-  # ---- fixed effects: intercept, x, y, x^2, x:y, y^2 ----
-  b <- as.numeric(nlme::fixef(model))
-  if (length(b) < 6) {
-    stop("fixef(model) must return at least 6 coefficients ordered as: intercept, x, y, x^2, x:y, y^2")
-  }
-  b <- b[1:6]
-  
-  poly_fun <- function(x, y) {
-    b[1] + b[2] * x + b[3] * y + b[4] * x^2 + b[5] * x * y + b[6] * y^2
-  }
-  
-  # ---- plotting ranges ----
-  x_range <- x_range
-  y_range <- y_range
-  
-  n_grid <- 150L
-  x_seq  <- seq(x_range[1], x_range[2], length.out = n_grid)
-  y_seq  <- seq(y_range[1], y_range[2], length.out = n_grid)
-  
-  Xmat <- outer(x_seq, y_seq, function(x, y) x)
-  Ymat <- outer(x_seq, y_seq, function(x, y) y)
-  Zmat <- poly_fun(Xmat, Ymat)
-  
-  vx <- as.vector(Xmat)
-  vy <- as.vector(Ymat)
-  vz <- as.vector(Zmat)
-  
-  vid <- function(ix, iy) ix + (iy - 1L) * n_grid
-  
-  # ---- diverging palette (fixed to love's natural scale, not per-plot z-range) ----
-  # Using z_lim as the colour anchor means all four response surfaces share a
-  # comparable colour mapping — a blue patch on one plot represents the same
-  # predicted love as a blue patch on another.
-  ramp_lo <- grDevices::colorRamp(c("#2166ac", "#f7f7f7"))
-  ramp_hi <- grDevices::colorRamp(c("#f7f7f7", "#b2182b"))
-  
-  z_to_col <- function(z) {
-    u <- (z - z_lim[1]) / (z_lim[2] - z_lim[1])
-    u <- pmin(pmax(u, 0), 1)
-    
-    out <- character(length(u))
-    lo  <- u <= 0.5
-    hi  <- !lo
-    
-    if (any(lo)) {
-      rgb_lo <- ramp_lo(u[lo] / 0.5)
-      out[lo] <- grDevices::rgb(rgb_lo[, 1], rgb_lo[, 2], rgb_lo[, 3],
-                                maxColorValue = 255)
-    }
-    if (any(hi)) {
-      rgb_hi <- ramp_hi((u[hi] - 0.5) / 0.5)
-      out[hi] <- grDevices::rgb(rgb_hi[, 1], rgb_hi[, 2], rgb_hi[, 3],
-                                maxColorValue = 255)
-    }
-    out
-  }
-  
-  # ---- explicit triangulation ----
-  n_faces <- 2L * (n_grid - 1L) * (n_grid - 1L)
-  ii <- integer(n_faces); jj <- integer(n_faces); kk <- integer(n_faces)
-  face_x <- numeric(n_faces); face_y <- numeric(n_faces); face_z <- numeric(n_faces)
-  loc_hit  <- logical(n_faces)
-  loic_hit <- logical(n_faces)
-  
-  pos <- 1L
-  for (iy in 1:(n_grid - 1L)) {
-    for (ix in 1:(n_grid - 1L)) {
-      v00 <- vid(ix, iy)
-      v10 <- vid(ix + 1L, iy)
-      v11 <- vid(ix + 1L, iy + 1L)
-      v01 <- vid(ix, iy + 1L)
-      
-      # triangle 1: (v00, v10, v11)
-      tri1 <- c(v00, v10, v11)
-      x1 <- vx[tri1]; y1 <- vy[tri1]; z1 <- vz[tri1]
-      ii[pos] <- tri1[1] - 1L; jj[pos] <- tri1[2] - 1L; kk[pos] <- tri1[3] - 1L
-      face_x[pos] <- mean(x1); face_y[pos] <- mean(y1); face_z[pos] <- mean(z1)
-      loc_hit[pos]  <- (min(x1 - y1) <= 0) && (max(x1 - y1) >= 0)
-      loic_hit[pos] <- (min(x1 + y1) <= 0) && (max(x1 + y1) >= 0)
-      pos <- pos + 1L
-      
-      # triangle 2: (v00, v11, v01)
-      tri2 <- c(v00, v11, v01)
-      x2 <- vx[tri2]; y2 <- vy[tri2]; z2 <- vz[tri2]
-      ii[pos] <- tri2[1] - 1L; jj[pos] <- tri2[2] - 1L; kk[pos] <- tri2[3] - 1L
-      face_x[pos] <- mean(x2); face_y[pos] <- mean(y2); face_z[pos] <- mean(z2)
-      loc_hit[pos]  <- (min(x2 - y2) <= 0) && (max(x2 - y2) >= 0)
-      loic_hit[pos] <- (min(x2 + y2) <= 0) && (max(x2 + y2) >= 0)
-      pos <- pos + 1L
-    }
-  }
-  
-  face_col <- z_to_col(face_z)
-  
-  # ---- LOIC dashed pattern ----
-  loic_tmin <- max(x_range[1], -y_range[2])
-  loic_tmax <- min(x_range[2], -y_range[1])
-  loic_span <- loic_tmax - loic_tmin
-  
-  if (is.finite(loic_span) && loic_span > 0) {
-    t_loic   <- (face_x - face_y) / 2
-    dash_len <- loic_span / 30
-    gap_len  <- dash_len * 0.4
-    phase    <- (t_loic - loic_tmin) %% (dash_len + gap_len)
-    loic_on  <- loic_hit & (phase <= dash_len)
-  } else {
-    loic_on <- rep(FALSE, length(face_col))
-  }
-  
-  # paint LOC/LOIC into the face colour vector
-  face_col[loic_on] <- "#000000"
-  face_col[loc_hit] <- "#000000"
-  
-  # ---- observed data points (subsample for rendering speed) ----
-  obs <- data %>%
-    dplyr::select(x = dplyr::all_of(x_var),
-                  y = dplyr::all_of(y_var),
-                  z = love) %>%
-    dplyr::filter(stats::complete.cases(.)) %>%
-    dplyr::filter(x >= x_range[1], x <= x_range[2],
-                  y >= y_range[1], y <= y_range[2])
-  if (nrow(obs) > 2000) obs <- obs %>% dplyr::slice_sample(n = 2000)
-  
-  # ---- colorbar trace: invisible scatter3d carrying the colour scale ----
-  # mesh3d with facecolor can't display a colorbar, so we attach one to a
-  # hidden marker trace placed off-screen. The colorscale here must match the
-  # z_to_col() mapping above so the legend reflects what the surface shows.
-  cbar_scale <- list(
-    c(0.0, "#2166ac"),
-    c(0.5, "#f7f7f7"),
-    c(1.0, "#b2182b")
-  )
-  
-  plotly::plot_ly() %>%
-    # main surface
-    plotly::add_trace(
-      type = "mesh3d",
-      x = vx, y = vy, z = vz,
-      i = ii, j = jj, k = kk,
-      facecolor = I(face_col),
-      flatshading = FALSE,
-      opacity = 0.65,
-      # hoverinfo = "skip",
-      lighting = list(
-        ambient = 0.85, diffuse = 0.7, specular = 0.03,
-        roughness = 0.9, fresnel = 0.02
-      ),
-      lightposition = list(x = 100, y = 200, z = 0),
-      name = "Surface",
-      showlegend = FALSE
-    ) %>%
-    # observed data points
-    plotly::add_markers(
-      x = obs$x, y = obs$y, z = obs$z,
-      marker = list(size = 1.5, color = "black", opacity = 0.25),
-      name = "Observed",
-      # hoverinfo = "skip",
-      showlegend = FALSE
-    ) %>%
-    # hidden colorbar trace
-    plotly::add_trace(
-      type = "scatter3d",
-      mode = "markers",
-      x = c(x_range[1], x_range[1]),
-      y = c(y_range[1], y_range[1]),
-      z = z_lim,
-      marker = list(
-        size = 0.1,
-        color = z_lim,
-        colorscale = cbar_scale,
-        cmin = z_lim[1],
-        cmax = z_lim[2],
-        showscale = TRUE,
-        colorbar = list(
-          title = list(text = "Predicted\nlove"),
-          len = 0.7
-        )
-      ),
-      hoverinfo = "skip",
-      showlegend = FALSE
-    ) %>%
-    plotly::layout(
-      title = list(text = title),
-      scene = list(
-        xaxis = list(title = x_lab),
-        yaxis = list(title = y_lab),
-        zaxis = list(title = z_lab, range = z_lim),
-        camera = list(eye = list(x = 1.5, y = -1.5, z = 1.2))
-      ),
-      annotations = list(
-        list(
-          x = 0.01, y = 0.99, xref = "paper", yref = "paper",
-          text = "<b>LOC</b>: solid black&nbsp;&nbsp;&nbsp;<b>LOIC</b>: dashed",
-          showarrow = FALSE, xanchor = "left", yanchor = "top",
-          bgcolor = "rgba(255,255,255,0.75)",
-          bordercolor = "rgba(0,0,0,0.15)",
-          borderwidth = 1
-        )
-      )
-    ) %>%
-    plotly::partial_bundle("gl3d")
-}
-
-# --- 2D contour plot as a static alternative ---
-plot_rsa_contour <- function(model, data, x_var, y_var,
-                              x_lab = "Actor affect (centered)",
-                              y_lab = "Partner affect (centered)",
-                              title = "Response Surface (contour)") {
-  
-  b <- fixef(model)
-  
-  x_range <- c(-50, 50)
-  y_range <- c(-50, 50)
-  
-  grid <- expand.grid(
-    X = seq(x_range[1], x_range[2], length.out = 100),
-    Y = seq(y_range[1], y_range[2], length.out = 100)
-  )
-  
-  grid$Z <- b[1] + b[2]*grid$X + b[3]*grid$Y + 
-            b[4]*grid$X^2 + b[5]*grid$X*grid$Y + b[6]*grid$Y^2
-  
-  ggplot(grid, aes(x = X, y = Y, z = Z)) +
-    geom_contour_filled(alpha = 0.8) +
-    geom_abline(intercept = 0, slope = 1, linetype = "solid", colour = "black") +
-    geom_abline(intercept = 0, slope = -1, linetype = "dashed", colour = "black") +
-    annotate("text", x = x_range[2]*0.85, y = x_range[2]*0.85, 
-             label = "LOC (X = Y)", angle = 45, size = 3, colour = "black") +
-    annotate("text", x = x_range[2]*0.85, y = -x_range[2]*0.85, 
-             label = "LOIC (X = −Y)", angle = -45, size = 3, colour = "black") +
-    labs(x = x_lab, y = y_lab, fill = "Predicted\nlove", title = title) +
-    coord_fixed() +
-    theme_minimal()
-}
-```
+- `rsa_params(model)` — surface parameters (a1–a5) with SE / z / p / stars
+- `plot_rsa_surface(model, data, x_var, y_var, ...)` — 3D plotly mesh with LOC / LOIC lines and observed data overlay
+- `plot_rsa_contour(model, data, x_var, y_var, ...)` — 2D static contour alternative
 
 # Model 1: Actual PA — Response Surface
 
@@ -680,9 +396,9 @@ plot_rsa_contour(
 
 ## Results and connection to SC1
 
-**Stronger LOC slope than for actual PA ($a_1 = 0.385$, $p < .001$).** Predicted love rises more steeply when the actor's PA and the actor's *perception* of the partner's PA move together than in the corresponding actual-PA surface ($a_1 = 0.310$, Model 1). This tracks the SC1 H1.3.PA finding (`h13_PA`) that perceived PA similarity carries a substantially larger within-person association with love than actual PA similarity when both are in the model.
+**Stronger LOC slope than for actual PA (**$a_1 = 0.385$, $p < .001$). Predicted love rises more steeply when the actor's PA and the actor's *perception* of the partner's PA move together than in the corresponding actual-PA surface ($a_1 = 0.310$, Model 1). This tracks the SC1 H1.3.PA finding (`h13_PA`) that perceived PA similarity carries a substantially larger within-person association with love than actual PA similarity when both are in the model.
 
-**No directional asymmetry ($a_3 = -0.012$, n.s.).** The pronounced tilt seen in Model 1 disappears when the partner's affect is replaced by the actor's perception of it. Substantively: the actor's perception of the partner's PA is already aligned more symmetrically with the actor's own PA than the partner's self-reported PA is, so the perceived-PA surface is close to rotationally symmetric around the LOC.
+**No directional asymmetry (**$a_3 = -0.012$, n.s.). The pronounced tilt seen in Model 1 disappears when the partner's affect is replaced by the actor's perception of it. Substantively: the actor's perception of the partner's PA is already aligned more symmetrically with the actor's own PA than the partner's self-reported PA is, so the perceived-PA surface is close to rotationally symmetric around the LOC.
 
 **Curvatures negligible.** $a_2$ is non-significant; $a_4 = 0.004$ is significant but small and positive, so, consistent with Models 1 and 2, no inverted-U mismatch pattern is present.
 
@@ -747,9 +463,9 @@ plot_rsa_contour(
 
 ## Results and connection to SC1
 
-**Descending ridge, slightly steeper than for actual NA ($a_1 = -0.310$, $p < .001$).** As actor NA and the actor's perception of the partner's NA rise together, predicted love drops. Magnitude exceeds the corresponding actual-NA LOC slope (Model 2: $a_1 = -0.287$), consistent with the SC1 H1.3.NA finding (`h13_NA`) that perceived NA similarity carries a stronger negative within-person association with love than actual NA similarity when both are modelled.
+**Descending ridge, slightly steeper than for actual NA (**$a_1 = -0.310$, $p < .001$). As actor NA and the actor's perception of the partner's NA rise together, predicted love drops. Magnitude exceeds the corresponding actual-NA LOC slope (Model 2: $a_1 = -0.287$), consistent with the SC1 H1.3.NA finding (`h13_NA`) that perceived NA similarity carries a stronger negative within-person association with love than actual NA similarity when both are modelled.
 
-**Small residual directional asymmetry ($a_3 = -0.072$, $p < .001$).** A mild negative LOIC slope remains, smaller in magnitude than for actual NA (Model 2: $a_3 = -0.131$) but in the same direction. Unlike the perceived-PA surface, where perception fully absorbed the directional signal, a residual directional tilt persists for NA.
+**Small residual directional asymmetry (**$a_3 = -0.072$, $p < .001$). A mild negative LOIC slope remains, smaller in magnitude than for actual NA (Model 2: $a_3 = -0.131$) but in the same direction. Unlike the perceived-PA surface, where perception fully absorbed the directional signal, a residual directional tilt persists for NA.
 
 **Curvatures negligible.** Neither $a_2$ nor $a_4$ reaches significance. No curvilinear component, and in particular no inverted-U congruence pattern.
 
@@ -779,11 +495,11 @@ kable(summary_tbl, digits = 3,
 
 Reading the summary table across the four models produces a consistent picture.
 
-**LOC slopes ($a_1$) are large and in the expected direction in every model.** PA models ($a_1 = 0.310$ actual, $0.385$ perceived) show a rising ridge; NA models ($a_1 = -0.287$ actual, $-0.310$ perceived) show a descending ridge. In every case the perceived-affect LOC slope is steeper than its actual-affect counterpart, consistent with the SC1 result that perceived similarity carries more of the within-person association with love than actual similarity.
+**LOC slopes (**$a_1$) are large and in the expected direction in every model. PA models ($a_1 = 0.310$ actual, $0.385$ perceived) show a rising ridge; NA models ($a_1 = -0.287$ actual, $-0.310$ perceived) show a descending ridge. In every case the perceived-affect LOC slope is steeper than its actual-affect counterpart, consistent with the SC1 result that perceived similarity carries more of the within-person association with love than actual similarity.
 
-**LOIC slopes ($a_3$) are substantial in the actual-affect models and attenuated in the perceived-affect models.** Actual PA shows $a_3 = 0.178$ ($p < .001$) and actual NA shows $a_3 = -0.131$ ($p < .001$); perceived PA drops to $a_3 = -0.012$ (n.s.) and perceived NA to $a_3 = -0.072$. This pattern is the RSA signature of the directional-asymmetry story that SC1 developed from its signed-difference decompositions: when partner affect enters the model objectively, the surface is tilted in the direction where the actor's affect exceeds the partner's; when partner affect enters as perceived by the actor, this asymmetry is largely absorbed.
+**LOIC slopes (**$a_3$) are substantial in the actual-affect models and attenuated in the perceived-affect models. Actual PA shows $a_3 = 0.178$ ($p < .001$) and actual NA shows $a_3 = -0.131$ ($p < .001$); perceived PA drops to $a_3 = -0.012$ (n.s.) and perceived NA to $a_3 = -0.072$. This pattern is the RSA signature of the directional-asymmetry story that SC1 developed from its signed-difference decompositions: when partner affect enters the model objectively, the surface is tilted in the direction where the actor's affect exceeds the partner's; when partner affect enters as perceived by the actor, this asymmetry is largely absorbed.
 
-**Curvatures ($a_2$, $a_4$) are small everywhere and in no case consistent with an inverted-U congruence pattern.** Where $a_4$ reaches significance it is *positive*, not negative, and always an order of magnitude smaller than $a_1$ or $a_3$. None of the four surfaces show the strict-congruence shape (flat LOC plus concave LOIC) that the preregistered mismatch framing implicitly assumed.
+**Curvatures (**$a_2$, $a_4$) are small everywhere and in no case consistent with an inverted-U congruence pattern. Where $a_4$ reaches significance it is *positive*, not negative, and always an order of magnitude smaller than $a_1$ or $a_3$. None of the four surfaces show the strict-congruence shape (flat LOC plus concave LOIC) that the preregistered mismatch framing implicitly assumed.
 
 ## Connecting RSA to the preregistered similarity index
 

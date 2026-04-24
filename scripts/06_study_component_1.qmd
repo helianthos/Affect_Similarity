@@ -3233,11 +3233,10 @@ edges(p_mod)$label_hjust <- "center"
 
 # Extract node coordinates
 nd <- nodes(p_mod)
-get_node <- function(name) nd[nd$name == name, c("x", "y")]
 
-x_X <- get_node("X")
-x_M <- get_node("M")
-x_Y <- get_node("Y")
+x_X <- get_node(nd, "X")
+x_M <- get_node(nd, "M")
+x_Y <- get_node(nd, "Y")
 
 # Midpoint of X->M edge (a-path)
 mid_a_x <- (x_X$x + x_M$x) / 2
@@ -3619,11 +3618,10 @@ edges(p_mod)$label_hjust <- "center"
 
 # Extract node coordinates
 nd <- nodes(p_mod)
-get_node <- function(name) nd[nd$name == name, c("x", "y")]
 
-x_X <- get_node("X")
-x_M <- get_node("M")
-x_Y <- get_node("Y")
+x_X <- get_node(nd, "X")
+x_M <- get_node(nd, "M")
+x_Y <- get_node(nd, "Y")
 
 # Midpoint of X->M edge (a-path)
 mid_b_x <- (x_M$x + x_Y$x) / 2
@@ -4110,10 +4108,9 @@ edges(p_mod)$label_colour <- edges_mod$colour
 edges(p_mod)$label_hjust <- "center"
 
 nd <- nodes(p_mod)
-get_node <- function(name) nd[nd$name == name, c("x", "y")]
-x_X <- get_node("X")
-x_M <- get_node("M")
-x_Y <- get_node("Y")
+x_X <- get_node(nd, "X")
+x_M <- get_node(nd, "M")
+x_Y <- get_node(nd, "Y")
 
 # Midpoint of X->M edge (a-path) — the only moderated path
 mid_a_x <- (x_X$x + x_M$x) / 2
@@ -4539,10 +4536,9 @@ edges(p_mod)$label_colour <- edges_mod$colour
 edges(p_mod)$label_hjust  <- "center"
 
 nd <- nodes(p_mod)
-get_node <- function(name) nd[nd$name == name, c("x", "y")]
-x_X <- get_node("X")
-x_M <- get_node("M")
-x_Y <- get_node("Y")
+x_X <- get_node(nd, "X")
+x_M <- get_node(nd, "M")
+x_Y <- get_node(nd, "Y")
 
 # Midpoint of X->M edge (a-path) — the only significantly moderated path
 mid_a_x <- (x_X$x + x_M$x) / 2
@@ -4790,21 +4786,7 @@ e1_slopes_out_perc <- emtrends(e1_h33_outcome_mod,
 e1_slopes_out_act_df  <- as.data.frame(summary(e1_slopes_out_act,  infer = TRUE))
 e1_slopes_out_perc_df <- as.data.frame(summary(e1_slopes_out_perc, infer = TRUE))
 
-make_rows_expl <- function(df, trend_col, predictor_label, mod_col) {
-  data.frame(
-    `Predictor`           = predictor_label,
-    `Event valence level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
-    `cC_expl`             = sprintf("%.2f", df[[mod_col]]),
-    `Simple slope`        = sprintf("%.4f", df[[trend_col]]),
-    `SE`                  = sprintf("%.4f", df$SE),
-    `95% CI`              = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
-    `t`                   = sprintf("%.3f", df$t.ratio),
-    `p`                   = ifelse(df$p.value < .001, "< .001",
-                                   sprintf("%.3f", df$p.value)),
-    check.names = FALSE
-  )
-}
-
+# make_rows_expl() is defined in R/04_functions.R
 tbl_e1_out <- rbind(
   make_rows_expl(e1_slopes_out_act_df,  "PA_similarity_act_w.trend",
                  "Actual PA similarity",    "cC_expl"),
@@ -4936,10 +4918,9 @@ edges(p_mod)$label_colour <- edges_mod$colour
 edges(p_mod)$label_hjust  <- "center"
 
 nd <- nodes(p_mod)
-get_node <- function(name) nd[nd$name == name, c("x", "y")]
-x_X <- get_node("X")
-x_M <- get_node("M")
-x_Y <- get_node("Y")
+x_X <- get_node(nd, "X")
+x_M <- get_node(nd, "M")
+x_Y <- get_node(nd, "Y")
 
 # Midpoint of a-path (X -> M)
 mid_a_x <- (x_X$x + x_M$x) / 2
@@ -5304,10 +5285,9 @@ edges(p_mod)$label_colour <- edges_mod$colour
 edges(p_mod)$label_hjust  <- "center"
 
 nd <- nodes(p_mod)
-get_node <- function(name) nd[nd$name == name, c("x", "y")]
-x_X <- get_node("X")
-x_M <- get_node("M")
-x_Y <- get_node("Y")
+x_X <- get_node(nd, "X")
+x_M <- get_node(nd, "M")
+x_Y <- get_node(nd, "Y")
 
 # Midpoints
 mid_a_x <- (x_X$x + x_M$x) / 2
@@ -5584,20 +5564,7 @@ e2_slopes_out_perc <- emtrends(e2_h33_outcome_mod,
 e2_slopes_out_act_df  <- as.data.frame(summary(e2_slopes_out_act,  infer = TRUE))
 e2_slopes_out_perc_df <- as.data.frame(summary(e2_slopes_out_perc, infer = TRUE))
 
-make_rows_dummy <- function(df, trend_col, predictor_label) {
-  data.frame(
-    `Predictor`      = predictor_label,
-    `Negative event` = c("No (0)", "Yes (1)"),
-    `Simple slope`   = sprintf("%.4f", df[[trend_col]]),
-    `SE`             = sprintf("%.4f", df$SE),
-    `95% CI`         = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
-    `t`              = sprintf("%.3f", df$t.ratio),
-    `p`              = ifelse(df$p.value < .001, "< .001",
-                              sprintf("%.3f", df$p.value)),
-    check.names = FALSE
-  )
-}
-
+# make_rows_dummy() is defined in R/04_functions.R
 tbl_e2_out <- rbind(
   make_rows_dummy(e2_slopes_out_act_df,  "PA_similarity_act_w.trend",
                   "Actual PA similarity"),
@@ -5724,10 +5691,9 @@ edges(p_mod)$label_colour <- edges_mod$colour
 edges(p_mod)$label_hjust  <- "center"
 
 nd <- nodes(p_mod)
-get_node <- function(name) nd[nd$name == name, c("x", "y")]
-x_X <- get_node("X")
-x_M <- get_node("M")
-x_Y <- get_node("Y")
+x_X <- get_node(nd, "X")
+x_M <- get_node(nd, "M")
+x_Y <- get_node(nd, "Y")
 
 # Midpoints
 mid_a_x <- (x_X$x + x_M$x) / 2
@@ -6114,10 +6080,9 @@ edges(p_mod)$label_colour <- edges_mod$colour
 edges(p_mod)$label_hjust  <- "center"
 
 nd <- nodes(p_mod)
-get_node <- function(name) nd[nd$name == name, c("x", "y")]
-x_X <- get_node("X")
-x_M <- get_node("M")
-x_Y <- get_node("Y")
+x_X <- get_node(nd, "X")
+x_M <- get_node(nd, "M")
+x_Y <- get_node(nd, "Y")
 
 # Midpoints
 mid_a_x <- (x_X$x + x_M$x) / 2
@@ -6521,10 +6486,9 @@ edges(p_mod)$label_colour <- edges_mod$colour
 edges(p_mod)$label_hjust  <- "center"
 
 nd <- nodes(p_mod)
-get_node <- function(name) nd[nd$name == name, c("x", "y")]
-x_X <- get_node("X")
-x_M <- get_node("M")
-x_Y <- get_node("Y")
+x_X <- get_node(nd, "X")
+x_M <- get_node(nd, "M")
+x_Y <- get_node(nd, "Y")
 
 # Midpoints
 mid_a_x <- (x_X$x + x_M$x) / 2
@@ -6884,10 +6848,9 @@ edges(p_mod)$label_colour <- edges_mod$colour
 edges(p_mod)$label_hjust  <- "center"
 
 nd <- nodes(p_mod)
-get_node <- function(name) nd[nd$name == name, c("x", "y")]
-x_X <- get_node("X")
-x_M <- get_node("M")
-x_Y <- get_node("Y")
+x_X <- get_node(nd, "X")
+x_M <- get_node(nd, "M")
+x_Y <- get_node(nd, "Y")
 
 # Midpoints
 mid_a_x <- (x_X$x + x_M$x) / 2

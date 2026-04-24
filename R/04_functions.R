@@ -436,10 +436,43 @@ add_layer <- function(base_plot, data, x_var, y_var, z_var, title, x_lab, y_lab,
 select_and_rename <- function(data, map) {
   old <- unname(map)
   new <- names(map)
-  data <- data %>%     
+  data <- data %>%
     select(all_of(old)) %>%
     setNames(new)
   return(data)
+}
+
+
+# ============================================================================ #
+# DESCRIPTIVES HELPERS (SIMILARITY SURFACE & VIOLINS)
+# Used in 05_descriptives.qmd for the theoretical similarity surface and for
+# violin plots comparing similarity distributions across affect / perception
+# ============================================================================ #
+
+# Theoretical similarity index: elevation minus mismatch. Used with outer()
+# to build the reference similarity surface over a (X, Y) affect grid.
+similarity <- function(X, Y) {
+  elevation <- (X + Y) / 2
+  mismatch  <- abs(X - Y)
+  elevation - mismatch
+}
+
+# Draw a 4-panel vioplot of the similarity columns (actual/perceived × PA/NA)
+# for a given dataset (esm_data or vmr_data). The default `cols` match the
+# column naming convention used throughout the pipeline.
+draw_sim_violin_plot <- function(data,
+                                 cols = c("PA_similarity_act", "NA_similarity_act",
+                                          "PA_similarity_perc", "NA_similarity_perc")) {
+  vioplot(data[, cols],
+          main      = "Range and Distribution of Affect Similarity",
+          col       = c("#A6CEE3", "#FB9A99", "#A6CEE3", "#FB9A99"),
+          names     = c("PA\nActual", "NA\nActual", "PA\nPerceived", "NA\nPerceived"),
+          areaEqual = FALSE,
+          rectCol   = "gray30",
+          lineCol   = "gray30",
+          border    = "gray30")
+  title(ylab = "Similarity (S = M - D)", line = 2)
+  abline(h = 0, col = "black", lty = 2, lwd = 1.5)
 }
 
 
@@ -588,6 +621,42 @@ make_rows <- function(df, trend_col, predictor_label, moderator = "responsivenes
     rename(!!level_col := ` `, !!value_col := `  `)
 }
 
+# Format emtrends output into a simple-slopes row set for a continuous
+# exploratory moderator (cC_expl). Compared with make_rows(), this version
+# does not rename moderator columns and uses fixed "Event valence level" /
+# "cC_expl" headers. Used in 06_study_component_1.qmd (exploratory h3.3).
+make_rows_expl <- function(df, trend_col, predictor_label, mod_col) {
+  data.frame(
+    `Predictor`           = predictor_label,
+    `Event valence level` = c("Low (−1 SD)", "Average", "High (+1 SD)"),
+    `cC_expl`             = sprintf("%.2f", df[[mod_col]]),
+    `Simple slope`        = sprintf("%.4f", df[[trend_col]]),
+    `SE`                  = sprintf("%.4f", df$SE),
+    `95% CI`              = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
+    `t`                   = sprintf("%.3f", df$t.ratio),
+    `p`                   = ifelse(df$p.value < .001, "< .001",
+                                   sprintf("%.3f", df$p.value)),
+    check.names = FALSE
+  )
+}
+
+# Format emtrends output into a simple-slopes row set for a 0/1 dummy
+# moderator (negative event occurrence). Two rows per predictor. Used in
+# 06_study_component_1.qmd (exploratory h3.3 with D_neg).
+make_rows_dummy <- function(df, trend_col, predictor_label) {
+  data.frame(
+    `Predictor`      = predictor_label,
+    `Negative event` = c("No (0)", "Yes (1)"),
+    `Simple slope`   = sprintf("%.4f", df[[trend_col]]),
+    `SE`             = sprintf("%.4f", df$SE),
+    `95% CI`         = sprintf("[%.4f, %.4f]", df$lower.CL, df$upper.CL),
+    `t`              = sprintf("%.3f", df$t.ratio),
+    `p`              = ifelse(df$p.value < .001, "< .001",
+                              sprintf("%.3f", df$p.value)),
+    check.names = FALSE
+  )
+}
+
 
 # ============================================================================ #
 # MEDIATION DIAGRAM HELPERS
@@ -603,6 +672,12 @@ fmt <- function(est, ci_low, ci_up, p) {
 # Return black for significant paths, grey for non-significant paths
 # (used for both arrow colour and label colour in diagrams)
 sig_col <- function(p) ifelse(p < .05, "black", "grey75")
+
+# Look up a node's (x, y) coordinates in a tidySEM node data frame. `nd`
+# should be the data frame returned by tidySEM::nodes(p_mod); `name` is the
+# node name (e.g. "X", "M", "Y", "W"). Used throughout 06_study_component_1.qmd
+# (and 07) when placing annotations relative to tidySEM path diagrams.
+get_node <- function(nd, name) nd[nd$name == name, c("x", "y")]
 
 
 # ============================================================================ #
@@ -631,4 +706,336 @@ fmt_mc <- function(res) {
   txt <- sprintf("%.3f%s", res$point, stars)
   if (p < .05) txt <- paste0("<b>", txt, "</b>")
   txt
+}
+
+# Extract a one-row summary for an exploratory perceived-PA model: intercept,
+# slope on PA_sim_perc, and the dyad-level ICC. Used in 07_study_component_2.qmd
+# for the perceived PA similarity summary table.
+extract_row <- function(mod, outcome, context) {
+  vc   <- as.numeric(nlme::VarCorr(mod)[, "Variance"])
+  tau2 <- vc[1]
+  sig2 <- vc[2]
+  icc  <- tau2 / (tau2 + sig2)
+  data.frame(
+    Outcome = outcome,
+    Context = context,
+    b0      = fmt_cell(mod, "(Intercept)"),
+    b1      = fmt_cell(mod, "PA_sim_perc"),
+    ICC     = sprintf("%.3f", icc)
+  )
+}
+
+# Same as extract_row() but reads the NA_sim_perc slope. Used in
+# 07_study_component_2.qmd for the perceived NA similarity summary table.
+extract_row_na <- function(mod, outcome, context) {
+  vc   <- as.numeric(nlme::VarCorr(mod)[, "Variance"])
+  tau2 <- vc[1]
+  sig2 <- vc[2]
+  icc  <- tau2 / (tau2 + sig2)
+  data.frame(
+    Outcome = outcome,
+    Context = context,
+    b0      = fmt_cell(mod, "(Intercept)"),
+    b1      = fmt_cell(mod, "NA_sim_perc"),
+    ICC     = sprintf("%.3f", icc)
+  )
+}
+
+
+# ============================================================================ #
+# RESPONSE SURFACE ANALYSIS (RSA)
+# Used in 08_response_surface_analysis.qmd to compute RSA surface parameters
+# (a1–a5) from polynomial lme fits and to render 3D / 2D response surfaces
+# ============================================================================ #
+
+# Compute the five RSA surface parameters (a1–a5) and their standard errors
+# from an lme model with fixed effects ordered as:
+#   intercept, b1 (X), b2 (Y), b3 (X^2), b4 (XY), b5 (Y^2)
+# Returns a data.frame with Estimate, SE, z, p, and significance stars.
+rsa_params <- function(model) {
+  b  <- fixef(model)
+  b1 <- b[2]; b2 <- b[3]; b3 <- b[4]; b4 <- b[5]; b5 <- b[6]
+
+  a1 <- b1 + b2       # LOC slope
+  a2 <- b3 + b4 + b5  # LOC curvature
+  a3 <- b1 - b2       # LOIC slope
+  a4 <- b3 - b4 + b5  # LOIC curvature
+  a5 <- b3 - b5       # FPA = LOC condition
+
+  # Standard errors via delta method (variance of linear combos)
+  V <- vcov(model)
+  se_a1 <- sqrt(V[2,2] + V[3,3] + 2*V[2,3])
+  se_a2 <- sqrt(V[4,4] + V[5,5] + V[6,6] + 2*V[4,5] + 2*V[4,6] + 2*V[5,6])
+  se_a3 <- sqrt(V[2,2] + V[3,3] - 2*V[2,3])
+  se_a4 <- sqrt(V[4,4] + V[5,5] + V[6,6] - 2*V[4,5] + 2*V[4,6] - 2*V[5,6])
+  se_a5 <- sqrt(V[4,4] + V[6,6] - 2*V[4,6])
+
+  params <- data.frame(
+    Parameter = c("a1 (LOC slope)", "a2 (LOC curvature)",
+                  "a3 (LOIC slope)", "a4 (LOIC curvature)",
+                  "a5 (FPA = LOC)"),
+    Meaning   = c("Slope along X = Y at origin",
+                  "Curvature along X = Y",
+                  "Slope along X = −Y at origin",
+                  "Curvature along X = −Y",
+                  "Ridge displacement from LOC"),
+    Estimate = c(a1, a2, a3, a4, a5),
+    SE       = c(se_a1, se_a2, se_a3, se_a4, se_a5),
+    stringsAsFactors = FALSE
+  )
+  params$z   <- params$Estimate / params$SE
+  params$p   <- 2 * pnorm(-abs(params$z))
+  params$sig <- ifelse(params$p < .001, "***",
+                ifelse(params$p < .01,  "**",
+                ifelse(params$p < .05,  "*", "")))
+  params
+}
+
+# 3D response surface plot (plotly mesh3d) overlaid with observed data
+# points. The surface is coloured on a diverging blue–white–red scale
+# anchored to z_lim (fixed across models for visual comparability); the
+# LOC (X = Y) is painted solid black and the LOIC (X = −Y) as a black
+# dashed pattern. A hidden scatter3d trace carries the colorbar legend.
+plot_rsa_surface <- function(model, data, x_var, y_var,
+                             x_lab  = "Actor affect (centered)",
+                             y_lab  = "Partner affect (centered)",
+                             title  = "Response Surface",
+                             z_lab  = "Momentary love",
+                             z_lim  = c(0, 100),
+                             x_range = c(-95, 95),
+                             y_range = c(-95, 95)) {
+
+  # ---- fixed effects: intercept, x, y, x^2, x:y, y^2 ----
+  b <- as.numeric(nlme::fixef(model))
+  if (length(b) < 6) {
+    stop("fixef(model) must return at least 6 coefficients ordered as: intercept, x, y, x^2, x:y, y^2")
+  }
+  b <- b[1:6]
+
+  poly_fun <- function(x, y) {
+    b[1] + b[2] * x + b[3] * y + b[4] * x^2 + b[5] * x * y + b[6] * y^2
+  }
+
+  # ---- plotting ranges ----
+  x_range <- x_range
+  y_range <- y_range
+
+  n_grid <- 150L
+  x_seq  <- seq(x_range[1], x_range[2], length.out = n_grid)
+  y_seq  <- seq(y_range[1], y_range[2], length.out = n_grid)
+
+  Xmat <- outer(x_seq, y_seq, function(x, y) x)
+  Ymat <- outer(x_seq, y_seq, function(x, y) y)
+  Zmat <- poly_fun(Xmat, Ymat)
+
+  vx <- as.vector(Xmat)
+  vy <- as.vector(Ymat)
+  vz <- as.vector(Zmat)
+
+  vid <- function(ix, iy) ix + (iy - 1L) * n_grid
+
+  # ---- diverging palette (fixed to love's natural scale, not per-plot z-range) ----
+  # Using z_lim as the colour anchor means all four response surfaces share a
+  # comparable colour mapping — a blue patch on one plot represents the same
+  # predicted love as a blue patch on another.
+  ramp_lo <- grDevices::colorRamp(c("#2166ac", "#f7f7f7"))
+  ramp_hi <- grDevices::colorRamp(c("#f7f7f7", "#b2182b"))
+
+  z_to_col <- function(z) {
+    u <- (z - z_lim[1]) / (z_lim[2] - z_lim[1])
+    u <- pmin(pmax(u, 0), 1)
+
+    out <- character(length(u))
+    lo  <- u <= 0.5
+    hi  <- !lo
+
+    if (any(lo)) {
+      rgb_lo <- ramp_lo(u[lo] / 0.5)
+      out[lo] <- grDevices::rgb(rgb_lo[, 1], rgb_lo[, 2], rgb_lo[, 3],
+                                maxColorValue = 255)
+    }
+    if (any(hi)) {
+      rgb_hi <- ramp_hi((u[hi] - 0.5) / 0.5)
+      out[hi] <- grDevices::rgb(rgb_hi[, 1], rgb_hi[, 2], rgb_hi[, 3],
+                                maxColorValue = 255)
+    }
+    out
+  }
+
+  # ---- explicit triangulation ----
+  n_faces <- 2L * (n_grid - 1L) * (n_grid - 1L)
+  ii <- integer(n_faces); jj <- integer(n_faces); kk <- integer(n_faces)
+  face_x <- numeric(n_faces); face_y <- numeric(n_faces); face_z <- numeric(n_faces)
+  loc_hit  <- logical(n_faces)
+  loic_hit <- logical(n_faces)
+
+  pos <- 1L
+  for (iy in 1:(n_grid - 1L)) {
+    for (ix in 1:(n_grid - 1L)) {
+      v00 <- vid(ix, iy)
+      v10 <- vid(ix + 1L, iy)
+      v11 <- vid(ix + 1L, iy + 1L)
+      v01 <- vid(ix, iy + 1L)
+
+      # triangle 1: (v00, v10, v11)
+      tri1 <- c(v00, v10, v11)
+      x1 <- vx[tri1]; y1 <- vy[tri1]; z1 <- vz[tri1]
+      ii[pos] <- tri1[1] - 1L; jj[pos] <- tri1[2] - 1L; kk[pos] <- tri1[3] - 1L
+      face_x[pos] <- mean(x1); face_y[pos] <- mean(y1); face_z[pos] <- mean(z1)
+      loc_hit[pos]  <- (min(x1 - y1) <= 0) && (max(x1 - y1) >= 0)
+      loic_hit[pos] <- (min(x1 + y1) <= 0) && (max(x1 + y1) >= 0)
+      pos <- pos + 1L
+
+      # triangle 2: (v00, v11, v01)
+      tri2 <- c(v00, v11, v01)
+      x2 <- vx[tri2]; y2 <- vy[tri2]; z2 <- vz[tri2]
+      ii[pos] <- tri2[1] - 1L; jj[pos] <- tri2[2] - 1L; kk[pos] <- tri2[3] - 1L
+      face_x[pos] <- mean(x2); face_y[pos] <- mean(y2); face_z[pos] <- mean(z2)
+      loc_hit[pos]  <- (min(x2 - y2) <= 0) && (max(x2 - y2) >= 0)
+      loic_hit[pos] <- (min(x2 + y2) <= 0) && (max(x2 + y2) >= 0)
+      pos <- pos + 1L
+    }
+  }
+
+  face_col <- z_to_col(face_z)
+
+  # ---- LOIC dashed pattern ----
+  loic_tmin <- max(x_range[1], -y_range[2])
+  loic_tmax <- min(x_range[2], -y_range[1])
+  loic_span <- loic_tmax - loic_tmin
+
+  if (is.finite(loic_span) && loic_span > 0) {
+    t_loic   <- (face_x - face_y) / 2
+    dash_len <- loic_span / 30
+    gap_len  <- dash_len * 0.4
+    phase    <- (t_loic - loic_tmin) %% (dash_len + gap_len)
+    loic_on  <- loic_hit & (phase <= dash_len)
+  } else {
+    loic_on <- rep(FALSE, length(face_col))
+  }
+
+  # paint LOC/LOIC into the face colour vector
+  face_col[loic_on] <- "#000000"
+  face_col[loc_hit] <- "#000000"
+
+  # ---- observed data points (subsample for rendering speed) ----
+  obs <- data %>%
+    dplyr::select(x = dplyr::all_of(x_var),
+                  y = dplyr::all_of(y_var),
+                  z = love) %>%
+    dplyr::filter(stats::complete.cases(.)) %>%
+    dplyr::filter(x >= x_range[1], x <= x_range[2],
+                  y >= y_range[1], y <= y_range[2])
+  if (nrow(obs) > 2000) obs <- obs %>% dplyr::slice_sample(n = 2000)
+
+  # ---- colorbar trace: invisible scatter3d carrying the colour scale ----
+  # mesh3d with facecolor can't display a colorbar, so we attach one to a
+  # hidden marker trace placed off-screen. The colorscale here must match the
+  # z_to_col() mapping above so the legend reflects what the surface shows.
+  cbar_scale <- list(
+    c(0.0, "#2166ac"),
+    c(0.5, "#f7f7f7"),
+    c(1.0, "#b2182b")
+  )
+
+  plotly::plot_ly() %>%
+    # main surface
+    plotly::add_trace(
+      type = "mesh3d",
+      x = vx, y = vy, z = vz,
+      i = ii, j = jj, k = kk,
+      facecolor = I(face_col),
+      flatshading = FALSE,
+      opacity = 0.65,
+      lighting = list(
+        ambient = 0.85, diffuse = 0.7, specular = 0.03,
+        roughness = 0.9, fresnel = 0.02
+      ),
+      lightposition = list(x = 100, y = 200, z = 0),
+      name = "Surface",
+      showlegend = FALSE
+    ) %>%
+    # observed data points
+    plotly::add_markers(
+      x = obs$x, y = obs$y, z = obs$z,
+      marker = list(size = 1.5, color = "black", opacity = 0.25),
+      name = "Observed",
+      showlegend = FALSE
+    ) %>%
+    # hidden colorbar trace
+    plotly::add_trace(
+      type = "scatter3d",
+      mode = "markers",
+      x = c(x_range[1], x_range[1]),
+      y = c(y_range[1], y_range[1]),
+      z = z_lim,
+      marker = list(
+        size = 0.1,
+        color = z_lim,
+        colorscale = cbar_scale,
+        cmin = z_lim[1],
+        cmax = z_lim[2],
+        showscale = TRUE,
+        colorbar = list(
+          title = list(text = "Predicted\nlove"),
+          len = 0.7
+        )
+      ),
+      hoverinfo = "skip",
+      showlegend = FALSE
+    ) %>%
+    plotly::layout(
+      title = list(text = title),
+      scene = list(
+        xaxis = list(title = x_lab),
+        yaxis = list(title = y_lab),
+        zaxis = list(title = z_lab, range = z_lim),
+        camera = list(eye = list(x = 1.5, y = -1.5, z = 1.2))
+      ),
+      annotations = list(
+        list(
+          x = 0.01, y = 0.99, xref = "paper", yref = "paper",
+          text = "<b>LOC</b>: solid black&nbsp;&nbsp;&nbsp;<b>LOIC</b>: dashed",
+          showarrow = FALSE, xanchor = "left", yanchor = "top",
+          bgcolor = "rgba(255,255,255,0.75)",
+          bordercolor = "rgba(0,0,0,0.15)",
+          borderwidth = 1
+        )
+      )
+    ) %>%
+    plotly::partial_bundle("gl3d")
+}
+
+# 2D static alternative to plot_rsa_surface(): filled contour plot of the
+# fitted polynomial surface over a fixed (-50, 50) window, with the LOC
+# (solid) and LOIC (dashed) lines annotated.
+plot_rsa_contour <- function(model, data, x_var, y_var,
+                             x_lab = "Actor affect (centered)",
+                             y_lab = "Partner affect (centered)",
+                             title = "Response Surface (contour)") {
+
+  b <- fixef(model)
+
+  x_range <- c(-50, 50)
+  y_range <- c(-50, 50)
+
+  grid <- expand.grid(
+    X = seq(x_range[1], x_range[2], length.out = 100),
+    Y = seq(y_range[1], y_range[2], length.out = 100)
+  )
+
+  grid$Z <- b[1] + b[2]*grid$X + b[3]*grid$Y +
+            b[4]*grid$X^2 + b[5]*grid$X*grid$Y + b[6]*grid$Y^2
+
+  ggplot(grid, aes(x = X, y = Y, z = Z)) +
+    geom_contour_filled(alpha = 0.8) +
+    geom_abline(intercept = 0, slope = 1, linetype = "solid", colour = "black") +
+    geom_abline(intercept = 0, slope = -1, linetype = "dashed", colour = "black") +
+    annotate("text", x = x_range[2]*0.85, y = x_range[2]*0.85,
+             label = "LOC (X = Y)", angle = 45, size = 3, colour = "black") +
+    annotate("text", x = x_range[2]*0.85, y = -x_range[2]*0.85,
+             label = "LOIC (X = −Y)", angle = -45, size = 3, colour = "black") +
+    labs(x = x_lab, y = y_lab, fill = "Predicted\nlove", title = title) +
+    coord_fixed() +
+    theme_minimal()
 }
