@@ -84,6 +84,169 @@ save_as_docx(ft_step1_pos, path = file.path(dir_tables, "table_sc2_step1_pos.doc
 ft_step1_pos
 ```
 
+## Summary (both contexts)
+
+```{r table-sc2-step1-summary}
+coef_cols_sum <- c("pos_1a", "pos_1b", "pos_1c", "neg_1a", "neg_1b", "neg_1c")
+
+tbl_sum <- tibble(
+  outcome   = rep(c("Closeness", "Closeness", "Love", "Love"), each = 3),
+  affect    = rep(c("PA Similarity", "NA Similarity", "PA Similarity", "NA Similarity"), each = 3),
+  predictor = rep(c("Actual", "Perceived", "Actual × Perceived"), times = 4),
+  pos_1a = c(
+    pull_fmt(m_pos$m1a_PA_close, "PA_sim_act"), "", "",
+    pull_fmt(m_pos$m1a_NA_close, "NA_sim_act"), "", "",
+    pull_fmt(m_pos$m1a_PA_love,  "PA_sim_act"), "", "",
+    pull_fmt(m_pos$m1a_NA_love,  "NA_sim_act"), "", ""
+  ),
+  pos_1b = c(
+    pull_fmt(m_pos$m1b_PA_close, "PA_sim_act"),  pull_fmt(m_pos$m1b_PA_close, "PA_sim_perc"), "",
+    pull_fmt(m_pos$m1b_NA_close, "NA_sim_act"),  pull_fmt(m_pos$m1b_NA_close, "NA_sim_perc"), "",
+    pull_fmt(m_pos$m1b_PA_love,  "PA_sim_act"),  pull_fmt(m_pos$m1b_PA_love,  "PA_sim_perc"), "",
+    pull_fmt(m_pos$m1b_NA_love,  "NA_sim_act"),  pull_fmt(m_pos$m1b_NA_love,  "NA_sim_perc"), ""
+  ),
+  pos_1c = c(
+    pull_fmt(m_pos$m1c_PA_close, "PA_sim_act_gmc"),
+    pull_fmt(m_pos$m1c_PA_close, "PA_sim_perc_gmc"),
+    pull_fmt(m_pos$m1c_PA_close, "PA_sim_act_gmc:PA_sim_perc_gmc"),
+    pull_fmt(m_pos$m1c_NA_close, "NA_sim_act_gmc"),
+    pull_fmt(m_pos$m1c_NA_close, "NA_sim_perc_gmc"),
+    pull_fmt(m_pos$m1c_NA_close, "NA_sim_act_gmc:NA_sim_perc_gmc"),
+    pull_fmt(m_pos$m1c_PA_love,  "PA_sim_act_gmc"),
+    pull_fmt(m_pos$m1c_PA_love,  "PA_sim_perc_gmc"),
+    pull_fmt(m_pos$m1c_PA_love,  "PA_sim_act_gmc:PA_sim_perc_gmc"),
+    pull_fmt(m_pos$m1c_NA_love,  "NA_sim_act_gmc"),
+    pull_fmt(m_pos$m1c_NA_love,  "NA_sim_perc_gmc"),
+    pull_fmt(m_pos$m1c_NA_love,  "NA_sim_act_gmc:NA_sim_perc_gmc")
+  ),
+  neg_1a = c(
+    pull_fmt(m_neg$m1a_PA_close, "PA_sim_act"), "", "",
+    pull_fmt(m_neg$m1a_NA_close, "NA_sim_act"), "", "",
+    pull_fmt(m_neg$m1a_PA_love,  "PA_sim_act"), "", "",
+    pull_fmt(m_neg$m1a_NA_love,  "NA_sim_act"), "", ""
+  ),
+  neg_1b = c(
+    pull_fmt(m_neg$m1b_PA_close, "PA_sim_act"),  pull_fmt(m_neg$m1b_PA_close, "PA_sim_perc"), "",
+    pull_fmt(m_neg$m1b_NA_close, "NA_sim_act"),  pull_fmt(m_neg$m1b_NA_close, "NA_sim_perc"), "",
+    pull_fmt(m_neg$m1b_PA_love,  "PA_sim_act"),  pull_fmt(m_neg$m1b_PA_love,  "PA_sim_perc"), "",
+    pull_fmt(m_neg$m1b_NA_love,  "NA_sim_act"),  pull_fmt(m_neg$m1b_NA_love,  "NA_sim_perc"), ""
+  ),
+  neg_1c = c(
+    pull_fmt(m_neg$m1c_PA_close, "PA_sim_act_gmc"),
+    pull_fmt(m_neg$m1c_PA_close, "PA_sim_perc_gmc"),
+    pull_fmt(m_neg$m1c_PA_close, "PA_sim_act_gmc:PA_sim_perc_gmc"),
+    pull_fmt(m_neg$m1c_NA_close, "NA_sim_act_gmc"),
+    pull_fmt(m_neg$m1c_NA_close, "NA_sim_perc_gmc"),
+    pull_fmt(m_neg$m1c_NA_close, "NA_sim_act_gmc:NA_sim_perc_gmc"),
+    pull_fmt(m_neg$m1c_PA_love,  "PA_sim_act_gmc"),
+    pull_fmt(m_neg$m1c_PA_love,  "PA_sim_perc_gmc"),
+    pull_fmt(m_neg$m1c_PA_love,  "PA_sim_act_gmc:PA_sim_perc_gmc"),
+    pull_fmt(m_neg$m1c_NA_love,  "NA_sim_act_gmc"),
+    pull_fmt(m_neg$m1c_NA_love,  "NA_sim_perc_gmc"),
+    pull_fmt(m_neg$m1c_NA_love,  "NA_sim_act_gmc:NA_sim_perc_gmc")
+  )
+)
+
+p_sum <- tibble(
+  pos_1a = c(
+    pull_p(m_pos$m1a_PA_close, "PA_sim_act"), NA, NA,
+    pull_p(m_pos$m1a_NA_close, "NA_sim_act"), NA, NA,
+    pull_p(m_pos$m1a_PA_love,  "PA_sim_act"), NA, NA,
+    pull_p(m_pos$m1a_NA_love,  "NA_sim_act"), NA, NA
+  ),
+  pos_1b = c(
+    pull_p(m_pos$m1b_PA_close, "PA_sim_act"),  pull_p(m_pos$m1b_PA_close, "PA_sim_perc"), NA,
+    pull_p(m_pos$m1b_NA_close, "NA_sim_act"),  pull_p(m_pos$m1b_NA_close, "NA_sim_perc"), NA,
+    pull_p(m_pos$m1b_PA_love,  "PA_sim_act"),  pull_p(m_pos$m1b_PA_love,  "PA_sim_perc"), NA,
+    pull_p(m_pos$m1b_NA_love,  "NA_sim_act"),  pull_p(m_pos$m1b_NA_love,  "NA_sim_perc"), NA
+  ),
+  pos_1c = c(
+    pull_p(m_pos$m1c_PA_close, "PA_sim_act_gmc"),
+    pull_p(m_pos$m1c_PA_close, "PA_sim_perc_gmc"),
+    pull_p(m_pos$m1c_PA_close, "PA_sim_act_gmc:PA_sim_perc_gmc"),
+    pull_p(m_pos$m1c_NA_close, "NA_sim_act_gmc"),
+    pull_p(m_pos$m1c_NA_close, "NA_sim_perc_gmc"),
+    pull_p(m_pos$m1c_NA_close, "NA_sim_act_gmc:NA_sim_perc_gmc"),
+    pull_p(m_pos$m1c_PA_love,  "PA_sim_act_gmc"),
+    pull_p(m_pos$m1c_PA_love,  "PA_sim_perc_gmc"),
+    pull_p(m_pos$m1c_PA_love,  "PA_sim_act_gmc:PA_sim_perc_gmc"),
+    pull_p(m_pos$m1c_NA_love,  "NA_sim_act_gmc"),
+    pull_p(m_pos$m1c_NA_love,  "NA_sim_perc_gmc"),
+    pull_p(m_pos$m1c_NA_love,  "NA_sim_act_gmc:NA_sim_perc_gmc")
+  ),
+  neg_1a = c(
+    pull_p(m_neg$m1a_PA_close, "PA_sim_act"), NA, NA,
+    pull_p(m_neg$m1a_NA_close, "NA_sim_act"), NA, NA,
+    pull_p(m_neg$m1a_PA_love,  "PA_sim_act"), NA, NA,
+    pull_p(m_neg$m1a_NA_love,  "NA_sim_act"), NA, NA
+  ),
+  neg_1b = c(
+    pull_p(m_neg$m1b_PA_close, "PA_sim_act"),  pull_p(m_neg$m1b_PA_close, "PA_sim_perc"), NA,
+    pull_p(m_neg$m1b_NA_close, "NA_sim_act"),  pull_p(m_neg$m1b_NA_close, "NA_sim_perc"), NA,
+    pull_p(m_neg$m1b_PA_love,  "PA_sim_act"),  pull_p(m_neg$m1b_PA_love,  "PA_sim_perc"), NA,
+    pull_p(m_neg$m1b_NA_love,  "NA_sim_act"),  pull_p(m_neg$m1b_NA_love,  "NA_sim_perc"), NA
+  ),
+  neg_1c = c(
+    pull_p(m_neg$m1c_PA_close, "PA_sim_act_gmc"),
+    pull_p(m_neg$m1c_PA_close, "PA_sim_perc_gmc"),
+    pull_p(m_neg$m1c_PA_close, "PA_sim_act_gmc:PA_sim_perc_gmc"),
+    pull_p(m_neg$m1c_NA_close, "NA_sim_act_gmc"),
+    pull_p(m_neg$m1c_NA_close, "NA_sim_perc_gmc"),
+    pull_p(m_neg$m1c_NA_close, "NA_sim_act_gmc:NA_sim_perc_gmc"),
+    pull_p(m_neg$m1c_PA_love,  "PA_sim_act_gmc"),
+    pull_p(m_neg$m1c_PA_love,  "PA_sim_perc_gmc"),
+    pull_p(m_neg$m1c_PA_love,  "PA_sim_act_gmc:PA_sim_perc_gmc"),
+    pull_p(m_neg$m1c_NA_love,  "NA_sim_act_gmc"),
+    pull_p(m_neg$m1c_NA_love,  "NA_sim_perc_gmc"),
+    pull_p(m_neg$m1c_NA_love,  "NA_sim_act_gmc:NA_sim_perc_gmc")
+  )
+)
+
+note_sum <- paste0(
+  "Note. Step 1a = actual similarity only; 1b = actual + perceived similarity; ",
+  "1c = actual + perceived + Actual × Perceived interaction (predictors grand-mean ",
+  "centered within context). All models include a dyad-level random intercept. ",
+  "Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+)
+
+ft_sum <- flextable(tbl_sum) %>%
+  set_header_labels(
+    outcome   = "Outcome",
+    affect    = "Affect\nSimilarity",
+    predictor = "Predictor",
+    pos_1a = "1a", pos_1b = "1b", pos_1c = "1c",
+    neg_1a = "1a", neg_1b = "1b", neg_1c = "1c"
+  ) %>%
+  add_header_row(
+    values    = c("", "", "", "Positive Interaction", "Negative Interaction"),
+    colwidths = c(1, 1, 1, 3, 3)
+  ) %>%
+  merge_v(j = c("outcome", "affect"), part = "header") %>%
+  merge_v(j = c("outcome", "affect"), part = "body") %>%
+  bold_sig(p_sum, coef_cols_sum) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = c("outcome", "affect", "predictor"), align = "left", part = "body") %>%
+  align(j = coef_cols_sum, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline(i = 1, border = rule_thin, part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i = c(3, 6, 9), border = rule_thin, part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = note_sum, colwidths = 9) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_sum, path = file.path(dir_tables, "table_sc2_step1_summary.docx"))
+ft_sum
+```
+
 # RSA Parameter Table
 
 ```{r esm-data}
