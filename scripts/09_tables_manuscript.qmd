@@ -17,6 +17,774 @@ rule_thick <- fp_border(width = 1.5)
 rule_thin  <- fp_border(width = 0.75)
 ```
 
+# SC1 Step 1 Tables
+
+## Main and Additive Effects (H1.1–H1.3)
+
+```{r sc1-step1-data}
+#| include: false
+
+esm_data <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
+load_config("ESM")
+esm_data <- esm_data %>% arrange(dyad, person, time)
+
+sc1_ctrl <- lmeControl(opt = "nlminb")
+sc1_cor  <- corCAR1(form = ~ time | dyad/person)
+
+# ── Step 1a: actual similarity only (H1.1 PA, H1.2 NA) ──
+h11 <- lme(love ~ PA_similarity_act_w + PA_similarity_act_b,
+           random = ~1|dyad/person, correlation = sc1_cor,
+           data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+
+h12 <- lme(love ~ NA_similarity_act_w + NA_similarity_act_b,
+           random = ~1|dyad/person, correlation = sc1_cor,
+           data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+
+# ── Step 1b: actual + perceived similarity (H1.3) ──
+h13_PA <- lme(love ~ PA_similarity_act_w + PA_similarity_act_b +
+                     PA_similarity_perc_w + PA_similarity_perc_b,
+              random = ~1|dyad/person, correlation = sc1_cor,
+              data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+
+h13_NA <- lme(love ~ NA_similarity_act_w + NA_similarity_act_b +
+                     NA_similarity_perc_w + NA_similarity_perc_b,
+              random = ~1|dyad/person, correlation = sc1_cor,
+              data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+```
+
+```{r table-sc1-step1}
+coef_cols_s1 <- c("PA_1a", "PA_1b", "NA_1a", "NA_1b")
+
+tbl_s1 <- tibble(
+  predictor = c("Act. similarity (within)", "Act. similarity (between)",
+                "Perc. similarity (within)", "Perc. similarity (between)"),
+  PA_1a = c(pull_fmt(h11, "PA_similarity_act_w"),
+            pull_fmt(h11, "PA_similarity_act_b"), "—", "—"),
+  PA_1b = c(pull_fmt(h13_PA, "PA_similarity_act_w"),
+            pull_fmt(h13_PA, "PA_similarity_act_b"),
+            pull_fmt(h13_PA, "PA_similarity_perc_w"),
+            pull_fmt(h13_PA, "PA_similarity_perc_b")),
+  NA_1a = c(pull_fmt(h12, "NA_similarity_act_w"),
+            pull_fmt(h12, "NA_similarity_act_b"), "—", "—"),
+  NA_1b = c(pull_fmt(h13_NA, "NA_similarity_act_w"),
+            pull_fmt(h13_NA, "NA_similarity_act_b"),
+            pull_fmt(h13_NA, "NA_similarity_perc_w"),
+            pull_fmt(h13_NA, "NA_similarity_perc_b"))
+)
+
+p_s1 <- tibble(
+  PA_1a = c(pull_p(h11, "PA_similarity_act_w"),
+            pull_p(h11, "PA_similarity_act_b"), NA, NA),
+  PA_1b = c(pull_p(h13_PA, "PA_similarity_act_w"),
+            pull_p(h13_PA, "PA_similarity_act_b"),
+            pull_p(h13_PA, "PA_similarity_perc_w"),
+            pull_p(h13_PA, "PA_similarity_perc_b")),
+  NA_1a = c(pull_p(h12, "NA_similarity_act_w"),
+            pull_p(h12, "NA_similarity_act_b"), NA, NA),
+  NA_1b = c(pull_p(h13_NA, "NA_similarity_act_w"),
+            pull_p(h13_NA, "NA_similarity_act_b"),
+            pull_p(h13_NA, "NA_similarity_perc_w"),
+            pull_p(h13_NA, "NA_similarity_perc_b"))
+)
+
+note_s1 <- paste0(
+  "Note. Model 1a = actual similarity only (H1.1 for PA, H1.2 for NA); Model 1b = actual + perceived ",
+  "similarity (H1.3). All models include random intercepts for persons nested in dyads and a ",
+  "continuous-time AR(1) residual structure. '—' = predictor not included in model. ",
+  "Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+)
+
+ft_s1 <- flextable(tbl_s1) %>%
+  set_header_labels(
+    predictor = "Predictor",
+    PA_1a = "Model 1a", PA_1b = "Model 1b",
+    NA_1a = "Model 1a", NA_1b = "Model 1b"
+  ) %>%
+  add_header_row(
+    values    = c("", "PA Similarity (H1.1 & H1.3)", "NA Similarity (H1.2 & H1.3)"),
+    colwidths = c(1, 2, 2)
+  ) %>%
+  merge_v(j = "predictor", part = "header") %>%
+  bold_sig(p_s1, coef_cols_s1) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = "predictor", align = "left", part = "body") %>%
+  align(j = coef_cols_s1, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline(i = 1, border = rule_thin,  part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i = 2, border = rule_thin,  part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = note_s1, colwidths = 5) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_s1, path = file.path(dir_tables, "table_sc1_step1_main_additive.docx"))
+ft_s1
+```
+
+## Summary (Models 1a–1c)
+
+```{r sc1-step1-1c-data}
+#| include: false
+
+h1c_PA <- lme(love ~ PA_similarity_act_w + PA_similarity_act_b +
+                     PA_similarity_perc_w + PA_similarity_perc_b +
+                     PA_similarity_act_w:PA_similarity_perc_w +
+                     PA_similarity_act_b:PA_similarity_perc_b,
+              random = ~1|dyad/person, correlation = sc1_cor,
+              data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+
+h1c_NA <- lme(love ~ NA_similarity_act_w + NA_similarity_act_b +
+                     NA_similarity_perc_w + NA_similarity_perc_b +
+                     NA_similarity_act_w:NA_similarity_perc_w +
+                     NA_similarity_act_b:NA_similarity_perc_b,
+              random = ~1|dyad/person, correlation = sc1_cor,
+              data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+```
+
+```{r table-sc1-step1-summary}
+coef_cols_s1_sum <- c("PA_1a", "PA_1b", "PA_1c", "NA_1a", "NA_1b", "NA_1c")
+
+tbl_s1_sum <- tibble(
+  predictor = c(rep("Act. Similarity", 2), rep("Perc. Similarity", 2), rep("Act. × Perc. Similarity", 2)),
+  level     = rep(c("within", "between"), 3),
+  PA_1a = c(pull_fmt(h11, "PA_similarity_act_w"),
+            pull_fmt(h11, "PA_similarity_act_b"),
+            "—", "—", "—", "—"),
+  PA_1b = c(pull_fmt(h13_PA, "PA_similarity_act_w"),
+            pull_fmt(h13_PA, "PA_similarity_act_b"),
+            pull_fmt(h13_PA, "PA_similarity_perc_w"),
+            pull_fmt(h13_PA, "PA_similarity_perc_b"),
+            "—", "—"),
+  PA_1c = c(pull_fmt(h1c_PA, "PA_similarity_act_w"),
+            pull_fmt(h1c_PA, "PA_similarity_act_b"),
+            pull_fmt(h1c_PA, "PA_similarity_perc_w"),
+            pull_fmt(h1c_PA, "PA_similarity_perc_b"),
+            pull_fmt(h1c_PA, "PA_similarity_act_w:PA_similarity_perc_w"),
+            pull_fmt(h1c_PA, "PA_similarity_act_b:PA_similarity_perc_b")),
+  NA_1a = c(pull_fmt(h12, "NA_similarity_act_w"),
+            pull_fmt(h12, "NA_similarity_act_b"),
+            "—", "—", "—", "—"),
+  NA_1b = c(pull_fmt(h13_NA, "NA_similarity_act_w"),
+            pull_fmt(h13_NA, "NA_similarity_act_b"),
+            pull_fmt(h13_NA, "NA_similarity_perc_w"),
+            pull_fmt(h13_NA, "NA_similarity_perc_b"),
+            "—", "—"),
+  NA_1c = c(pull_fmt(h1c_NA, "NA_similarity_act_w"),
+            pull_fmt(h1c_NA, "NA_similarity_act_b"),
+            pull_fmt(h1c_NA, "NA_similarity_perc_w"),
+            pull_fmt(h1c_NA, "NA_similarity_perc_b"),
+            pull_fmt(h1c_NA, "NA_similarity_act_w:NA_similarity_perc_w"),
+            pull_fmt(h1c_NA, "NA_similarity_act_b:NA_similarity_perc_b"))
+)
+
+p_s1_sum <- tibble(
+  PA_1a = c(pull_p(h11, "PA_similarity_act_w"),
+            pull_p(h11, "PA_similarity_act_b"),
+            NA, NA, NA, NA),
+  PA_1b = c(pull_p(h13_PA, "PA_similarity_act_w"),
+            pull_p(h13_PA, "PA_similarity_act_b"),
+            pull_p(h13_PA, "PA_similarity_perc_w"),
+            pull_p(h13_PA, "PA_similarity_perc_b"),
+            NA, NA),
+  PA_1c = c(pull_p(h1c_PA, "PA_similarity_act_w"),
+            pull_p(h1c_PA, "PA_similarity_act_b"),
+            pull_p(h1c_PA, "PA_similarity_perc_w"),
+            pull_p(h1c_PA, "PA_similarity_perc_b"),
+            pull_p(h1c_PA, "PA_similarity_act_w:PA_similarity_perc_w"),
+            pull_p(h1c_PA, "PA_similarity_act_b:PA_similarity_perc_b")),
+  NA_1a = c(pull_p(h12, "NA_similarity_act_w"),
+            pull_p(h12, "NA_similarity_act_b"),
+            NA, NA, NA, NA),
+  NA_1b = c(pull_p(h13_NA, "NA_similarity_act_w"),
+            pull_p(h13_NA, "NA_similarity_act_b"),
+            pull_p(h13_NA, "NA_similarity_perc_w"),
+            pull_p(h13_NA, "NA_similarity_perc_b"),
+            NA, NA),
+  NA_1c = c(pull_p(h1c_NA, "NA_similarity_act_w"),
+            pull_p(h1c_NA, "NA_similarity_act_b"),
+            pull_p(h1c_NA, "NA_similarity_perc_w"),
+            pull_p(h1c_NA, "NA_similarity_perc_b"),
+            pull_p(h1c_NA, "NA_similarity_act_w:NA_similarity_perc_w"),
+            pull_p(h1c_NA, "NA_similarity_act_b:NA_similarity_perc_b"))
+)
+
+note_s1_sum <- paste0(
+  "Note. Model 1a = actual similarity only (H1.1 for PA, H1.2 for NA); ",
+  "Model 1b = actual + perceived similarity (H1.3); ",
+  "Model 1c = actual + perceived + Actual × Perceived interaction (exploratory). ",
+  "All models include random intercepts for persons nested in dyads and a ",
+  "continuous-time AR(1) residual structure. '—' = predictor not included in model. ",
+  "Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+)
+
+ft_s1_sum <- flextable(tbl_s1_sum) %>%
+  set_header_labels(
+    predictor = "Predictor",
+    level     = "Level",
+    PA_1a = "1a", PA_1b = "1b", PA_1c = "1c",
+    NA_1a = "1a", NA_1b = "1b", NA_1c = "1c"
+  ) %>%
+  add_header_row(
+    values    = c("", "", "PA Similarity", "NA Similarity"),
+    colwidths = c(1, 1, 3, 3)
+  ) %>%
+  merge_v(j = c("predictor", "level"), part = "header") %>%
+  merge_v(j = "predictor", part = "body") %>%
+  bold_sig(p_s1_sum, coef_cols_s1_sum) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = c("predictor", "level"), align = "left", part = "body") %>%
+  align(j = coef_cols_s1_sum, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline(i = 1, border = rule_thin,  part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i = 2, border = rule_thin, part = "body") %>%
+  hline(i = 4, border = rule_thin, part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = note_s1_sum, colwidths = 8) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_s1_sum, path = file.path(dir_tables, "table_sc1_step1_summary.docx"))
+ft_s1_sum
+```
+
+# SC1 Step 2 Tables
+
+## Mediation Summary (H2.1–H2.2)
+
+```{r sc1-step2-data}
+#| include: false
+
+esm_data <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
+load_config("ESM")
+esm_data <- esm_data %>% arrange(dyad, person, time)
+
+set.seed(42)
+
+sc1_ctrl <- lmeControl(opt = "nlminb")
+sc1_cor  <- corCAR1(form = ~ time | dyad/person)
+
+# ── Total-effect (c-path) models ──
+h11 <- lme(love ~ PA_similarity_act_w + PA_similarity_act_b,
+           random = ~1|dyad/person, correlation = sc1_cor,
+           data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+h12 <- lme(love ~ NA_similarity_act_w + NA_similarity_act_b,
+           random = ~1|dyad/person, correlation = sc1_cor,
+           data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+
+# ── Mediator models (a-paths) ──
+h21_mediator <- lme(PA_similarity_perc ~ PA_similarity_act_w + PA_similarity_act_b,
+                    random = ~1|dyad/person, correlation = sc1_cor,
+                    data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+h22_mediator <- lme(NA_similarity_perc ~ NA_similarity_act_w + NA_similarity_act_b,
+                    random = ~1|dyad/person, correlation = sc1_cor,
+                    data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+
+# ── Outcome models (b- and c'-paths) ──
+h21_outcome <- lme(love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                          PA_similarity_act_w  + PA_similarity_act_b,
+                   random = ~1|dyad/person, correlation = sc1_cor,
+                   data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+h22_outcome <- lme(love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                          NA_similarity_act_w  + NA_similarity_act_b,
+                   random = ~1|dyad/person, correlation = sc1_cor,
+                   data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+
+# ── Monte Carlo indirect effects (20,000 draws each) ──
+mc_PA_w <- run_mc(h21_mediator, "PA_similarity_act_w", h21_outcome, "PA_similarity_perc_w")
+mc_PA_b <- run_mc(h21_mediator, "PA_similarity_act_b", h21_outcome, "PA_similarity_perc_b")
+mc_NA_w <- run_mc(h22_mediator, "NA_similarity_act_w", h22_outcome, "NA_similarity_perc_w")
+mc_NA_b <- run_mc(h22_mediator, "NA_similarity_act_b", h22_outcome, "NA_similarity_perc_b")
+```
+
+```{r table-sc1-step2-mediation}
+coef_cols_s2 <- c("PA_sim", "NA_sim")
+
+tbl_s2 <- tibble(
+  level  = c(rep("Within", 5), rep("Between", 5)),
+  path   = rep(c("a-path", "b-path", "c-path (total)", "c′-path (direct)", "Indirect (MC)"), 2),
+  PA_sim = c(
+    pull_fmt(h21_mediator, "PA_similarity_act_w"),
+    pull_fmt(h21_outcome,  "PA_similarity_perc_w"),
+    pull_fmt(h11,          "PA_similarity_act_w"),
+    pull_fmt(h21_outcome,  "PA_similarity_act_w"),
+    fmt_b(mc_PA_w$point,   mc_PA_w$p),
+    pull_fmt(h21_mediator, "PA_similarity_act_b"),
+    pull_fmt(h21_outcome,  "PA_similarity_perc_b"),
+    pull_fmt(h11,          "PA_similarity_act_b"),
+    pull_fmt(h21_outcome,  "PA_similarity_act_b"),
+    fmt_b(mc_PA_b$point,   mc_PA_b$p)
+  ),
+  NA_sim = c(
+    pull_fmt(h22_mediator, "NA_similarity_act_w"),
+    pull_fmt(h22_outcome,  "NA_similarity_perc_w"),
+    pull_fmt(h12,          "NA_similarity_act_w"),
+    pull_fmt(h22_outcome,  "NA_similarity_act_w"),
+    fmt_b(mc_NA_w$point,   mc_NA_w$p),
+    pull_fmt(h22_mediator, "NA_similarity_act_b"),
+    pull_fmt(h22_outcome,  "NA_similarity_perc_b"),
+    pull_fmt(h12,          "NA_similarity_act_b"),
+    pull_fmt(h22_outcome,  "NA_similarity_act_b"),
+    fmt_b(mc_NA_b$point,   mc_NA_b$p)
+  )
+)
+
+p_s2 <- tibble(
+  PA_sim = c(
+    pull_p(h21_mediator, "PA_similarity_act_w"),
+    pull_p(h21_outcome,  "PA_similarity_perc_w"),
+    pull_p(h11,          "PA_similarity_act_w"),
+    pull_p(h21_outcome,  "PA_similarity_act_w"),
+    mc_PA_w$p,
+    pull_p(h21_mediator, "PA_similarity_act_b"),
+    pull_p(h21_outcome,  "PA_similarity_perc_b"),
+    pull_p(h11,          "PA_similarity_act_b"),
+    pull_p(h21_outcome,  "PA_similarity_act_b"),
+    mc_PA_b$p
+  ),
+  NA_sim = c(
+    pull_p(h22_mediator, "NA_similarity_act_w"),
+    pull_p(h22_outcome,  "NA_similarity_perc_w"),
+    pull_p(h12,          "NA_similarity_act_w"),
+    pull_p(h22_outcome,  "NA_similarity_act_w"),
+    mc_NA_w$p,
+    pull_p(h22_mediator, "NA_similarity_act_b"),
+    pull_p(h22_outcome,  "NA_similarity_perc_b"),
+    pull_p(h12,          "NA_similarity_act_b"),
+    pull_p(h22_outcome,  "NA_similarity_act_b"),
+    mc_NA_b$p
+  )
+)
+
+note_s2 <- paste0(
+  "Note. a-path: actual similarity predicting perceived similarity. b-path: perceived similarity ",
+  "predicting love, controlling for actual similarity. c-path (total): total effect of actual ",
+  "similarity on love. c′-path (direct): direct effect of actual similarity, controlling for ",
+  "perceived similarity. Indirect (MC): Monte Carlo indirect effect (20,000 draws; a × b product). ",
+  "Within = within-person/moment component; Between = between-dyad component. All models include ",
+  "random intercepts for persons nested in dyads and a continuous-time AR(1) residual structure. ",
+  "Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+)
+
+ft_s2 <- flextable(tbl_s2) %>%
+  set_header_labels(
+    level  = "Level",
+    path   = "Path",
+    PA_sim = "PA Similarity (H2.1)",
+    NA_sim = "NA Similarity (H2.2)"
+  ) %>%
+  merge_v(j = "level", part = "body") %>%
+  bold_sig(p_s2, coef_cols_s2) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = c("level", "path"), align = "left", part = "body") %>%
+  align(j = coef_cols_s2, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i = 5, border = rule_thin,  part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = note_s2, colwidths = 4) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_s2, path = file.path(dir_tables, "table_sc1_step2_mediation.docx"))
+ft_s2
+```
+
+# SC1 Step 3a Tables
+
+## Responsiveness Moderation Summary (H3.1–H3.2)
+
+```{r sc1-step3a-data}
+#| include: false
+
+esm_data <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
+load_config("ESM")
+esm_data <- esm_data %>% arrange(dyad, person, time)
+
+sc1_ctrl <- lmeControl(opt = "nlminb")
+sc1_cor  <- corCAR1(form = ~ time | dyad/person)
+
+# ── H3.1: PA × Responsiveness ──
+h31a <- lme(love ~ PA_similarity_act_w  + PA_similarity_act_b  +
+                   cperc_resp + PA_similarity_act_w:cperc_resp,
+            random = ~1|dyad/person, correlation = sc1_cor,
+            data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+h31p <- lme(love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                   cperc_resp + PA_similarity_perc_w:cperc_resp,
+            random = ~1|dyad/person, correlation = sc1_cor,
+            data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+
+# ── H3.2: NA × Responsiveness ──
+h32a <- lme(love ~ NA_similarity_act_w  + NA_similarity_act_b  +
+                   cperc_resp + NA_similarity_act_w:cperc_resp,
+            random = ~1|dyad/person, correlation = sc1_cor,
+            data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+h32p <- lme(love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                   cperc_resp + NA_similarity_perc_w:cperc_resp,
+            random = ~1|dyad/person, correlation = sc1_cor,
+            data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+```
+
+```{r table-sc1-step3a-responsiveness}
+coef_cols_3a_sc1 <- "estimate"
+
+tbl_3a_sc1 <- tibble(
+  affect     = rep(c("PA Similarity (H3.1)", "NA Similarity (H3.2)"), each = 8),
+  similarity = rep(c("Actual", "Perceived"), each = 4, times = 2),
+  parameter  = rep(c("Similarity (within)", "Similarity (between)",
+                     "Responsiveness", "Sim × Responsiveness"), times = 4),
+  estimate   = c(
+    pull_fmt(h31a, "PA_similarity_act_w"),
+    pull_fmt(h31a, "PA_similarity_act_b"),
+    pull_fmt(h31a, "cperc_resp"),
+    pull_fmt(h31a, "PA_similarity_act_w:cperc_resp"),
+    pull_fmt(h31p, "PA_similarity_perc_w"),
+    pull_fmt(h31p, "PA_similarity_perc_b"),
+    pull_fmt(h31p, "cperc_resp"),
+    pull_fmt(h31p, "PA_similarity_perc_w:cperc_resp"),
+    pull_fmt(h32a, "NA_similarity_act_w"),
+    pull_fmt(h32a, "NA_similarity_act_b"),
+    pull_fmt(h32a, "cperc_resp"),
+    pull_fmt(h32a, "NA_similarity_act_w:cperc_resp"),
+    pull_fmt(h32p, "NA_similarity_perc_w"),
+    pull_fmt(h32p, "NA_similarity_perc_b"),
+    pull_fmt(h32p, "cperc_resp"),
+    pull_fmt(h32p, "NA_similarity_perc_w:cperc_resp")
+  )
+)
+
+p_mat_3a_sc1 <- tibble(
+  estimate = c(
+    pull_p(h31a, "PA_similarity_act_w"),
+    pull_p(h31a, "PA_similarity_act_b"),
+    pull_p(h31a, "cperc_resp"),
+    pull_p(h31a, "PA_similarity_act_w:cperc_resp"),
+    pull_p(h31p, "PA_similarity_perc_w"),
+    pull_p(h31p, "PA_similarity_perc_b"),
+    pull_p(h31p, "cperc_resp"),
+    pull_p(h31p, "PA_similarity_perc_w:cperc_resp"),
+    pull_p(h32a, "NA_similarity_act_w"),
+    pull_p(h32a, "NA_similarity_act_b"),
+    pull_p(h32a, "cperc_resp"),
+    pull_p(h32a, "NA_similarity_act_w:cperc_resp"),
+    pull_p(h32p, "NA_similarity_perc_w"),
+    pull_p(h32p, "NA_similarity_perc_b"),
+    pull_p(h32p, "cperc_resp"),
+    pull_p(h32p, "NA_similarity_perc_w:cperc_resp")
+  )
+)
+
+note_3a_sc1 <- paste0(
+  "Note. Similarity (within): main effect of within-person similarity at average responsiveness. ",
+  "Similarity (between): main effect of between-dyad similarity. ",
+  "Responsiveness: main effect of person-mean-centered perceived partner responsiveness. ",
+  "Sim × Responsiveness: interaction term (preregistered hypothesis: positive for PA [H3.1] and ",
+  "NA [H3.2]). All models include random intercepts for persons nested in dyads and a ",
+  "continuous-time AR(1) residual structure. Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+)
+
+ft_3a_sc1 <- flextable(tbl_3a_sc1) %>%
+  set_header_labels(
+    affect     = "Affect",
+    similarity = "Similarity",
+    parameter  = "Parameter",
+    estimate   = "Estimate"
+  ) %>%
+  merge_v(j = c("affect", "similarity"), part = "body") %>%
+  bold_sig(p_mat_3a_sc1, coef_cols_3a_sc1) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = c("affect", "similarity", "parameter"), align = "left", part = "body") %>%
+  align(j = coef_cols_3a_sc1, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i =  4, border = rule_thin,  part = "body") %>%
+  hline(i =  8, border = rule_thick, part = "body") %>%
+  hline(i = 12, border = rule_thin,  part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = note_3a_sc1, colwidths = 4) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_3a_sc1, path = file.path(dir_tables, "table_sc1_step3a_responsiveness.docx"))
+ft_3a_sc1
+```
+
+# SC1 Step 3b Tables
+
+## Event Valence Moderation Summary (H3.3–H3.4)
+
+```{r sc1-step3b-data}
+#| include: false
+
+esm_data <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
+load_config("ESM")
+esm_data <- esm_data %>% arrange(dyad, person, time)
+
+sc1_ctrl <- lmeControl(opt = "nlminb")
+sc1_cor  <- corCAR1(form = ~ time | dyad/person)
+
+# ── H3.3: PA × Event Valence (cC) ──
+h33a <- lme(love ~ PA_similarity_act_w  + PA_similarity_act_b  +
+                   cC + PA_similarity_act_w:cC,
+            random = ~1|dyad/person, correlation = sc1_cor,
+            data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+h33p <- lme(love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                   cC + PA_similarity_perc_w:cC,
+            random = ~1|dyad/person, correlation = sc1_cor,
+            data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+
+# ── H3.4: NA × Event Valence (cC) ──
+h34a <- lme(love ~ NA_similarity_act_w  + NA_similarity_act_b  +
+                   cC + NA_similarity_act_w:cC,
+            random = ~1|dyad/person, correlation = sc1_cor,
+            data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+h34p <- lme(love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                   cC + NA_similarity_perc_w:cC,
+            random = ~1|dyad/person, correlation = sc1_cor,
+            data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+```
+
+```{r table-sc1-step3b-valence}
+coef_cols_3b_sc1 <- "estimate"
+
+tbl_3b_sc1 <- tibble(
+  affect     = rep(c("PA Similarity (H3.3)", "NA Similarity (H3.4)"), each = 8),
+  similarity = rep(c("Actual", "Perceived"), each = 4, times = 2),
+  parameter  = rep(c("Similarity (within)", "Similarity (between)",
+                     "Event Valence", "Sim × Event Valence"), times = 4),
+  estimate   = c(
+    pull_fmt(h33a, "PA_similarity_act_w"),
+    pull_fmt(h33a, "PA_similarity_act_b"),
+    pull_fmt(h33a, "cC"),
+    pull_fmt(h33a, "PA_similarity_act_w:cC"),
+    pull_fmt(h33p, "PA_similarity_perc_w"),
+    pull_fmt(h33p, "PA_similarity_perc_b"),
+    pull_fmt(h33p, "cC"),
+    pull_fmt(h33p, "PA_similarity_perc_w:cC"),
+    pull_fmt(h34a, "NA_similarity_act_w"),
+    pull_fmt(h34a, "NA_similarity_act_b"),
+    pull_fmt(h34a, "cC"),
+    pull_fmt(h34a, "NA_similarity_act_w:cC"),
+    pull_fmt(h34p, "NA_similarity_perc_w"),
+    pull_fmt(h34p, "NA_similarity_perc_b"),
+    pull_fmt(h34p, "cC"),
+    pull_fmt(h34p, "NA_similarity_perc_w:cC")
+  )
+)
+
+p_mat_3b_sc1 <- tibble(
+  estimate = c(
+    pull_p(h33a, "PA_similarity_act_w"),
+    pull_p(h33a, "PA_similarity_act_b"),
+    pull_p(h33a, "cC"),
+    pull_p(h33a, "PA_similarity_act_w:cC"),
+    pull_p(h33p, "PA_similarity_perc_w"),
+    pull_p(h33p, "PA_similarity_perc_b"),
+    pull_p(h33p, "cC"),
+    pull_p(h33p, "PA_similarity_perc_w:cC"),
+    pull_p(h34a, "NA_similarity_act_w"),
+    pull_p(h34a, "NA_similarity_act_b"),
+    pull_p(h34a, "cC"),
+    pull_p(h34a, "NA_similarity_act_w:cC"),
+    pull_p(h34p, "NA_similarity_perc_w"),
+    pull_p(h34p, "NA_similarity_perc_b"),
+    pull_p(h34p, "cC"),
+    pull_p(h34p, "NA_similarity_perc_w:cC")
+  )
+)
+
+note_3b_sc1 <- paste0(
+  "Note. Event valence (cC) = person-mean-centered net positivity of events since the previous beep ",
+  "(positive − negative events; only available at beeps when the participant was not with or in recent ",
+  "contact with their partner). Similarity (within): main effect at average event valence. ",
+  "Similarity (between): main effect of between-dyad similarity. ",
+  "Sim × Event Valence: interaction term (preregistered mismatch hypothesis: negative for PA [H3.3] ",
+  "and negative for NA [H3.4]). All models include random intercepts for persons nested in dyads ",
+  "and a continuous-time AR(1) residual structure. Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+)
+
+ft_3b_sc1 <- flextable(tbl_3b_sc1) %>%
+  set_header_labels(
+    affect     = "Affect",
+    similarity = "Similarity",
+    parameter  = "Parameter",
+    estimate   = "Estimate"
+  ) %>%
+  merge_v(j = c("affect", "similarity"), part = "body") %>%
+  bold_sig(p_mat_3b_sc1, coef_cols_3b_sc1) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = c("affect", "similarity", "parameter"), align = "left", part = "body") %>%
+  align(j = coef_cols_3b_sc1, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i =  4, border = rule_thin,  part = "body") %>%
+  hline(i =  8, border = rule_thick, part = "body") %>%
+  hline(i = 12, border = rule_thin,  part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = note_3b_sc1, colwidths = 4) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_3b_sc1, path = file.path(dir_tables, "table_sc1_step3b_valence.docx"))
+ft_3b_sc1
+```
+
+## Extended Event Valence Moderation — Exploratory (cC_expl)
+
+```{r sc1-step3b-expl-data}
+#| include: false
+
+esm_data <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
+load_config("ESM")
+esm_data <- esm_data %>% arrange(dyad, person, time)
+
+sc1_ctrl <- lmeControl(opt = "nlminb")
+sc1_cor  <- corCAR1(form = ~ time | dyad/person)
+
+# ── PA × Extended Event Valence ──
+e1_h33a <- lme(love ~ PA_similarity_act_w  + PA_similarity_act_b  +
+                      cC_expl + PA_similarity_act_w:cC_expl,
+               random = ~1|dyad/person, correlation = sc1_cor,
+               data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+e1_h33p <- lme(love ~ PA_similarity_perc_w + PA_similarity_perc_b +
+                      cC_expl + PA_similarity_perc_w:cC_expl,
+               random = ~1|dyad/person, correlation = sc1_cor,
+               data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+
+# ── NA × Extended Event Valence ──
+e1_h34a <- lme(love ~ NA_similarity_act_w  + NA_similarity_act_b  +
+                      cC_expl + NA_similarity_act_w:cC_expl,
+               random = ~1|dyad/person, correlation = sc1_cor,
+               data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+e1_h34p <- lme(love ~ NA_similarity_perc_w + NA_similarity_perc_b +
+                      cC_expl + NA_similarity_perc_w:cC_expl,
+               random = ~1|dyad/person, correlation = sc1_cor,
+               data = esm_data, method = "REML", na.action = na.exclude, control = sc1_ctrl)
+```
+
+```{r table-sc1-step3b-expl-valence}
+coef_cols_3b_e <- "estimate"
+
+tbl_3b_e <- tibble(
+  affect     = rep(c("PA Similarity", "NA Similarity"), each = 8),
+  similarity = rep(c("Actual", "Perceived"), each = 4, times = 2),
+  parameter  = rep(c("Similarity (within)", "Similarity (between)",
+                     "Event Valence (ext.)", "Sim × Event Valence (ext.)"), times = 4),
+  estimate   = c(
+    pull_fmt(e1_h33a, "PA_similarity_act_w"),
+    pull_fmt(e1_h33a, "PA_similarity_act_b"),
+    pull_fmt(e1_h33a, "cC_expl"),
+    pull_fmt(e1_h33a, "PA_similarity_act_w:cC_expl"),
+    pull_fmt(e1_h33p, "PA_similarity_perc_w"),
+    pull_fmt(e1_h33p, "PA_similarity_perc_b"),
+    pull_fmt(e1_h33p, "cC_expl"),
+    pull_fmt(e1_h33p, "PA_similarity_perc_w:cC_expl"),
+    pull_fmt(e1_h34a, "NA_similarity_act_w"),
+    pull_fmt(e1_h34a, "NA_similarity_act_b"),
+    pull_fmt(e1_h34a, "cC_expl"),
+    pull_fmt(e1_h34a, "NA_similarity_act_w:cC_expl"),
+    pull_fmt(e1_h34p, "NA_similarity_perc_w"),
+    pull_fmt(e1_h34p, "NA_similarity_perc_b"),
+    pull_fmt(e1_h34p, "cC_expl"),
+    pull_fmt(e1_h34p, "NA_similarity_perc_w:cC_expl")
+  )
+)
+
+p_mat_3b_e <- tibble(
+  estimate = c(
+    pull_p(e1_h33a, "PA_similarity_act_w"),
+    pull_p(e1_h33a, "PA_similarity_act_b"),
+    pull_p(e1_h33a, "cC_expl"),
+    pull_p(e1_h33a, "PA_similarity_act_w:cC_expl"),
+    pull_p(e1_h33p, "PA_similarity_perc_w"),
+    pull_p(e1_h33p, "PA_similarity_perc_b"),
+    pull_p(e1_h33p, "cC_expl"),
+    pull_p(e1_h33p, "PA_similarity_perc_w:cC_expl"),
+    pull_p(e1_h34a, "NA_similarity_act_w"),
+    pull_p(e1_h34a, "NA_similarity_act_b"),
+    pull_p(e1_h34a, "cC_expl"),
+    pull_p(e1_h34a, "NA_similarity_act_w:cC_expl"),
+    pull_p(e1_h34p, "NA_similarity_perc_w"),
+    pull_p(e1_h34p, "NA_similarity_perc_b"),
+    pull_p(e1_h34p, "cC_expl"),
+    pull_p(e1_h34p, "NA_similarity_perc_w:cC_expl")
+  )
+)
+
+note_3b_e <- paste0(
+  "Note. Exploratory extension of Step 3b. Extended event valence (cC_expl) = person-mean-centered ",
+  "net positivity pooled across general (partner-absent beeps) and partner-related (partner-present ",
+  "or partner-contact beeps) event items, covering a substantially larger portion of the data than ",
+  "the preregistered cC index. Similarity (within): main effect at average event valence. ",
+  "Similarity (between): main effect of between-dyad similarity. ",
+  "Sim × Event Valence (ext.): interaction with extended event valence. ",
+  "All models include random intercepts for persons nested in dyads and a continuous-time AR(1) ",
+  "residual structure. Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+)
+
+ft_3b_e <- flextable(tbl_3b_e) %>%
+  set_header_labels(
+    affect     = "Affect",
+    similarity = "Similarity",
+    parameter  = "Parameter",
+    estimate   = "Estimate"
+  ) %>%
+  merge_v(j = c("affect", "similarity"), part = "body") %>%
+  bold_sig(p_mat_3b_e, coef_cols_3b_e) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = c("affect", "similarity", "parameter"), align = "left", part = "body") %>%
+  align(j = coef_cols_3b_e, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i =  4, border = rule_thin,  part = "body") %>%
+  hline(i =  8, border = rule_thick, part = "body") %>%
+  hline(i = 12, border = rule_thin,  part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = note_3b_e, colwidths = 4) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_3b_e, path = file.path(dir_tables, "table_sc1_step3b_expl_valence.docx"))
+ft_3b_e
+```
+
 # SC2 Step 1 Tables
 
 ```{r sc2-data}
@@ -203,7 +971,7 @@ p_sum <- tibble(
 )
 
 note_sum <- paste0(
-  "Note. Step 1a = actual similarity only; 1b = actual + perceived similarity; ",
+  "Note. Model 1a = actual similarity only; 1b = actual + perceived similarity; ",
   "1c = actual + perceived + Actual × Perceived interaction (predictors grand-mean ",
   "centered within context). All models include a dyad-level random intercept. ",
   "Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
@@ -247,6 +1015,511 @@ save_as_docx(ft_sum, path = file.path(dir_tables, "table_sc2_step1_summary.docx"
 ft_sum
 ```
 
+# SC2 Step 2 Tables
+
+## Mediation Summary (H2.1–H2.2)
+
+```{r sc2-step2-data}
+#| include: false
+
+set.seed(42)
+
+# ── Mediator models ──
+h21_PA_med_neg <- lme(PA_sim_perc ~ PA_sim_act, random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h21_PA_med_pos <- lme(PA_sim_perc ~ PA_sim_act, random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+h22_NA_med_neg <- lme(NA_sim_perc ~ NA_sim_act, random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h22_NA_med_pos <- lme(NA_sim_perc ~ NA_sim_act, random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+
+# ── Outcome models – love ──
+h21_PA_out_love_neg  <- lme(love  ~ PA_sim_perc + PA_sim_act, random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h21_PA_out_love_pos  <- lme(love  ~ PA_sim_perc + PA_sim_act, random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+h22_NA_out_love_neg  <- lme(love  ~ NA_sim_perc + NA_sim_act, random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h22_NA_out_love_pos  <- lme(love  ~ NA_sim_perc + NA_sim_act, random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+
+# ── Outcome models – closeness ──
+h21_PA_out_close_neg <- lme(close ~ PA_sim_perc + PA_sim_act, random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h21_PA_out_close_pos <- lme(close ~ PA_sim_perc + PA_sim_act, random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+h22_NA_out_close_neg <- lme(close ~ NA_sim_perc + NA_sim_act, random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h22_NA_out_close_pos <- lme(close ~ NA_sim_perc + NA_sim_act, random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+
+# ── Monte Carlo indirect effects (20,000 draws each) ──
+mc_PA_love_neg  <- run_mc(h21_PA_med_neg, "PA_sim_act", h21_PA_out_love_neg,  "PA_sim_perc")
+mc_PA_love_pos  <- run_mc(h21_PA_med_pos, "PA_sim_act", h21_PA_out_love_pos,  "PA_sim_perc")
+mc_PA_close_neg <- run_mc(h21_PA_med_neg, "PA_sim_act", h21_PA_out_close_neg, "PA_sim_perc")
+mc_PA_close_pos <- run_mc(h21_PA_med_pos, "PA_sim_act", h21_PA_out_close_pos, "PA_sim_perc")
+mc_NA_love_neg  <- run_mc(h22_NA_med_neg, "NA_sim_act", h22_NA_out_love_neg,  "NA_sim_perc")
+mc_NA_love_pos  <- run_mc(h22_NA_med_pos, "NA_sim_act", h22_NA_out_love_pos,  "NA_sim_perc")
+mc_NA_close_neg <- run_mc(h22_NA_med_neg, "NA_sim_act", h22_NA_out_close_neg, "NA_sim_perc")
+mc_NA_close_pos <- run_mc(h22_NA_med_pos, "NA_sim_act", h22_NA_out_close_pos, "NA_sim_perc")
+```
+
+```{r table-sc2-step2-mediation}
+est_cols_med <- c("PA_neg", "PA_pos", "NA_neg", "NA_pos")
+
+tbl_med2 <- tibble(
+  outcome = c("Love/Closeness", "Love", "Love", "Love",
+              "Closeness", "Closeness", "Closeness"),
+  path    = c("a-path",
+              "b-path", "c-path (indirect)", "c′-path (direct)",
+              "b-path", "c-path (indirect)", "c′-path (direct)"),
+  PA_neg  = c(
+    pull_fmt(h21_PA_med_neg,       "PA_sim_act"),
+    pull_fmt(h21_PA_out_love_neg,  "PA_sim_perc"),
+    fmt_b(mc_PA_love_neg$point,    mc_PA_love_neg$p),
+    pull_fmt(h21_PA_out_love_neg,  "PA_sim_act"),
+    pull_fmt(h21_PA_out_close_neg, "PA_sim_perc"),
+    fmt_b(mc_PA_close_neg$point,   mc_PA_close_neg$p),
+    pull_fmt(h21_PA_out_close_neg, "PA_sim_act")
+  ),
+  PA_pos  = c(
+    pull_fmt(h21_PA_med_pos,       "PA_sim_act"),
+    pull_fmt(h21_PA_out_love_pos,  "PA_sim_perc"),
+    fmt_b(mc_PA_love_pos$point,    mc_PA_love_pos$p),
+    pull_fmt(h21_PA_out_love_pos,  "PA_sim_act"),
+    pull_fmt(h21_PA_out_close_pos, "PA_sim_perc"),
+    fmt_b(mc_PA_close_pos$point,   mc_PA_close_pos$p),
+    pull_fmt(h21_PA_out_close_pos, "PA_sim_act")
+  ),
+  NA_neg  = c(
+    pull_fmt(h22_NA_med_neg,       "NA_sim_act"),
+    pull_fmt(h22_NA_out_love_neg,  "NA_sim_perc"),
+    fmt_b(mc_NA_love_neg$point,    mc_NA_love_neg$p),
+    pull_fmt(h22_NA_out_love_neg,  "NA_sim_act"),
+    pull_fmt(h22_NA_out_close_neg, "NA_sim_perc"),
+    fmt_b(mc_NA_close_neg$point,   mc_NA_close_neg$p),
+    pull_fmt(h22_NA_out_close_neg, "NA_sim_act")
+  ),
+  NA_pos  = c(
+    pull_fmt(h22_NA_med_pos,       "NA_sim_act"),
+    pull_fmt(h22_NA_out_love_pos,  "NA_sim_perc"),
+    fmt_b(mc_NA_love_pos$point,    mc_NA_love_pos$p),
+    pull_fmt(h22_NA_out_love_pos,  "NA_sim_act"),
+    pull_fmt(h22_NA_out_close_pos, "NA_sim_perc"),
+    fmt_b(mc_NA_close_pos$point,   mc_NA_close_pos$p),
+    pull_fmt(h22_NA_out_close_pos, "NA_sim_act")
+  )
+)
+
+p_med2 <- tibble(
+  PA_neg = c(
+    pull_p(h21_PA_med_neg,       "PA_sim_act"),
+    pull_p(h21_PA_out_love_neg,  "PA_sim_perc"),
+    mc_PA_love_neg$p,
+    pull_p(h21_PA_out_love_neg,  "PA_sim_act"),
+    pull_p(h21_PA_out_close_neg, "PA_sim_perc"),
+    mc_PA_close_neg$p,
+    pull_p(h21_PA_out_close_neg, "PA_sim_act")
+  ),
+  PA_pos = c(
+    pull_p(h21_PA_med_pos,       "PA_sim_act"),
+    pull_p(h21_PA_out_love_pos,  "PA_sim_perc"),
+    mc_PA_love_pos$p,
+    pull_p(h21_PA_out_love_pos,  "PA_sim_act"),
+    pull_p(h21_PA_out_close_pos, "PA_sim_perc"),
+    mc_PA_close_pos$p,
+    pull_p(h21_PA_out_close_pos, "PA_sim_act")
+  ),
+  NA_neg = c(
+    pull_p(h22_NA_med_neg,       "NA_sim_act"),
+    pull_p(h22_NA_out_love_neg,  "NA_sim_perc"),
+    mc_NA_love_neg$p,
+    pull_p(h22_NA_out_love_neg,  "NA_sim_act"),
+    pull_p(h22_NA_out_close_neg, "NA_sim_perc"),
+    mc_NA_close_neg$p,
+    pull_p(h22_NA_out_close_neg, "NA_sim_act")
+  ),
+  NA_pos = c(
+    pull_p(h22_NA_med_pos,       "NA_sim_act"),
+    pull_p(h22_NA_out_love_pos,  "NA_sim_perc"),
+    mc_NA_love_pos$p,
+    pull_p(h22_NA_out_love_pos,  "NA_sim_act"),
+    pull_p(h22_NA_out_close_pos, "NA_sim_perc"),
+    mc_NA_close_pos$p,
+    pull_p(h22_NA_out_close_pos, "NA_sim_act")
+  )
+)
+
+note_med <- paste0(
+  "Note. a-path: actual similarity predicting perceived similarity ",
+  "(shared across outcomes within each context). b-path: perceived similarity ",
+  "predicting outcome, controlling for actual similarity. c-path (indirect): ",
+  "Monte Carlo indirect effect (20,000 draws). c′-path (direct): direct ",
+  "effect of actual similarity, controlling for perceived similarity. ",
+  "All models include a dyad-level random intercept. ",
+  "Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+)
+
+ft_med2 <- flextable(tbl_med2) %>%
+  set_header_labels(
+    outcome = "Outcome",
+    path    = "Path",
+    PA_neg  = "Negative",
+    PA_pos  = "Positive",
+    NA_neg  = "Negative",
+    NA_pos  = "Positive"
+  ) %>%
+  add_header_row(
+    values    = c("", "PA Similarity (H2.1)", "NA Similarity (H2.2)"),
+    colwidths = c(2, 2, 2)
+  ) %>%
+  merge_v(j = c("outcome", "path"), part = "header") %>%
+  merge_v(j = "outcome", part = "body") %>%
+  bold_sig(p_med2, est_cols_med) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = c("outcome", "path"), align = "left", part = "body") %>%
+  align(j = est_cols_med, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline(i = 1, border = rule_thin,  part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i = 1, border = rule_thin,  part = "body") %>%
+  hline(i = 4, border = rule_thin,  part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = note_med, colwidths = 6) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_med2, path = file.path(dir_tables, "table_sc2_step2_mediation_summary.docx"))
+ft_med2
+```
+
+# SC2 Step 3a Tables
+
+## We-ness Moderation Summary (H3.1–H3.2)
+
+```{r sc2-step3a-data}
+#| include: false
+
+# ── H3.1: PA Similarity × We-ness (actual PA) ──
+h31_PA_act_love_neg  <- lme(love  ~ PA_sim_act + cwe_ness + PA_sim_act:cwe_ness,  random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h31_PA_act_love_pos  <- lme(love  ~ PA_sim_act + cwe_ness + PA_sim_act:cwe_ness,  random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+h31_PA_act_close_neg <- lme(close ~ PA_sim_act + cwe_ness + PA_sim_act:cwe_ness,  random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h31_PA_act_close_pos <- lme(close ~ PA_sim_act + cwe_ness + PA_sim_act:cwe_ness,  random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+
+# ── H3.1: PA Similarity × We-ness (perceived PA) ──
+h31_PA_perc_love_neg  <- lme(love  ~ PA_sim_perc + cwe_ness + PA_sim_perc:cwe_ness, random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h31_PA_perc_love_pos  <- lme(love  ~ PA_sim_perc + cwe_ness + PA_sim_perc:cwe_ness, random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+h31_PA_perc_close_neg <- lme(close ~ PA_sim_perc + cwe_ness + PA_sim_perc:cwe_ness, random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h31_PA_perc_close_pos <- lme(close ~ PA_sim_perc + cwe_ness + PA_sim_perc:cwe_ness, random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+
+# ── H3.2: NA Similarity × We-ness (actual NA) ──
+h32_NA_act_love_neg  <- lme(love  ~ NA_sim_act + cwe_ness + NA_sim_act:cwe_ness,  random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h32_NA_act_love_pos  <- lme(love  ~ NA_sim_act + cwe_ness + NA_sim_act:cwe_ness,  random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+h32_NA_act_close_neg <- lme(close ~ NA_sim_act + cwe_ness + NA_sim_act:cwe_ness,  random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h32_NA_act_close_pos <- lme(close ~ NA_sim_act + cwe_ness + NA_sim_act:cwe_ness,  random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+
+# ── H3.2: NA Similarity × We-ness (perceived NA) ──
+h32_NA_perc_love_neg  <- lme(love  ~ NA_sim_perc + cwe_ness + NA_sim_perc:cwe_ness, random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h32_NA_perc_love_pos  <- lme(love  ~ NA_sim_perc + cwe_ness + NA_sim_perc:cwe_ness, random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+h32_NA_perc_close_neg <- lme(close ~ NA_sim_perc + cwe_ness + NA_sim_perc:cwe_ness, random = ~1|dyad, data = sc2_neg, method = "REML", na.action = na.exclude)
+h32_NA_perc_close_pos <- lme(close ~ NA_sim_perc + cwe_ness + NA_sim_perc:cwe_ness, random = ~1|dyad, data = sc2_pos, method = "REML", na.action = na.exclude)
+```
+
+```{r table-sc2-step3a-weness}
+est_cols_3a <- c("pos", "neg")
+
+tbl_3a2 <- tibble(
+  outcome    = rep(c("Closeness", "Love"), each = 12),
+  affect     = rep(c("PA Similarity", "NA Similarity"), each = 6, times = 2),
+  similarity = rep(c("Actual", "Perceived"), each = 3, times = 4),
+  parameter  = rep(c("Similarity", "We-ness", "Sim × We-ness"), times = 8),
+  pos = c(
+    pull_fmt(h31_PA_act_close_pos,  "PA_sim_act"),
+    pull_fmt(h31_PA_act_close_pos,  "cwe_ness"),
+    pull_fmt(h31_PA_act_close_pos,  "PA_sim_act:cwe_ness"),
+    pull_fmt(h31_PA_perc_close_pos, "PA_sim_perc"),
+    pull_fmt(h31_PA_perc_close_pos, "cwe_ness"),
+    pull_fmt(h31_PA_perc_close_pos, "PA_sim_perc:cwe_ness"),
+    pull_fmt(h32_NA_act_close_pos,  "NA_sim_act"),
+    pull_fmt(h32_NA_act_close_pos,  "cwe_ness"),
+    pull_fmt(h32_NA_act_close_pos,  "NA_sim_act:cwe_ness"),
+    pull_fmt(h32_NA_perc_close_pos, "NA_sim_perc"),
+    pull_fmt(h32_NA_perc_close_pos, "cwe_ness"),
+    pull_fmt(h32_NA_perc_close_pos, "NA_sim_perc:cwe_ness"),
+    pull_fmt(h31_PA_act_love_pos,   "PA_sim_act"),
+    pull_fmt(h31_PA_act_love_pos,   "cwe_ness"),
+    pull_fmt(h31_PA_act_love_pos,   "PA_sim_act:cwe_ness"),
+    pull_fmt(h31_PA_perc_love_pos,  "PA_sim_perc"),
+    pull_fmt(h31_PA_perc_love_pos,  "cwe_ness"),
+    pull_fmt(h31_PA_perc_love_pos,  "PA_sim_perc:cwe_ness"),
+    pull_fmt(h32_NA_act_love_pos,   "NA_sim_act"),
+    pull_fmt(h32_NA_act_love_pos,   "cwe_ness"),
+    pull_fmt(h32_NA_act_love_pos,   "NA_sim_act:cwe_ness"),
+    pull_fmt(h32_NA_perc_love_pos,  "NA_sim_perc"),
+    pull_fmt(h32_NA_perc_love_pos,  "cwe_ness"),
+    pull_fmt(h32_NA_perc_love_pos,  "NA_sim_perc:cwe_ness")
+  ),
+  neg = c(
+    pull_fmt(h31_PA_act_close_neg,  "PA_sim_act"),
+    pull_fmt(h31_PA_act_close_neg,  "cwe_ness"),
+    pull_fmt(h31_PA_act_close_neg,  "PA_sim_act:cwe_ness"),
+    pull_fmt(h31_PA_perc_close_neg, "PA_sim_perc"),
+    pull_fmt(h31_PA_perc_close_neg, "cwe_ness"),
+    pull_fmt(h31_PA_perc_close_neg, "PA_sim_perc:cwe_ness"),
+    pull_fmt(h32_NA_act_close_neg,  "NA_sim_act"),
+    pull_fmt(h32_NA_act_close_neg,  "cwe_ness"),
+    pull_fmt(h32_NA_act_close_neg,  "NA_sim_act:cwe_ness"),
+    pull_fmt(h32_NA_perc_close_neg, "NA_sim_perc"),
+    pull_fmt(h32_NA_perc_close_neg, "cwe_ness"),
+    pull_fmt(h32_NA_perc_close_neg, "NA_sim_perc:cwe_ness"),
+    pull_fmt(h31_PA_act_love_neg,   "PA_sim_act"),
+    pull_fmt(h31_PA_act_love_neg,   "cwe_ness"),
+    pull_fmt(h31_PA_act_love_neg,   "PA_sim_act:cwe_ness"),
+    pull_fmt(h31_PA_perc_love_neg,  "PA_sim_perc"),
+    pull_fmt(h31_PA_perc_love_neg,  "cwe_ness"),
+    pull_fmt(h31_PA_perc_love_neg,  "PA_sim_perc:cwe_ness"),
+    pull_fmt(h32_NA_act_love_neg,   "NA_sim_act"),
+    pull_fmt(h32_NA_act_love_neg,   "cwe_ness"),
+    pull_fmt(h32_NA_act_love_neg,   "NA_sim_act:cwe_ness"),
+    pull_fmt(h32_NA_perc_love_neg,  "NA_sim_perc"),
+    pull_fmt(h32_NA_perc_love_neg,  "cwe_ness"),
+    pull_fmt(h32_NA_perc_love_neg,  "NA_sim_perc:cwe_ness")
+  )
+)
+
+p_mat_3a <- tibble(
+  pos = c(
+    pull_p(h31_PA_act_close_pos,  "PA_sim_act"),
+    pull_p(h31_PA_act_close_pos,  "cwe_ness"),
+    pull_p(h31_PA_act_close_pos,  "PA_sim_act:cwe_ness"),
+    pull_p(h31_PA_perc_close_pos, "PA_sim_perc"),
+    pull_p(h31_PA_perc_close_pos, "cwe_ness"),
+    pull_p(h31_PA_perc_close_pos, "PA_sim_perc:cwe_ness"),
+    pull_p(h32_NA_act_close_pos,  "NA_sim_act"),
+    pull_p(h32_NA_act_close_pos,  "cwe_ness"),
+    pull_p(h32_NA_act_close_pos,  "NA_sim_act:cwe_ness"),
+    pull_p(h32_NA_perc_close_pos, "NA_sim_perc"),
+    pull_p(h32_NA_perc_close_pos, "cwe_ness"),
+    pull_p(h32_NA_perc_close_pos, "NA_sim_perc:cwe_ness"),
+    pull_p(h31_PA_act_love_pos,   "PA_sim_act"),
+    pull_p(h31_PA_act_love_pos,   "cwe_ness"),
+    pull_p(h31_PA_act_love_pos,   "PA_sim_act:cwe_ness"),
+    pull_p(h31_PA_perc_love_pos,  "PA_sim_perc"),
+    pull_p(h31_PA_perc_love_pos,  "cwe_ness"),
+    pull_p(h31_PA_perc_love_pos,  "PA_sim_perc:cwe_ness"),
+    pull_p(h32_NA_act_love_pos,   "NA_sim_act"),
+    pull_p(h32_NA_act_love_pos,   "cwe_ness"),
+    pull_p(h32_NA_act_love_pos,   "NA_sim_act:cwe_ness"),
+    pull_p(h32_NA_perc_love_pos,  "NA_sim_perc"),
+    pull_p(h32_NA_perc_love_pos,  "cwe_ness"),
+    pull_p(h32_NA_perc_love_pos,  "NA_sim_perc:cwe_ness")
+  ),
+  neg = c(
+    pull_p(h31_PA_act_close_neg,  "PA_sim_act"),
+    pull_p(h31_PA_act_close_neg,  "cwe_ness"),
+    pull_p(h31_PA_act_close_neg,  "PA_sim_act:cwe_ness"),
+    pull_p(h31_PA_perc_close_neg, "PA_sim_perc"),
+    pull_p(h31_PA_perc_close_neg, "cwe_ness"),
+    pull_p(h31_PA_perc_close_neg, "PA_sim_perc:cwe_ness"),
+    pull_p(h32_NA_act_close_neg,  "NA_sim_act"),
+    pull_p(h32_NA_act_close_neg,  "cwe_ness"),
+    pull_p(h32_NA_act_close_neg,  "NA_sim_act:cwe_ness"),
+    pull_p(h32_NA_perc_close_neg, "NA_sim_perc"),
+    pull_p(h32_NA_perc_close_neg, "cwe_ness"),
+    pull_p(h32_NA_perc_close_neg, "NA_sim_perc:cwe_ness"),
+    pull_p(h31_PA_act_love_neg,   "PA_sim_act"),
+    pull_p(h31_PA_act_love_neg,   "cwe_ness"),
+    pull_p(h31_PA_act_love_neg,   "PA_sim_act:cwe_ness"),
+    pull_p(h31_PA_perc_love_neg,  "PA_sim_perc"),
+    pull_p(h31_PA_perc_love_neg,  "cwe_ness"),
+    pull_p(h31_PA_perc_love_neg,  "PA_sim_perc:cwe_ness"),
+    pull_p(h32_NA_act_love_neg,   "NA_sim_act"),
+    pull_p(h32_NA_act_love_neg,   "cwe_ness"),
+    pull_p(h32_NA_act_love_neg,   "NA_sim_act:cwe_ness"),
+    pull_p(h32_NA_perc_love_neg,  "NA_sim_perc"),
+    pull_p(h32_NA_perc_love_neg,  "cwe_ness"),
+    pull_p(h32_NA_perc_love_neg,  "NA_sim_perc:cwe_ness")
+  )
+)
+
+note_3a <- paste0(
+  "Note. Similarity: main effect of similarity at average we-ness. ",
+  "We-ness: main effect of trait we-ness at average similarity. ",
+  "Sim × We-ness: interaction term (H3.1 for PA similarity, H3.2 for NA ",
+  "similarity; preregistered hypothesis: positive). All models include a ",
+  "dyad-level random intercept. Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+)
+
+ft_3a <- flextable(tbl_3a2) %>%
+  set_header_labels(
+    outcome    = "Outcome",
+    affect     = "Affect",
+    similarity = "Similarity",
+    parameter  = "Parameter",
+    pos        = "Positive",
+    neg        = "Negative"
+  ) %>%
+  add_header_row(
+    values    = c("", "Interaction Valence"),
+    colwidths = c(4, 2)
+  ) %>%
+  merge_v(j = c("outcome", "affect", "similarity", "parameter"), part = "header") %>%
+  merge_v(j = c("outcome", "affect", "similarity"), part = "body") %>%
+  bold_sig(p_mat_3a, est_cols_3a) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = c("outcome", "affect", "similarity", "parameter"), align = "left", part = "body") %>%
+  align(j = est_cols_3a, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline(i = 1, border = rule_thin,  part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i =  3, border = rule_thin,  part = "body") %>%
+  hline(i =  6, border = rule_thin,  part = "body") %>%
+  hline(i =  9, border = rule_thin,  part = "body") %>%
+  hline(i = 12, border = rule_thick, part = "body") %>%
+  hline(i = 15, border = rule_thin,  part = "body") %>%
+  hline(i = 18, border = rule_thin,  part = "body") %>%
+  hline(i = 21, border = rule_thin,  part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = note_3a, colwidths = 6) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_3a, path = file.path(dir_tables, "table_sc2_step3a_weness_moderation_summary.docx"))
+ft_3a
+```
+
+# SC2 Step 3b Tables
+
+## Context Moderation Summary (H3.3–H3.4)
+
+```{r sc2-step3b-data}
+#| include: false
+
+# ── H3.3: PA × Context ──
+h33_PA_act_love   <- lme(love  ~ PA_sim_act  + context + PA_sim_act:context,  random = ~1|dyad/person, data = sc2, method = "REML", na.action = na.exclude)
+h33_PA_act_close  <- lme(close ~ PA_sim_act  + context + PA_sim_act:context,  random = ~1|dyad/person, data = sc2, method = "REML", na.action = na.exclude)
+h33_PA_perc_love  <- lme(love  ~ PA_sim_perc + context + PA_sim_perc:context, random = ~1|dyad/person, data = sc2, method = "REML", na.action = na.exclude)
+h33_PA_perc_close <- lme(close ~ PA_sim_perc + context + PA_sim_perc:context, random = ~1|dyad/person, data = sc2, method = "REML", na.action = na.exclude)
+
+# ── H3.4: NA × Context ──
+h34_NA_act_love   <- lme(love  ~ NA_sim_act  + context + NA_sim_act:context,  random = ~1|dyad/person, data = sc2, method = "REML", na.action = na.exclude)
+h34_NA_act_close  <- lme(close ~ NA_sim_act  + context + NA_sim_act:context,  random = ~1|dyad/person, data = sc2, method = "REML", na.action = na.exclude)
+h34_NA_perc_love  <- lme(love  ~ NA_sim_perc + context + NA_sim_perc:context, random = ~1|dyad/person, data = sc2, method = "REML", na.action = na.exclude)
+h34_NA_perc_close <- lme(close ~ NA_sim_perc + context + NA_sim_perc:context, random = ~1|dyad/person, data = sc2, method = "REML", na.action = na.exclude)
+```
+
+```{r table-sc2-step3b-context}
+est_cols_3b <- "estimate"
+
+tbl_3b2 <- tibble(
+  outcome    = rep(c("Closeness", "Love"), each = 12),
+  affect     = rep(c("PA Similarity", "NA Similarity"), each = 6, times = 2),
+  similarity = rep(c("Actual", "Perceived"), each = 3, times = 4),
+  parameter  = rep(c("Similarity", "Context", "Sim × Context"), times = 8),
+  estimate = c(
+    pull_fmt(h33_PA_act_close,  "PA_sim_act"),
+    pull_fmt(h33_PA_act_close,  "context"),
+    pull_fmt(h33_PA_act_close,  "PA_sim_act:context"),
+    pull_fmt(h33_PA_perc_close, "PA_sim_perc"),
+    pull_fmt(h33_PA_perc_close, "context"),
+    pull_fmt(h33_PA_perc_close, "PA_sim_perc:context"),
+    pull_fmt(h34_NA_act_close,  "NA_sim_act"),
+    pull_fmt(h34_NA_act_close,  "context"),
+    pull_fmt(h34_NA_act_close,  "NA_sim_act:context"),
+    pull_fmt(h34_NA_perc_close, "NA_sim_perc"),
+    pull_fmt(h34_NA_perc_close, "context"),
+    pull_fmt(h34_NA_perc_close, "NA_sim_perc:context"),
+    pull_fmt(h33_PA_act_love,   "PA_sim_act"),
+    pull_fmt(h33_PA_act_love,   "context"),
+    pull_fmt(h33_PA_act_love,   "PA_sim_act:context"),
+    pull_fmt(h33_PA_perc_love,  "PA_sim_perc"),
+    pull_fmt(h33_PA_perc_love,  "context"),
+    pull_fmt(h33_PA_perc_love,  "PA_sim_perc:context"),
+    pull_fmt(h34_NA_act_love,   "NA_sim_act"),
+    pull_fmt(h34_NA_act_love,   "context"),
+    pull_fmt(h34_NA_act_love,   "NA_sim_act:context"),
+    pull_fmt(h34_NA_perc_love,  "NA_sim_perc"),
+    pull_fmt(h34_NA_perc_love,  "context"),
+    pull_fmt(h34_NA_perc_love,  "NA_sim_perc:context")
+  )
+)
+
+p_mat_3b <- tibble(
+  estimate = c(
+    pull_p(h33_PA_act_close,  "PA_sim_act"),
+    pull_p(h33_PA_act_close,  "context"),
+    pull_p(h33_PA_act_close,  "PA_sim_act:context"),
+    pull_p(h33_PA_perc_close, "PA_sim_perc"),
+    pull_p(h33_PA_perc_close, "context"),
+    pull_p(h33_PA_perc_close, "PA_sim_perc:context"),
+    pull_p(h34_NA_act_close,  "NA_sim_act"),
+    pull_p(h34_NA_act_close,  "context"),
+    pull_p(h34_NA_act_close,  "NA_sim_act:context"),
+    pull_p(h34_NA_perc_close, "NA_sim_perc"),
+    pull_p(h34_NA_perc_close, "context"),
+    pull_p(h34_NA_perc_close, "NA_sim_perc:context"),
+    pull_p(h33_PA_act_love,   "PA_sim_act"),
+    pull_p(h33_PA_act_love,   "context"),
+    pull_p(h33_PA_act_love,   "PA_sim_act:context"),
+    pull_p(h33_PA_perc_love,  "PA_sim_perc"),
+    pull_p(h33_PA_perc_love,  "context"),
+    pull_p(h33_PA_perc_love,  "PA_sim_perc:context"),
+    pull_p(h34_NA_act_love,   "NA_sim_act"),
+    pull_p(h34_NA_act_love,   "context"),
+    pull_p(h34_NA_act_love,   "NA_sim_act:context"),
+    pull_p(h34_NA_perc_love,  "NA_sim_perc"),
+    pull_p(h34_NA_perc_love,  "context"),
+    pull_p(h34_NA_perc_love,  "NA_sim_perc:context")
+  )
+)
+
+note_3b <- paste0(
+  "Note. Similarity: slope in the negative interaction context (context = 0). ",
+  "Context: difference in intercept between positive and negative interaction. ",
+  "Sim × Context: difference in similarity slope between contexts ",
+  "(H3.3 for PA similarity, H3.4 for NA similarity; preregistered hypothesis: ",
+  "negative). All models include dyad-level and person-level random intercepts. ",
+  "Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
+)
+
+ft_3b <- flextable(tbl_3b2) %>%
+  set_header_labels(
+    outcome    = "Outcome",
+    affect     = "Affect",
+    similarity = "Similarity",
+    parameter  = "Parameter",
+    estimate   = "Estimate"
+  ) %>%
+  merge_v(j = c("outcome", "affect", "similarity"), part = "body") %>%
+  bold_sig(p_mat_3b, est_cols_3b) %>%
+  font(fontname = MS_FONT, part = "all") %>%
+  fontsize(size = MS_SIZE_BODY, part = "all") %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(j = c("outcome", "affect", "similarity", "parameter"), align = "left", part = "body") %>%
+  align(j = est_cols_3b, align = "right", part = "body") %>%
+  border_remove() %>%
+  hline_top(border = rule_thick, part = "header") %>%
+  hline_bottom(border = rule_thick, part = "header") %>%
+  hline(i =  3, border = rule_thin,  part = "body") %>%
+  hline(i =  6, border = rule_thin,  part = "body") %>%
+  hline(i =  9, border = rule_thin,  part = "body") %>%
+  hline(i = 12, border = rule_thick, part = "body") %>%
+  hline(i = 15, border = rule_thin,  part = "body") %>%
+  hline(i = 18, border = rule_thin,  part = "body") %>%
+  hline(i = 21, border = rule_thin,  part = "body") %>%
+  hline_bottom(border = rule_thick, part = "body") %>%
+  add_footer_row(values = note_3b, colwidths = 5) %>%
+  font(fontname = MS_FONT, part = "footer") %>%
+  fontsize(size = MS_SIZE_NOTE, part = "footer") %>%
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+
+save_as_docx(ft_3b, path = file.path(dir_tables, "table_sc2_step3b_context_moderation_summary.docx"))
+ft_3b
+```
+
 # RSA Parameter Table
 
 ```{r esm-data}
@@ -272,7 +1545,6 @@ esm_data <- esm_data %>%
 ```
 
 ```{r rsa-models}
-#| cache: true
 
 rsa_ctrl <- lmeControl(opt = "nlminb")
 

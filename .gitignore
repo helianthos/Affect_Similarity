@@ -37,3 +37,4 @@ outputs/tables/*
 # Quarto cache
 /.quarto/
 **/*.quarto_ipynb
+*_cache/

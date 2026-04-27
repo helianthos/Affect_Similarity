@@ -38,6 +38,6 @@ library(nlme) # for corAR1 in lme models; not in renv.lock because in R's defaul
 library(car)
 library(patchwork)
 library(emmeans)
-library(kableExtra)
 library(flextable)
+library(kableExtra)
 library(officer)

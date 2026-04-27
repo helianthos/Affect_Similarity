@@ -21,7 +21,7 @@ esm_data  <- readRDS(file.path(dir_data_ana, "esm_ana.rds"))
 load_config("ESM")
 # plot initialisation
 plot_counter <- 1
-prefix <- "ESM"
+prefix <- "SC1"
 ```
 
 # Introduction
@@ -1484,7 +1484,7 @@ kable(tbl_within_PA,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = paste0(
       "Probe values: actual PA similarity (within) at −1 SD = ",
       sprintf("%.2f", -act_w_sd), ", 0, +1 SD = ",
@@ -1540,7 +1540,7 @@ kable(tbl_slopes_PA_w,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean (0), and +1 SD of within-person perceived PA similarity; between-person components held at 0. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title     = "Note.",
     footnote_as_chunk = TRUE
@@ -1634,7 +1634,7 @@ kable(tbl_between_PA,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = paste0(
       "Probe values: typical actual PA similarity (between) at −1 SD = ",
       sprintf("%.2f", -act_b_sd), ", 0, +1 SD = ",
@@ -1690,7 +1690,7 @@ kable(tbl_slopes_PA_b,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean (0), and +1 SD of typical perceived PA similarity; within-person components held at 0. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title     = "Note.",
     footnote_as_chunk = TRUE
@@ -1807,7 +1807,7 @@ kable(tbl_within_NA,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = paste0(
       "Probe values: actual NA similarity (within) at −1 SD = ",
       sprintf("%.2f", -act_w_sd_NA), ", 0, +1 SD = ",
@@ -1862,7 +1862,7 @@ kable(tbl_slopes_NA_w,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean (0), and +1 SD of within-person perceived NA similarity; between-person components held at 0. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title     = "Note.",
     footnote_as_chunk = TRUE
@@ -1953,7 +1953,7 @@ kable(tbl_between_NA,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = paste0(
       "Probe values: typical actual NA similarity (between) at −1 SD = ",
       sprintf("%.2f", -act_b_sd_NA), ", 0, +1 SD = ",
@@ -2008,7 +2008,7 @@ kable(tbl_slopes_NA_b,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean (0), and +1 SD of typical perceived NA similarity; within-person components held at 0. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title     = "Note.",
     footnote_as_chunk = TRUE
@@ -2098,7 +2098,14 @@ edges(p)$linetype <- edges$linetype
 edges(p)$colour   <- edges$colour
 edges(p)$label_hjust <- "center"
 
-plot(p) + ggtitle("General Mediation Diagram")
+med_plot <- plot(p) + ggtitle("General Mediation Diagram")
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_mediation_general_diagram.png", prefix, plot_counter)),
+  plot = med_plot, width = 7, height = 5, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 ```
 
 **Mediator Model**
@@ -2278,7 +2285,14 @@ edges(p)$linetype <- edges$linetype
 edges(p)$colour   <- edges$colour
 edges(p)$label_hjust <- "center"
 
-plot(p) + ggtitle("Within Person Mediation Diagram: PA")
+med_plot <- plot(p) + ggtitle("Within Person Mediation Diagram: PA")
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_mediation_within_person_PA.png", prefix, plot_counter)),
+  plot = med_plot, width = 7, height = 5, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 
 ```
 
@@ -2342,7 +2356,14 @@ edges(p)$colour   <- edges$colour
 edges(p)$label_colour <- edges$colour
 edges(p)$label_hjust <- "center"
 
-plot(p) + ggtitle("Between Person Mediation Diagram: PA")
+med_plot <- plot(p) + ggtitle("Between Person Mediation Diagram: PA")
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_mediation_between_person_PA.png", prefix, plot_counter)),
+  plot = med_plot, width = 7, height = 5, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 ```
 
 ### Confidence intervals for the indirect effects
@@ -2450,7 +2471,7 @@ kable(tbl,
     full_width = FALSE,
     position   = "left"
   ) |>
-  footnote(
+  kableExtra::footnote(
     general = "CIs based on 20,000 Monte Carlo draws. Proportion mediated not reported at between level as the non-significant total effect renders the ratio unstable.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -2644,7 +2665,14 @@ edges(p)$linetype <- edges$linetype
 edges(p)$colour   <- edges$colour
 edges(p)$label_hjust <- "center"
 
-plot(p) + ggtitle("Within Person Mediation Diagram: NA")
+med_plot <- plot(p) + ggtitle("Within Person Mediation Diagram: NA")
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_mediation_within_person_NA.png", prefix, plot_counter)),
+  plot = med_plot, width = 7, height = 5, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 
 ```
 
@@ -2708,7 +2736,14 @@ edges(p)$colour   <- edges$colour
 edges(p)$label_colour <- edges$colour
 edges(p)$label_hjust <- "center"
 
-plot(p) + ggtitle("Between Person Mediation Diagram: NA")
+med_plot <- plot(p) + ggtitle("Between Person Mediation Diagram: NA")
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_mediation_between_person_NA.png", prefix, plot_counter)),
+  plot = med_plot, width = 7, height = 5, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 
 ```
 
@@ -2822,7 +2857,7 @@ kable(tbl,
     full_width = FALSE,
     position   = "left"
   ) |>
-  footnote(
+  kableExtra::footnote(
     general = "CIs based on 20,000 Monte Carlo draws.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -2959,7 +2994,7 @@ kable(tbl_h31a,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -3028,7 +3063,7 @@ kable(tbl_h31p,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -3108,7 +3143,7 @@ kable(tbl_extended,
   ) %>%
   pack_rows("Actual PA similarity",    1, 3) %>%
   pack_rows("Perceived PA similarity", 4, 6) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -3181,7 +3216,7 @@ kable(tbl_mediator_mod,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -3256,7 +3291,7 @@ w1_y <- mid_a_y + arrow_length
 w2_x <- mid_c_x          # directly below midpoint of c'-path
 w2_y <- mid_c_y - arrow_length
 
-plot(p_mod) +
+med_plot <- plot(p_mod) +
   # Moderator arrow 1: from above down to midpoint of a-path
   geom_segment(
     data = data.frame(x = w1_x , y = w1_y - 0.05,
@@ -3299,6 +3334,13 @@ plot(p_mod) +
   ) +
   ggtitle("Within person mediation moderated by responsiveness \u2014 PA Similarity") +
   labs(caption = "Dashed arrows indicate moderation of the intersected path (Hayes, 2013 convention)")
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_moderated_mediation_responsiveness_PA.png", prefix, plot_counter)),
+  plot = med_plot, width = 9, height = 7, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 ```
 
 The relationship is not "waiting" for shared positive affect to feel connected; it is already connected through behavior.
@@ -3370,7 +3412,7 @@ kable(tbl_h31a,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -3438,7 +3480,7 @@ kable(tbl_h32p,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -3506,7 +3548,7 @@ kable(tbl_extended,
   ) %>%
   pack_rows("Actual NA similarity",    1, 3) %>%
   pack_rows("Perceived NA similarity", 4, 6) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -3568,7 +3610,7 @@ kable(tbl_mediator_mod,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of perceived responsiveness. Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -3641,7 +3683,7 @@ w1_y <- mid_b_y
 w2_x <- mid_c_x          # directly below midpoint of c'-path
 w2_y <- mid_c_y - arrow_length
 
-plot(p_mod) +
+med_plot <- plot(p_mod) +
   # Moderator arrow 1: from right to midpoint of b-path
   geom_segment(
     data = data.frame(x = w1_x - 0.05, y = w1_y ,
@@ -3684,6 +3726,13 @@ plot(p_mod) +
   labs(caption = "Dashed arrows indicate moderation of the intersected path (Hayes, 2013 convention)") +
   theme(plot.margin = unit(c(0.2, 0.5, 0.2, 0.2),"cm")
         )
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_moderated_mediation_responsiveness_NA.png", prefix, plot_counter)),
+  plot = med_plot, width = 9, height = 7, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 ```
 
 1.  **a-path**: Perception of similarity is unaffected by responsiveness This suggests that the perceptual process linking actual to perceived NA similarity is not dependent on feeling understood by the partner.
@@ -3817,7 +3866,7 @@ kable(tbl_h33a,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of event valence (cC). Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -3905,7 +3954,7 @@ kable(tbl_h33p,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of event valence (cC). Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -3983,7 +4032,7 @@ kable(tbl_extended,
   ) %>%
   pack_rows("Actual PA similarity",    1, 3) %>%
   pack_rows("Perceived PA similarity", 4, 6) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of event valence (cC). Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -4054,7 +4103,7 @@ kable(tbl_h33_mediator_mod,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of event valence (cC). Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -4121,7 +4170,7 @@ arrow_length <- 1.2
 w1_x <- mid_a_x
 w1_y <- mid_a_y + arrow_length
 
-plot(p_mod) +
+med_plot <- plot(p_mod) +
   # Moderator arrow: down to midpoint of a-path only
   geom_segment(
     data = data.frame(
@@ -4153,6 +4202,13 @@ plot(p_mod) +
   ) +
   ggtitle("Within-person mediation moderated by event valence \u2014 PA Similarity") +
   labs(caption = "Dashed arrow indicates moderation of the a-path (Hayes, 2013 convention). c\u2019-path non-significant; b-path and its moderation by event valence non-significant.")
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_moderated_mediation_event_valence_PA.png", prefix, plot_counter)),
+  plot = med_plot, width = 9, height = 7, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 ```
 
 First, considering the unmoderated mediation, actual PA similarity was positively associated with perceived PA similarity ($a = 0.565$, 95% CI $[0.553, 0.578]$), which in turn predicted greater love ($b = 0.149$, 95% CI $[0.137, 0.161]$). The direct effect of actual PA similarity on love was also significant ($c' = 0.032$, 95% CI $[0.020, 0.043]$), indicating partial mediation via perceived similarity.
@@ -4245,7 +4301,7 @@ kable(tbl_h34a,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of event valence (cC). Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -4333,7 +4389,7 @@ kable(tbl_h34p,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of event valence (cC). Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -4411,7 +4467,7 @@ kable(tbl_extended,
   ) %>%
   pack_rows("Actual NA similarity",    1, 3) %>%
   pack_rows("Perceived NA similarity", 4, 6) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of event valence (cC). Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -4482,7 +4538,7 @@ kable(tbl_h34_mediator_mod,
     full_width = FALSE,
     position   = "left"
   ) %>%
-  footnote(
+  kableExtra::footnote(
     general = "Simple slopes estimated at −1 SD, mean, and +1 SD of event valence (cC). Degrees of freedom estimated via Satterthwaite approximation.",
     general_title = "Note.",
     footnote_as_chunk = TRUE
@@ -4577,7 +4633,14 @@ plot(p_mod) +
     colour = "black"
   ) +
   ggtitle("Within-person mediation moderated by event valence \u2014 NA Similarity") +
-  labs(caption = "Dashed arrow indicates moderation of the a-path (Hayes, 2013 convention). b-path, c\u2019-path, and their moderation by event valence all non-significant.")
+  labs(caption = "Dashed arrow indicates moderation of the a-path (Hayes, 2013 convention). b-path, c\u2019-path, and their moderation by event valence all non-significant.") -> med_plot
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_moderated_mediation_event_valence_NA.png", prefix, plot_counter)),
+  plot = med_plot, width = 9, height = 7, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 ```
 
 The unmoderated NA mediation (from the baseline model `h22`) shows that actual NA similarity was positively associated with perceived NA similarity ($a = 0.471$, $p < .001$), which negatively predicted love at the within-person level ($b = -0.127$, $p < .001$). The remaining direct effect of actual NA similarity on love was also significant ($c' = -0.094$, $p < .001$), and so was the total effect ($c = -0.152$, $p < .001$), indicating partial mediation.
@@ -4668,7 +4731,7 @@ kable(tbl_e1_h33a,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -4730,7 +4793,7 @@ kable(tbl_e1_h33p,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -4803,7 +4866,7 @@ kable(tbl_e1_out,
                 full_width = FALSE, position = "left") %>%
   pack_rows("Actual PA similarity",    1, 3) %>%
   pack_rows("Perceived PA similarity", 4, 6) %>%
-  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -4864,7 +4927,7 @@ kable(tbl_e1_med_pa,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -4981,7 +5044,14 @@ plot(p_mod) +
     hjust = 0, colour = "black"
   ) +
   ggtitle("Within-person mediation moderated by extended event valence \u2014 PA Similarity") +
-  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84) and c\u2019-path (\u03C67). b-path moderation non-significant.")
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84) and c\u2019-path (\u03C67). b-path moderation non-significant.") -> med_plot
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_moderated_mediation_extended_valence_PA.png", prefix, plot_counter)),
+  plot = med_plot, width = 9, height = 7, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 ```
 
 ## NA Similarity × cC_expl
@@ -5042,7 +5112,7 @@ kable(tbl_e1_h34a,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -5104,7 +5174,7 @@ kable(tbl_e1_h34p,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -5174,7 +5244,7 @@ kable(tbl_e1_out_na,
                 full_width = FALSE, position = "left") %>%
   pack_rows("Actual NA similarity",    1, 3) %>%
   pack_rows("Perceived NA similarity", 4, 6) %>%
-  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -5233,7 +5303,7 @@ kable(tbl_e1_med_na,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at −1 SD, mean, and +1 SD of cC_expl. Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -5372,7 +5442,14 @@ plot(p_mod) +
     hjust = 0, colour = "black"
   ) +
   ggtitle("Within-person mediation moderated by extended event valence \u2014 NA Similarity") +
-  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84), b-path (\u03C66), and c\u2019-path (\u03C67).")
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84), b-path (\u03C66), and c\u2019-path (\u03C67).") -> med_plot
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_moderated_mediation_extended_valence_NA.png", prefix, plot_counter)),
+  plot = med_plot, width = 9, height = 7, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 ```
 
 # Exploratory: 3b alternative 2 — Negative Event Dummy (C_expl_neg)
@@ -5449,7 +5526,7 @@ kable(tbl_e2_h33a,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -5510,7 +5587,7 @@ kable(tbl_e2_h33p,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -5581,7 +5658,7 @@ kable(tbl_e2_out,
                 full_width = FALSE, position = "left") %>%
   pack_rows("Actual PA similarity",    1, 2) %>%
   pack_rows("Perceived PA similarity", 3, 4) %>%
-  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -5639,7 +5716,7 @@ kable(tbl_e2_med_pa,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -5778,7 +5855,14 @@ plot(p_mod) +
     hjust = 0, colour = "black"
   ) +
   ggtitle("Within-person mediation moderated by negative event occurrence \u2014 PA Similarity") +
-  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84), b-path (\u03C66), and c\u2019-path (\u03C67).")
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84), b-path (\u03C66), and c\u2019-path (\u03C67).") -> med_plot
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_moderated_mediation_neg_event_PA.png", prefix, plot_counter)),
+  plot = med_plot, width = 9, height = 7, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 
 ```
 
@@ -5839,7 +5923,7 @@ kable(tbl_e2_h34a,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -5900,7 +5984,7 @@ kable(tbl_e2_h34p,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -5970,7 +6054,7 @@ kable(tbl_e2_out_na,
                 full_width = FALSE, position = "left") %>%
   pack_rows("Actual NA similarity",    1, 2) %>%
   pack_rows("Perceived NA similarity", 3, 4) %>%
-  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -6028,7 +6112,7 @@ kable(tbl_e2_med_na,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_neg = 0 (no negative event) and D_neg = 1 (negative event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -6167,7 +6251,14 @@ plot(p_mod) +
     hjust = 0, colour = "black"
   ) +
   ggtitle("Within-person mediation moderated by negative event occurrence \u2014 NA Similarity") +
-  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84), b-path (\u03C66), and c\u2019-path (\u03C67).")
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84), b-path (\u03C66), and c\u2019-path (\u03C67).") -> med_plot
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_moderated_mediation_neg_event_NA.png", prefix, plot_counter)),
+  plot = med_plot, width = 9, height = 7, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 
 ```
 
@@ -6245,7 +6336,7 @@ kable(tbl_e3_h33a,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -6306,7 +6397,7 @@ kable(tbl_e3_h33p,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -6376,7 +6467,7 @@ kable(tbl_e3_out,
                 full_width = FALSE, position = "left") %>%
   pack_rows("Actual PA similarity",    1, 2) %>%
   pack_rows("Perceived PA similarity", 3, 4) %>%
-  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -6434,7 +6525,7 @@ kable(tbl_e3_med_pa,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -6547,7 +6638,14 @@ plot(p_mod) +
     hjust = 0, colour = "black"
   ) +
   ggtitle("Within-person mediation moderated by positive event occurrence \u2014 PA Similarity") +
-  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84) and c\u2019-path (\u03C67). b-path moderation non-significant.")
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84) and c\u2019-path (\u03C67). b-path moderation non-significant.") -> med_plot
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_moderated_mediation_pos_event_PA.png", prefix, plot_counter)),
+  plot = med_plot, width = 9, height = 7, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 ```
 
 ## NA Similarity × C_expl_pos
@@ -6607,7 +6705,7 @@ kable(tbl_e3_h34a,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -6668,7 +6766,7 @@ kable(tbl_e3_h34p,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -6738,7 +6836,7 @@ kable(tbl_e3_out_na,
                 full_width = FALSE, position = "left") %>%
   pack_rows("Actual NA similarity",    1, 2) %>%
   pack_rows("Perceived NA similarity", 3, 4) %>%
-  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -6796,7 +6894,7 @@ kable(tbl_e3_med_na,
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = FALSE, position = "left") %>%
-  footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
+  kableExtra::footnote(general = "Simple slopes estimated at D_pos = 0 (no positive event) and D_pos = 1 (positive event occurred). Degrees of freedom estimated via Satterthwaite approximation.",
            general_title = "Note.", footnote_as_chunk = TRUE)
 ```
 
@@ -6909,5 +7007,12 @@ plot(p_mod) +
     hjust = 0, colour = "black"
   ) +
   ggtitle("Within-person mediation moderated by positive event occurrence \u2014 NA Similarity") +
-  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84) and c\u2019-path (\u03C67). b-path moderation non-significant.")
+  labs(caption = "Dashed arrows indicate moderation of the a-path (\u03B84) and c\u2019-path (\u03C67). b-path moderation non-significant.") -> med_plot
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_moderated_mediation_pos_event_NA.png", prefix, plot_counter)),
+  plot = med_plot, width = 9, height = 7, dpi = 300
+)
+plot_counter <- plot_counter + 1
+med_plot
 ```

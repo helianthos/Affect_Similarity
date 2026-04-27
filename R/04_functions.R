@@ -1069,6 +1069,16 @@ pull_p   <- function(mod, term) {
   tt[term, "p-value"]
 }
 
+# Run a Monte Carlo indirect-effect test for one mediator–outcome path pair.
+# Returns the same list structure as mc_ci(): point, ci_low, ci_hi, p, sim.
+run_mc <- function(med_model, a_term, out_model, b_term, n = 20000) {
+  a_est <- nlme::fixef(med_model)[a_term]
+  se_a  <- sqrt(vcov(med_model)[a_term, a_term])
+  b_est <- nlme::fixef(out_model)[b_term]
+  se_b  <- sqrt(vcov(out_model)[b_term, b_term])
+  mc_ci(rnorm(n, a_est, se_a) * rnorm(n, b_est, se_b), a_est, b_est, "")
+}
+
 # Apply bold to every significant (p < .05) cell in a set of columns
 bold_sig <- function(ft, p_mat, col_names) {
   for (j_col in col_names) {
@@ -1194,7 +1204,7 @@ make_step1_ft <- function(d, context_label) {
   coef_cols <- c("love_1a", "love_1b", "love_1c", "close_1a", "close_1b", "close_1c")
   note <- paste0(
     "Note. ", context_label, " interaction context. ",
-    "Step 1a = actual similarity only; 1b = actual + perceived similarity (H1.3); ",
+    "Model 1a = actual similarity only; 1b = actual + perceived similarity (H1.3); ",
     "1c = actual + perceived + Actual × Perceived interaction (exploratory). ",
     "All models include a dyad-level random intercept. ",
     "Bold = p < .05. * p < .05, ** p < .01, *** p < .001."
