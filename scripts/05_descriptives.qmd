@@ -857,7 +857,14 @@ esm_data <- esm_data %>%
     )
 
 # 2. distribution of love
-plot_hist_numeric(esm_data, "love", "Ditribution of 'love'", "love (0-100)",2)
+plot <- plot_hist_numeric(esm_data, "love", NULL, "Love (0-100)", 2) +
+  labs(y = "Number of beeps")
+
+plot
+
+plot_name <- sprintf("%s_%d_love_hist.png", prefix, plot_counter)
+save_plot(plot, plot_name)
+plot_counter <- plot_counter + 1
 
 # 3. Summary
 cat("Total beeps:", nrow(esm_data), "\n")
