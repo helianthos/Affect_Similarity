@@ -385,7 +385,7 @@ diag_data <- getData(h11) %>%
   )
 
 # Plot residuals vs fitted
-ggplot(diag_data, aes(x = .fitted, y = .resid_norm)) +
+resid_fitted_plot <- ggplot(diag_data, aes(x = .fitted, y = .resid_norm)) +
   geom_point(alpha = 0.5) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
   geom_smooth(method = "loess", se = FALSE, color = "blue") +
@@ -395,8 +395,17 @@ ggplot(diag_data, aes(x = .fitted, y = .resid_norm)) +
        y = "Normalized Residuals") +
   theme_minimal()
 
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_h11_residuals_vs_fitted.png", prefix, plot_counter)),
+  plot = resid_fitted_plot + labs(title = NULL, subtitle = NULL),
+  width = 7, height = 5, dpi = 300
+)
+plot_counter <- plot_counter + 1
+resid_fitted_plot
+
 # residuals by dyad
-ggplot(diag_data, aes(x = factor(dyad), y = .resid_norm)) +
+resid_dyad_plot <- ggplot(diag_data, aes(x = factor(dyad), y = .resid_norm)) +
   geom_boxplot(outlier.shape = NA, alpha = 0.5) +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
   labs(
@@ -408,8 +417,17 @@ ggplot(diag_data, aes(x = factor(dyad), y = .resid_norm)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
 
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_h11_residuals_by_dyad.png", prefix, plot_counter)),
+  plot = resid_dyad_plot + labs(title = NULL, subtitle = NULL),
+  width = 7, height = 5, dpi = 300
+)
+plot_counter <- plot_counter + 1
+resid_dyad_plot
+
 # residuals vs time
-ggplot(diag_data, aes(x = time, y = .resid_norm)) +
+resid_time_plot <- ggplot(diag_data, aes(x = time, y = .resid_norm)) +
   geom_point(alpha = 0.3) +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
   geom_smooth(method = "loess", se = FALSE, color = "blue") +
@@ -420,6 +438,15 @@ ggplot(diag_data, aes(x = time, y = .resid_norm)) +
     y = "Normalized Residuals"
   ) +
   theme_minimal()
+
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_h11_residuals_vs_time.png", prefix, plot_counter)),
+  plot = resid_time_plot + labs(title = NULL, subtitle = NULL),
+  width = 7, height = 5, dpi = 300
+)
+plot_counter <- plot_counter + 1
+resid_time_plot
 ```
 
 There is **clear heteroscedasticity**, violating the constant variance assumption. This is likely because the **outcome scale is bounded to a maximum of 100** and thus compressing the variance near the ceiling. See also the histogram of outcome variable `love`.
@@ -446,6 +473,16 @@ Looking at the residuals in function of time, we again see the small time trend,
 # QQ-plot of residuals
 qqnorm(diag_data$.resid_norm, main = "Normal QQ-plot (normalized residuals)")
 qqline(diag_data$.resid_norm, lwd = 2)
+
+png(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_h11_residuals_qq_plot.png", prefix, plot_counter)),
+  width = 7, height = 5, units = "in", res = 300
+)
+qqnorm(diag_data$.resid_norm, main = "")
+qqline(diag_data$.resid_norm, lwd = 2)
+invisible(dev.off())
+plot_counter <- plot_counter + 1
 ```
 
 In the central part of the distribution, between quantiles -1.5 and +1.5, the points are close to the qq-line, and thus approximate normality. There are however strong deviations in the tails, especially the left tail. Again, it is likely that this is because of the bounded scale, where near the +100, the positive residuals are compressed and the residual distribution becomes naturally left-skewed (heavy negative tail).
@@ -456,6 +493,17 @@ In the central part of the distribution, between quantiles -1.5 and +1.5, the po
 plot(ACF(h11, resType = "normalized", maxLag = 10), 
      alpha = 0.05, 
      main = "ACF of Normalized Residuals")
+
+png(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_h11_remaining_autocorrelation.png", prefix, plot_counter)),
+  width = 7, height = 5, units = "in", res = 300
+)
+plot(ACF(h11, resType = "normalized", maxLag = 10), 
+     alpha = 0.05, 
+     main = "")
+invisible(dev.off())
+plot_counter <- plot_counter + 1
 ```
 
 This plot suggests there is **some remaining short-term serial dependence** in the residuals that the `corCAR1(~ time | dyad/person)` does not fully absorb.
@@ -482,11 +530,37 @@ plot(pred_cond, pch = 16,
      main = "Mixed effect fitted values with 0/100 bounds")
 abline(h = c(0, 100), lty = 2)
 
+png(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_h11_fit_vs_data_mixed_effect_bounds.png", prefix, plot_counter)),
+  width = 7, height = 5, units = "in", res = 300
+)
+plot(pred_cond, pch = 16,
+     ylab = "Mixed effect (fixed + random effects) predicitions of love",
+     xlab = "Beeps",
+     main = "")
+abline(h = c(0, 100), lty = 2)
+invisible(dev.off())
+plot_counter <- plot_counter + 1
+
 plot(pred_fixed, pch = 16,
      ylab = "Fixed effect predictions of love",
      xlab = "Beeps",
      main = "Fixed effect fitted values with 0/100 bounds")
 abline(h = c(0, 100), lty = 2)
+
+png(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_h11_fit_vs_data_fixed_effect_bounds.png", prefix, plot_counter)),
+  width = 7, height = 5, units = "in", res = 300
+)
+plot(pred_fixed, pch = 16,
+     ylab = "Fixed effect predictions of love",
+     xlab = "Beeps",
+     main = "")
+abline(h = c(0, 100), lty = 2)
+invisible(dev.off())
+plot_counter <- plot_counter + 1
 
 # --- Observed vs predicted (more direct "fit vs data" check) ---
 diag_plot <- diag_data %>%
@@ -507,7 +581,7 @@ diag_plot <- diag_data %>%
     )
   )
 
-ggplot(diag_plot, aes(x = pred, y = love)) +
+obs_pred_plot <- ggplot(diag_plot, aes(x = pred, y = love)) +
   geom_point(alpha = 0.25) +
   geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
   coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
@@ -519,6 +593,15 @@ ggplot(diag_plot, aes(x = pred, y = love)) +
     y = "Observed love"
   ) +
   theme_minimal()
+
+ggsave(
+  filename = file.path(dir_plots,
+                       sprintf("%s_%02d_h11_fit_vs_data_observed_vs_predicted.png", prefix, plot_counter)),
+  plot = obs_pred_plot + labs(title = NULL, subtitle = NULL),
+  width = 7, height = 5, dpi = 300
+)
+plot_counter <- plot_counter + 1
+obs_pred_plot
 
 ```
 
