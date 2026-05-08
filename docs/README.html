@@ -2178,16 +2178,10 @@ vertical-align: -.125em;
 <p>Reproducible analysis and reporting code accompanying the OSF preregistration for the internship project “Feeling the Same, Seeing the Same”, in the context of the program <em>Master in Psychology: Theory and Research</em>.</p>
 <p><strong>Author:</strong> Geert Van Dingenen</p>
 <p><strong>Supervisor:</strong> Prof. Peter Kuppens</p>
-<p><strong>Affiliation:</strong><br>
-KU Leuven – Faculty of Psychology and Educational Sciences<br>
-Research Unit Quantitative Psychology and Individual Differences</p>
-<p><strong>Preregistration:</strong><br>
-Open Science Framework (OSF):<br>
-<a href="https://doi.org/10.17605/OSF.IO/E5SZ2" class="uri">https://doi.org/10.17605/OSF.IO/E5SZ2</a></p>
-<p><strong>Contact:</strong><br>
-geert.vandingenen@student.kuleuven.be / geert.vandingenen@gmail.com</p>
-<p><strong>Last updated:</strong><br>
-2026-04-17</p>
+<p><strong>Affiliation:</strong> KU Leuven – Faculty of Psychology and Educational Sciences Research Unit Quantitative Psychology and Individual Differences</p>
+<p><strong>Preregistration:</strong> Open Science Framework (OSF): <a href="https://doi.org/10.17605/OSF.IO/E5SZ2">https://doi.org/10.17605/OSF.IO/E5SZ2</a></p>
+<p><strong>Contact:</strong> geert.vandingenen@student.kuleuven.be / geert.vandingenen@gmail.com</p>
+<p><strong>Last updated:</strong> 2026-05-08</p>
 <section id="project-overview" class="level2">
 <h2 class="anchored" data-anchor-id="project-overview">Project overview</h2>
 <p>This repository contains the analysis and reporting code to investigate actual and perceived affect similarity in romantic couples across daily life and laboratory interaction contexts. The primary aim is to examine how affect similarity between partners relates to relational outcomes (e.g., love, closeness), how this association depends on perceived similarity, and how it is moderated by contextual and person-level factors.</p>
@@ -2198,9 +2192,9 @@ geert.vandingenen@student.kuleuven.be / geert.vandingenen@gmail.com</p>
 <h2 class="anchored" data-anchor-id="reproducibility">Reproducibility</h2>
 <p>This project uses:</p>
 <ul>
-<li><p><strong>R</strong> for all data processing and analyses,</p></li>
-<li><p><strong>renv</strong> for reproducible package management, and</p></li>
-<li><p><strong>git/GitHub</strong> for version control.</p></li>
+<li><strong>R</strong> for all data processing and analyses,</li>
+<li><strong>renv</strong> for reproducible package management, and</li>
+<li><strong>git/GitHub</strong> for version control.</li>
 </ul>
 <p>Raw data files are stored locally (e.g., via OneDrive) and are not tracked in this repository. Analysis-ready datasets are generated reproducible from the raw data using the scripts in this project.</p>
 <section id="recommended-setup" class="level3">
@@ -2208,8 +2202,8 @@ geert.vandingenen@student.kuleuven.be / geert.vandingenen@gmail.com</p>
 <p>For most users, the recommended way to work with this project is to use <strong>RStudio Desktop</strong> together with <strong>Quarto</strong>.</p>
 <ol type="1">
 <li>Install <strong>R</strong></li>
-<li>Install the latest <strong>RStudio Desktop</strong>: <a href="https://posit.co/downloads/" class="uri">https://posit.co/downloads/</a></li>
-<li>Install <strong>Quarto</strong>: <a href="https://quarto.org/docs/download/" class="uri">https://quarto.org/docs/download/</a></li>
+<li>Install the latest <strong>RStudio Desktop</strong>: <a href="https://posit.co/downloads/">https://posit.co/downloads/</a></li>
+<li>Install <strong>Quarto</strong>: <a href="https://quarto.org/docs/download/">https://quarto.org/docs/download/</a></li>
 <li>Open <code>Affect_Similarity.Rproj</code> in RStudio</li>
 </ol>
 <p>A recent version of RStudio is recommended, because Quarto support for <code>.qmd</code> files depends on the IDE version. For the analyses in this project, we mainly used <strong>RStudio version 2026.01.0+392</strong>.</p>
@@ -2222,8 +2216,8 @@ geert.vandingenen@student.kuleuven.be / geert.vandingenen@gmail.com</p>
 <h4 class="anchored" data-anchor-id="obtain-the-code"><em>1. Obtain the code</em></h4>
 <p>You can either:</p>
 <ul>
-<li><p>clone this repository from GitHub, or</p></li>
-<li><p>download the final project archive (ZIP) from OSF and extract it.</p></li>
+<li>clone this repository from GitHub, or</li>
+<li>download the final project archive (ZIP) from OSF and extract it.</li>
 </ul>
 </section>
 <section id="open-the-project" class="level4">
@@ -2284,13 +2278,15 @@ geert.vandingenen@student.kuleuven.be / geert.vandingenen@gmail.com</p>
 <li><p><code>scripts/06_study_component_1.qmd</code></p></li>
 <li><p><code>scripts/07_study_component_2.qmd</code></p></li>
 <li><p><code>scripts/08_response_surface_analysis.qmd</code></p></li>
+<li><p><code>scripts/09_tables_manuscript.qmd</code></p>
+<p>Generates publication-ready Word (<code>.docx</code>) tables for the manuscript. Re-fits models from the saved analysis datasets and writes output to <code>outputs/tables/</code>. Each table is in its own chunk so tables can be generated and fine-tuned individually. Render with <code>quarto render scripts/09_tables_manuscript.qmd</code> or run chunks interactively in RStudio.</p></li>
 </ol>
 <p>Confirmatory analyses follow the preregistered analysis plan. Any exploratory analyses are explicitly labeled as such.</p>
 </section>
 <section id="public-html-website-github-pages" class="level4">
 <h4 class="anchored" data-anchor-id="public-html-website-github-pages"><em>7. Public HTML website (GitHub Pages)</em></h4>
 <p>The repository can additionally serve a public-facing website through GitHub Pages using the <code>docs/</code> folder.</p>
-<p>This folder contains: - <code>docs/index.html</code>: a landing page linking to the rendered reports - pre-rendered HTML copies of selected reports for direct online viewing</p>
+<p>This folder contains: - <code>docs/index.html</code>: a landing page linking to the rendered reports - pre-rendered HTML copies of selected reports for direct online viewing.</p>
 <p>Typical contents of <code>docs/</code>:</p>
 <ul>
 <li><code>docs/index.html</code></li>
@@ -2301,9 +2297,9 @@ geert.vandingenen@student.kuleuven.be / geert.vandingenen@gmail.com</p>
 </ul>
 <p>This setup makes it possible to:</p>
 <ul>
-<li><p>keep the repository fully reproducible from source,</p></li>
-<li><p>preserve rendered outputs in <code>outputs/scripts/</code>, and</p></li>
-<li><p>provide a browsable public website through GitHub Pages.</p></li>
+<li>keep the repository fully reproducible from source,</li>
+<li>preserve rendered outputs in <code>outputs/scripts/</code>, and</li>
+<li>provide a browsable public website through GitHub Pages.</li>
 </ul>
 </section>
 </section>
@@ -2431,10 +2427,13 @@ geert.vandingenen@student.kuleuven.be / geert.vandingenen@gmail.com</p>
     │
     ├── logs/
     │   └── Saved log outputs
-    │     
+    │
+    ├── tables/
+    │   └── Word (.docx) tables generated by scripts/09_tables_manuscript.qmd
+    │
     └── scripts/
         └── Rendered Quarto HTML reports generated from source
-        </code></pre>
+    </code></pre>
 </section>
 </section>
 
