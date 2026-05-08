@@ -18,7 +18,7 @@ Open Science Framework (OSF):
 geert.vandingenen\@student.kuleuven.be / geert.vandingenen\@gmail.com
 
 **Last updated:**
-2026-04-24
+2026-05-08
 
 ## Project overview
 
@@ -290,5 +290,5 @@ project/
     │
     └── scripts/
         └── Rendered Quarto HTML reports generated from source
-      
+    
 ```
