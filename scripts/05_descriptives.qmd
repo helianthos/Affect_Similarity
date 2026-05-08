@@ -858,7 +858,12 @@ esm_data <- esm_data %>%
 
 # 2. distribution of love
 plot <- plot_hist_numeric(esm_data, "love", NULL, "Love (0-100)", 2) +
-  labs(y = "Number of beeps")
+  labs(y = "Number of beeps") +
+  theme(
+    axis.title = element_text(size = 20),
+    axis.text = element_text(size = 16),
+    plot.margin = margin(12, 12, 12, 12)
+  )
 
 plot
 
