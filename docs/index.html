@@ -206,6 +206,7 @@
       color:var(--muted);
       font-size:.94rem;
     }
+    .panel > p{color:var(--muted)}
     @media (max-width:700px){
       .hero,.panel{padding:22px}
       .hero-head{
@@ -226,7 +227,7 @@
         <div class="hero-copy">
           <h1>Feeling the Same, Seeing the Same</h1>
           <p class="subtitle">
-            Public project index for <em>Feeling the Same, Seeing the Same</em>, an internship project on actual and perceived affect similarity in romantic couples. This page provides access to the research report, conference poster, rendered analysis reports, presentation overviews, and links to the OSF project and GitHub repository.
+            <em>A preregistered study on affect similarity in romantic couples — internship project in the Master of Psychology: Theory and Research at KU Leuven, 2025–2026.</em>
           </p>
         </div>
       </div>
@@ -234,22 +235,21 @@
         <span><strong>Author:</strong> Geert Van Dingenen <a class="contact-button" href="mailto:geert.vandingenen@gmail.com">Contact</a></span>
         <span><strong>Supervisor:</strong> Prof. Peter Kuppens</span>
         <span><strong>Affiliation:</strong> KU Leuven — Faculty of Psychology and Educational Sciences</span>
-        <span><strong>Last updated:</strong> May 13, 2026</span>
+        <span><strong>Last updated:</strong> May 14, 2026</span>
       </div>
     </header>
 
     <section class="panel">
       <h2>Context</h2>
       <p>
-        This repository contains analysis and reporting code accompanying the preregistered project
-        <em>Feeling the Same, Seeing the Same</em>. The broader aim is to investigate actual and perceived affect similarity
-        in romantic couples across daily life and laboratory interaction contexts, and to examine how similarity relates to
-        relational outcomes such as love and closeness.
+        This page is the public project website for <em>Feeling the Same, Seeing the Same</em>, a preregistered internship
+        project investigating actual and perceived affect similarity in romantic couples across daily life and laboratory
+        interaction contexts, and examining how similarity relates to relational outcomes such as love and closeness.
       </p>
       <p>
-        The pages linked below are pre-rendered HTML outputs intended for direct online viewing. They complement the fully
-        reproducible project structure in the repository, where scripts, Quarto source files, and the package environment are
-        documented separately.
+        On this page you will find the research report, conference poster, rendered analysis reports, presentation-style
+        result summaries, and a link to the OSF preregistration. The full source code, documentation, and reproducibility
+        materials are available through the GitHub repository and OSF project linked below.
       </p>
     </section>
 
@@ -388,13 +388,20 @@
     <section class="panel">
       <h2>Reproducibility note</h2>
       <p>
-        The project is organised so that the codebase remains reproducible while this HTML page (in the <code>docs/</code> folder of the project) provides a browsable public website. The documents shown here are pre-rendered HTML outputs generated from the Quarto source files in the repository, which can be re-rendered and updated as needed.
-        In the repository, the Quarto source files live in <code>scripts/</code>, rendered outputs are generated into <code>outputs/scripts/</code>, and the public-facing pre-rendered copies have been placed in <code>docs/</code> for hosting through GitHub Pages.
+        The project is organised so that the full analysis pipeline remains reproducible while this page provides a browsable
+        public website. The analysis reports are pre-rendered HTML outputs generated from the Quarto source files in the
+        repository and can be re-rendered and updated as needed. Alongside these, the repository also contains the research
+        report, poster, presentation overviews, and preregistration materials.
+      </p>
+      <p>
+        In the repository, the Quarto source files live in <code>scripts/</code>, rendered outputs are generated into
+        <code>outputs/scripts/</code>, and the public-facing materials (pre-rendered HTML reports, PDF documents, and this
+        index page) have been placed in <code>docs/</code> for hosting through GitHub Pages.
       </p>
       <ul>
         <li><code>scripts/</code>: source <code>.qmd</code> and <code>.R</code> files</li>
         <li><code>outputs/scripts/</code>: rendered analysis outputs produced from the source files</li>
-        <li><code>docs/</code>: pre-rendered HTML files plus this index page for public viewing</li>
+        <li><code>docs/</code>: pre-rendered HTML reports, PDF documents, and this index page for public viewing</li>
       </ul>
       <p class="footer-note">
         For full setup instructions, package restoration, and project structure, consult the repository README.
